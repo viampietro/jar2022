@@ -9,3 +9,5 @@ auto/
 **/*.pdf
 **/*.synctex.gz
 **/*.*~
+macros/
+**/*.tdo

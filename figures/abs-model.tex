@@ -1,0 +1,102 @@
+\documentclass{standalone}
+
+\usepackage[english]{babel}
+
+% to create tables, with adaptative column width
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{adjustbox}
+\usepackage{float}
+
+% to define font size
+
+\usepackage{ulem}
+\usepackage{moresize}
+\usepackage{anyfontsize}
+
+% to use tikz and its libraries
+
+\usepackage{tikz-timing}
+\usepackage{tikz}
+
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{positioning, calc, arrows,
+  shapes, automata, petri, patterns}
+
+% to use tikzmark, to place and refer to marks outside the current figure
+
+\tikzset{every picture/.style={remember picture}}
+
+% styles for transitions
+
+\tikzset{transition/.append style={fill=black!20, thick}}
+\tikzset{transition/.append style={fill=black!20, thick}}
+
+% styles for test and inhib arcs.
+
+\tikzstyle{test}=[pre, *-]
+\tikzstyle{inhib}=[pre, o-]
+
+% to use colors
+
+\usepackage{xcolor}
+
+\usepackage{circuitikzgit}
+\ctikzset{
+  logic ports=ieee,
+}
+
+% Arrow positioning in a path
+
+\tikzset{->-/.style={decoration={
+      markings,
+      mark=at position #1 with {\arrow{>}}},postaction={decorate}}}
+
+\tikzset{-<-/.style={decoration={
+      markings,
+      mark=at position #1 with {\arrow{<}}},postaction={decorate}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                  BEGIN DOCUMENT                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{sitpn-macros}
+
+\begin{document}
+
+\begin{tikzpicture}
+  
+  %%% LEFT COMPONENT
+
+  \node[inner sep=20pt, draw, rectangle, line width=2pt] (lcomp) {\sitpnOne{}};
+  \draw ($(lcomp.west)!.9!(lcomp.north west)$) -- ++(0.3,-0.3) node[right] {\Large\tt clk} -- ++(-0.3,-0.3) ;
+  \draw ($(lcomp.west)!.65!(lcomp.north west)$) --++ (-.6,0) node[circle, fill=black, inner sep=2pt]{};
+  \node at ($(lcomp.west)!.65!(lcomp.north west)+(10pt,0)$) [anchor=west]  {\Large\tt rst};
+  
+  \node (lcomplabel) at ($(lcomp.south)$) [anchor=north]  {\Huge\tt Component 1};
+  
+  %%% RIGHT COMPONENT
+
+  \node[inner sep=10pt, draw, rectangle, line width=2pt] (rcomp) at ($(lcomp.east)+(9,0)$) {
+    \sitpnTwo{}
+  };
+  \draw ($(rcomp.west)!.9!(rcomp.north west)$) -- ++(0.3,-0.3) node[right] {\Large\tt clk} -- ++(-0.3,-0.3) ;
+  \draw ($(rcomp.west)!.65!(rcomp.north west)$) --++ (-.6,0) node[circle, fill=black, inner sep=2pt]{};
+  \node at ($(rcomp.west)!.65!(rcomp.north west)+(10pt,0)$) [anchor=west]  {\Large\tt rst};
+
+  \node (rcomplabel) at ($(rcomp.south)$) [anchor=north]  {\Huge\tt Component 2};
+  
+  % INTERFACE ARCS
+
+  \draw ($(sendqueryi.east)$) edge[pre] ($(uniqqueryi.west)$);
+  \draw[dotted] ($(queryi.east)$) -- ($(querypi.west)$);
+  \draw[dotted] ($(answeri.east)$) -- ($(answerpi.west)$);
+  
+\end{tikzpicture}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

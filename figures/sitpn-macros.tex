@@ -1,0 +1,376 @@
+\def\sitpnOne{
+  \begin{tikzpicture}
+    % \draw[help lines,step=8pt] (-2.6cm,1.9cm) grid (7.2cm,-5.8cm);
+    \clip (-2.6cm,1.9cm) rectangle (7.2cm,-5.8cm);
+    
+    % PLACES AND TRANSITIONS
+    
+    \node[place,tokens=1] (wforsensoron) {};
+    \node[place,tokens=1] (wafteranswer)
+    at ($(wforsensoron)+(3cm,0)$) {};
+
+    \node[transition] (sensoron) at ($(wforsensoron)-(0,1cm)$) {};
+    \node[transition] (execfun)
+    at ($(wforsensoron)!.5!(wafteranswer)-(0,1cm)$) {};
+    \node[transition] (sendquery) at ($(wafteranswer)-(0,1cm)$) {};
+
+    \node[place,tokens=2] (cyclect) at ($(sensoron)-(1cm,1cm)$) {};
+    \node[place] (caftersensoron) at ($(sensoron)-(0,2cm)$) {};
+    \node[place] (wafterfoo) at ($(execfun)-(0,1cm)$) {};
+    \node[place] (wforanswer) at ($(sendquery)-(0,1cm)$) {};
+    \node[place] (query) at ($(sendquery)+(1.5cm,-1cm)$) {};
+
+    \node[transition] (eocsensoron)
+    at ($(caftersensoron)-(0,1cm)$) {};
+    \node[transition] (answer) at ($(wforanswer)-(0,1.5cm)$) {};
+    \node[transition] (eocanswer) at ($(eocsensoron)-(0,1cm)$) {};
+
+    \node[place] (cafteranswer) at ($(answer)-(0,1cm)$) {};
+
+    % ARCS
+
+    \draw
+    ($(sensoron.north)$)
+    edge[pre]
+    ($(wforsensoron.south)$);
+    
+    \draw
+    ($(execfun.north west)$)
+    edge[pre]
+    ($(wforsensoron.south east)$);
+
+    \draw
+    ($(execfun.north east)$)
+    edge[test]
+    ($(wafteranswer.south west)$);
+
+    \draw
+    ($(sendquery.north)$)
+    edge[pre]
+    ($(wafteranswer.south)$);
+
+    \draw
+    ($(execfun.south)$)
+    edge[post]
+    ($(wafterfoo.north)$);
+
+    \draw
+    ($(sendquery.south west)$)
+    edge[pre]
+    ($(wafterfoo.north east)$);
+
+    \draw
+    ($(sendquery.south)$)
+    edge[post]
+    ($(wforanswer.north)$);
+
+    \draw
+    ($(sendquery.south east)$)
+    edge[post]
+    ($(query.north west)$);
+
+    \draw
+    ($(answer.north)$)
+    edge[pre]
+    ($(wforanswer.south)$);
+
+    \draw
+    ($(answer.south)$)
+    edge[post]
+    ($(cafteranswer.north)$);
+
+    \draw
+    ($(sensoron.south)$)
+    edge[post]
+    ($(caftersensoron.north)$);
+
+    \draw
+    ($(eocsensoron.north)$)
+    edge[pre]
+    ($(caftersensoron.south)$);
+
+    \draw
+    ($(eocsensoron.west)$)
+    edge[post,bend left=90,looseness=1.4]
+    ($(wforsensoron.west)$);
+
+    \draw
+    ($(cafteranswer.west)$)
+    edge[post]
+    ($(eocanswer.east)$);
+
+    \draw
+    ($(sensoron.south west)$)
+    edge[pre]
+    ($(cyclect.north east)$);
+
+    \draw
+    ($(eocanswer.west)$)
+    edge[post,bend left=90,looseness=2.2]
+    ($(wafteranswer.north west)$);
+
+    \draw
+    ($(sendquery.north east)$)
+    edge[post, in=45, out=45, looseness=3]
+    ($(wforsensoron.north east)$);
+
+    \draw
+    ($(execfun.south west)$)
+    edge[inhib,bend right=10]
+    ($(cyclect.east)$);
+
+    \draw
+    ($(execfun.south)-(1mm,0)$)
+    edge[post, bend left] node[xshift=1mm,yshift=-1mm]{\ssmall 2}
+    ($(cyclect.south east)$);
+
+    % LABELS
+
+    \node (lwforsensoron)
+    at ($(wforsensoron.north)+(0,2mm)$) {\ssmall WforSensorOn};
+
+    \node (lwafteranswer)
+    at ($(wafteranswer.north)+(0,2mm)$) {\ssmall WafterAnswer};
+
+    \node (lwafteranswer)
+    at ($(sensoron.west)-(8mm,0)$) {
+      \renewcommand\arraystretch{.3}
+      \begin{tabular}{@{}l@{}}
+        \ssmall SensorOn \\
+        {\ssmall\bf C-cond} \\
+      \end{tabular}
+
+    };
+
+    \node (lexecfun)
+    at ($(execfun.north)+(0,3mm)$) {
+      \renewcommand\arraystretch{.3}
+      \begin{tabular}{@{}c@{}}
+        \ssmall ExecFunction \\
+        {\ssmall\bf F-foo} \\
+      \end{tabular}
+
+    };
+
+    \node (lcyclect)
+    at ($(cyclect.west)-(5mm,0)$) {\ssmall CycleCt};
+
+    \node (lwafterfoo)
+    at ($(wafterfoo.south)-(0,3mm)$) {\ssmall Wafterfoo};
+
+    \node (lsendquery)
+    at ($(sendquery.north east)+(6mm,2mm)$) {\ssmall SendQuery};
+
+    \node (lwforanswer)
+    at ($(wforanswer.south)-(0,2mm)$) {\ssmall WforAnswer};
+
+    \node (lquery)
+    at ($(query.north)+(0,3mm)$) {\ssmall Query};
+
+    \node (lanswer)
+    at ($(answer.west)-(5mm,0)$) {\ssmall Answer};
+
+    \node (lcaftersensoron)
+    at ($(caftersensoron.west)-(6mm,0)$) {\ssmall Compute};
+
+    \node (leocsensoron) 
+    at ($(eocsensoron.south)-(0,3mm)$) {\ssmall EOC};
+
+    \node (leocanswer) 
+    at ($(eocanswer.south)-(0,3mm)$) {\ssmall EOC};
+
+    \node (lcafteranswer) 
+    at ($(cafteranswer.south)-(0,3mm)$) {\ssmall Compute};
+    
+    % INTERFACE and CONNECTIONS to INTERFACE
+    
+    \node[transition, anchor=west] (sendqueryi) at ($(sendquery.east)+(3,0)$) [label={[above]:\ssmall SendQuery}] {};
+    
+    \node[place, anchor=west] (queryi) at ($(query.east)+(1.2,0)$) {};
+    \node[anchor=north] (queryilabel) at ($(queryi.south)$) {\ssmall Query};
+    
+    \node[transition, anchor=west] (answeri) at ($(answer.east)+(3,0)$) {};
+    \node[anchor=north] (answerilabel) at ($(answeri.south)$) {\ssmall Answer};
+    
+    \draw[dotted] (sendquery) -- (sendqueryi);
+    \draw[dotted] (query) -- (queryi);
+    \draw[dotted] (answer) -- (answeri);
+  \end{tikzpicture}
+}
+
+\def\sitpnTwo{
+  \begin{tikzpicture}
+
+    % \draw[help lines,step=8pt] (-6.3cm,.8cm) grid (4.5cm,-7cm);
+    \clip (-6.3cm,.8cm) rectangle (4.5cm,-7cm);
+    
+    % PLACES AND TRANSITIONS
+    
+    \node[place, tokens=1] (wforquery) {};
+
+    \node[place, tokens=1] (uniqquery)
+    at ($(wforquery)-(2.5cm,1cm)$) {};
+    
+    \node[transition] (recvquery) at ($(wforquery)-(1.5cm,1.5cm)$) {};
+    \node[transition] (timeout) at ($(wforquery)+(1.5cm,-1.5cm)$) {};
+
+    \node[place] (queryp) at ($(uniqquery)-(0,1.5cm)$) {};
+    \node[place] (computeans) at ($(recvquery)-(0,1.5cm)$) {};
+    \node[place] (logerr) at ($(timeout)-(0,1.5cm)$) {};
+
+    \node[transition] (endofcheck) at ($(logerr)+(2.2cm,0)$) {};
+    \node[transition] (answerp) at ($(computeans)-(0,1.5cm)$) {};
+    \node[transition] (sustainrled) at ($(logerr)-(0,1.5cm)$) {};
+
+    \node[place] (checkstatus)
+    at ($(answerp)!.5!(sustainrled)-(0,1.5cm)$) {};
+
+    % ARCS
+
+    \draw
+    ($(timeout.south west)$)
+    edge[dotted,->,bend left]
+    ($(recvquery.south east)$);
+    
+    \draw
+    ($(recvquery.north east)$)
+    edge[pre]
+    ($(wforquery.south west)$);
+
+    \draw
+    ($(timeout.north west)$)
+    edge[pre]
+    ($(wforquery.south east)$);
+
+    \draw
+    ($(recvquery.south)$)
+    edge[post]
+    ($(computeans.north)$);
+
+    \draw
+    ($(timeout.south)$)
+    edge[post]
+    ($(logerr.north)$);
+
+    \draw
+    ($(answerp.north)$)
+    edge[pre]
+    ($(computeans.south)$);
+
+    \draw
+    ($(answerp.north)$)
+    edge[pre]
+    ($(computeans.south)$);
+    
+    \draw
+    ($(sustainrled.north)$)
+    edge[pre]
+    ($(logerr.south)$);
+
+    \draw
+    ($(answerp.south)$)
+    edge[post]
+    ($(checkstatus.north west)$);
+
+    \draw
+    ($(sustainrled.south)$)
+    edge[post]
+    ($(checkstatus.north east)$);
+
+    \draw
+    ($(answerp.south west)$)
+    edge[post, bend left=90, looseness=1.5]
+    ($(uniqquery.south west)$);
+
+    \draw
+    ($(recvquery.south west)$)
+    edge[pre]
+    ($(queryp.north east)$);
+
+    \draw
+    ($(endofcheck.south)$)
+    edge[pre,bend left=45]
+    ($(checkstatus.east)$);
+
+    \draw
+    ($(endofcheck.north)$)
+    edge[post,bend right=45]
+    ($(wforquery.east)$);
+
+    % LABELS
+
+    \node (lwforquery)
+    at ($(wforquery.north)+(0,2mm)$) {\ssmall WforQuery};
+
+    \node (luniqquery)
+    at ($(uniqquery.north)+(0,2mm)$) {\ssmall UniqueQuery};
+
+    \node (lrecvquery)
+    at ($(recvquery.east)+(7mm,0)$) {\ssmall RecvQuery};
+
+    \node (ltimeout)
+    at ($(timeout.east)+(5mm,0)$) {
+      \renewcommand\arraystretch{.3}
+      \begin{tabular}{@{}c@{}}
+        \ssmall TimeOut \\
+        {\ssmall\bf [10,$\infty$[} \\
+      \end{tabular}        
+    };
+
+    \node (lcomputeans)
+    at ($(computeans.east)+(7mm,0)$) {
+      \renewcommand\arraystretch{.3}
+      \begin{tabular}{@{}l@{}}
+        \ssmall Compute \\
+        {\ssmall\bf A-gLEDon} \\
+      \end{tabular}        
+    };
+
+    \node (llogerr)
+    at ($(logerr.east)+(7mm,0)$) {
+      \renewcommand\arraystretch{.3}
+      \begin{tabular}{@{}l@{}}
+        \ssmall LogError \\
+        {\ssmall\bf A-rLEDon} \\
+      \end{tabular}        
+    };
+
+    \node (lanswerp)
+    at ($(answerp.south)+(0,-2mm)$) {\ssmall Answer};
+
+    \node (lqueryp)
+    at ($(queryp.north)+(0,2mm)$) {\ssmall Query};
+
+    \node (lcheckstatus)
+    at ($(checkstatus.south)+(0,-2mm)$) {\ssmall CheckStatus};
+
+    \node (lsustainrled)
+    at ($(sustainrled.west)+(-9mm,0)$) {
+      \renewcommand\arraystretch{.3}
+      \begin{tabular}{@{}c@{}}
+        \ssmall SustainrLED \\
+        {\ssmall\bf [3,3]} \\
+      \end{tabular}        
+    };
+
+    \node (lendofcheck)
+    at ($(endofcheck.south)+(0,-4mm)$) {\ssmall EndOfCheck};
+
+    % INTERFACE AND INTERFACE CONNECTIONS
+
+    \node[place, anchor=east] (uniqqueryi) at ($(uniqquery.west)-(2,0)$) {};
+    \node[anchor=north] (uniqqueryilabel) at ($(uniqqueryi.south)$) {\ssmall UniqueQuery};
+    \node[place, anchor=east] (querypi) at ($(queryp.west)-(2,0)$) {};
+    \node[anchor=north] (querypilabel) at ($(querypi.south)$) {\ssmall Query};
+    
+    \node[transition] (answerpi) at ($(answerp.west)-(3.5,0)$) {};
+    \node[anchor=north] (answerpilabel) at ($(answerpi.south)$) {\ssmall Answer};
+    
+    % % \draw (rcomp.north west) rectangle (rcomp.south east);
+    \draw[dotted] ($(uniqquery.west)$) -- ($(uniqqueryi.east)$);
+    \draw[dotted] ($(queryp.west)$) -- ($(querypi.east)$);
+    \draw[dotted] ($(answerp.west)$) -- ($(answerpi.east)$);
+    
+  \end{tikzpicture}
+
+}
