@@ -64,14 +64,35 @@
 
 \begin{document}
 
-\begin{tikzpicture}
+\begin{circuitikz}
   
   %%% LEFT COMPONENT
 
-  \node[inner sep=20pt, draw, rectangle, line width=2pt] (lcomp) {\sitpnOne{}};
+  \node[inner sep=20pt, draw, rectangle, line width=2pt] (lcomp) {
+    \sitpnOne{}
+  };
   \draw ($(lcomp.west)!.9!(lcomp.north west)$) -- ++(0.3,-0.3) node[right] {\Large\tt clk} -- ++(-0.3,-0.3) ;
-  \draw ($(lcomp.west)!.65!(lcomp.north west)$) --++ (-.6,0) node[circle, fill=black, inner sep=2pt]{};
+  \draw ($(lcomp.west)!.65!(lcomp.north west)$) --++ (-.6,0);
   \node at ($(lcomp.west)!.65!(lcomp.north west)+(10pt,0)$) [anchor=west]  {\Large\tt rst};
+
+  \draw ($(lcomp.west)!.65!(lcomp.north west)$) --++ (-.6,0);
+  \node at ($(lcomp.west)!.65!(lcomp.north west)+(10pt,0)$) [anchor=west]  {\Large\tt rst};
+
+  \coordinate (lcin1) at ($(lcomp.west)!.72!(lcomp.south west)$);
+  \draw (lcin1) --++ (-.6,0);
+  \node at ($(lcin1)-(.6,0)$) [anchor=east]  {\Large\tt in1};
+
+  \coordinate (lcin2) at ($(lcomp.west)!.90!(lcomp.south west)$);
+  \draw (lcin2) --++ (-.6,0);
+  \node at ($(lcin2)-(.6,0)$) [anchor=east]  {\Large\tt in2};
+
+  \draw (lcin1) -| ($(op1.west)-(1,-.2)$) -- ($(op1.west)+(0,.2)$);
+  \draw (lcin2) -| ($(op1.west)-(1,.2)$) -- ($(op1.west)-(0,.2)$);
+
+  \coordinate (lcout1) at ($(lcomp.east)!.75!(lcomp.south east)$);
+  \draw (lcout1) --++ (.6,0);
+  \node at ($(lcout1)+(.1,-.3)$) [anchor=west]  {\Large\tt out1};
+  \draw (op1.east) -- (lcout1);
   
   \node (lcomplabel) at ($(lcomp.south)$) [anchor=north]  {\Huge\tt Component 1};
   
@@ -81,9 +102,19 @@
     \sitpnTwo{}
   };
   \draw ($(rcomp.west)!.9!(rcomp.north west)$) -- ++(0.3,-0.3) node[right] {\Large\tt clk} -- ++(-0.3,-0.3) ;
-  \draw ($(rcomp.west)!.65!(rcomp.north west)$) --++ (-.6,0) node[circle, fill=black, inner sep=2pt]{};
+  \draw ($(rcomp.west)!.65!(rcomp.north west)$) --++ (-.6,0);
   \node at ($(rcomp.west)!.65!(rcomp.north west)+(10pt,0)$) [anchor=west]  {\Large\tt rst};
 
+  \coordinate (rcin1) at ($(rcomp.west)!.72!(rcomp.south west)$);
+  \draw (rcin1) --++ (-.6,0);
+  \node at ($(rcin1)-(.2,-.4)$) [anchor=east]  {\Large\tt in1};
+  \draw (rcin1) -- ($(op2.west)-(2,-.4)$) |- ($(op2.west)$);
+
+  \coordinate (rcout1) at ($(rcomp.east)!.72!(rcomp.south east)$);
+  \draw (rcout1) --++ (.6,0);
+  \node at ($(rcout1)+(1.2,.4)$) [anchor=east]  {\Large\tt out1};
+  \draw ($(op2.east)$) -| ($(rcout1)-(1,0)$) -- (rcout1);
+  
   \node (rcomplabel) at ($(rcomp.south)$) [anchor=north]  {\Huge\tt Component 2};
   
   % INTERFACE ARCS
@@ -91,8 +122,10 @@
   \draw ($(sendqueryi.east)$) edge[pre] ($(uniqqueryi.west)$);
   \draw[dotted] ($(queryi.east)$) -- ($(querypi.west)$);
   \draw[dotted] ($(answeri.east)$) -- ($(answerpi.west)$);
+
+  \draw(lcout1) -| ($(rcin1)-(.6,0)$);
   
-\end{tikzpicture}
+\end{circuitikz}
 
 \end{document}
 

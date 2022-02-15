@@ -1,7 +1,7 @@
 \def\sitpnOne{
-  \begin{tikzpicture}
-    % \draw[help lines,step=8pt] (-2.6cm,1.9cm) grid (7.2cm,-5.8cm);
-    \clip (-2.6cm,1.9cm) rectangle (7.2cm,-5.8cm);
+  \begin{circuitikz}
+    % \draw[help lines,step=8pt] (-2.6cm,1.9cm) grid (7.2cm,-6.7cm);
+    \clip (-2.6cm,1.9cm) rectangle (7.2cm,-6.7cm);
     
     % PLACES AND TRANSITIONS
     
@@ -27,6 +27,13 @@
 
     \node[place] (cafteranswer) at ($(answer)-(0,1cm)$) {};
 
+    \node[draw, rectangle, inner sep=1pt] (op1) at ($(eocanswer.south)-(-2,1)$) {
+      \begin{tabular}{@{}c@{}}
+        \textsf{VHDL} \\
+        operation \\
+      \end{tabular}
+    };
+    
     % ARCS
 
     \draw
@@ -195,14 +202,17 @@
     \draw[dotted] (sendquery) -- (sendqueryi);
     \draw[dotted] (query) -- (queryi);
     \draw[dotted] (answer) -- (answeri);
-  \end{tikzpicture}
+
+
+    
+  \end{circuitikz}
 }
 
 \def\sitpnTwo{
   \begin{tikzpicture}
 
     % \draw[help lines,step=8pt] (-6.3cm,.8cm) grid (4.5cm,-7cm);
-    \clip (-6.3cm,.8cm) rectangle (4.5cm,-7cm);
+    \clip (-6.3cm,.8cm) rectangle (4.5cm,-8cm);
     
     % PLACES AND TRANSITIONS
     
@@ -225,6 +235,13 @@
     \node[place] (checkstatus)
     at ($(answerp)!.5!(sustainrled)-(0,1.5cm)$) {};
 
+    \node[draw, rectangle, inner sep=1pt] (op2) at ($(checkstatus.south)-(0,1)$) {
+      \begin{tabular}{@{}c@{}}
+        \textsf{VHDL} \\
+        operation \\
+      \end{tabular}
+    };
+    
     % ARCS
 
     \draw
@@ -374,3 +391,7 @@
   \end{tikzpicture}
 
 }
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "abs-model"
+%%% End:

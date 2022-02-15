@@ -11,3 +11,4 @@ auto/
 **/*.*~
 macros/
 **/*.tdo
+figures/*.eps
