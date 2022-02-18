@@ -1,0 +1,109 @@
+\documentclass{standalone}
+
+\usepackage[english]{babel}
+\usepackage[linesnumbered, ruled, vlined]{algorithm2e}
+
+\usepackage{caption}
+
+% to create listings
+
+\usepackage{listings, lstautogobble}
+\lstset{
+  autogobble=true,
+  frame=single,
+}
+
+\lstdefinelanguage{coq}[Objective]{Caml}{
+  morekeywords={Structure, Definition, Inductive, list, return},
+  sensitive=true
+}
+
+% to frame text
+
+\usepackage{framed}
+
+% to define font size
+
+\usepackage{ulem}
+\usepackage{moresize}
+\usepackage{anyfontsize}
+
+% to use tikz and its libraries
+
+\usepackage{tikz-timing}
+\usepackage{tikz}
+
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{positioning, calc, arrows, shapes, automata, petri, patterns}
+
+% to use tikzmark, to place and refer to marks outside the current figure
+
+\tikzset{every picture/.style={remember picture}}
+
+% styles for transitions
+
+\tikzset{transition/.append style={fill=black!20, thick}}
+\tikzset{transition/.append style={fill=black!20, thick}}
+
+% styles for test and inhib arcs.
+
+\tikzstyle{test}=[pre, *-]
+\tikzstyle{inhib}=[pre, o-]
+
+% to use colors
+
+\usepackage{xcolor}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                  BEGIN DOCUMENT                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\begin{tikzpicture}
+  
+  \node (pn) {
+    \begin{tikzpicture}
+      \node[place, tokens=1] (p0) [label={left:$p_0$}] {};
+      \node[anchor=west] at ($(p0.east)$) {$a_0$};
+      
+      \node[place, tokens=1] (p1) [right =of p0, label={right:$p_1$}] {};
+      \node[place] (p2) at ($(p0)!0.5!(p1)-(0, 2)$) [label={left:$p_2$}] {};
+      \node[anchor=west] at ($(p2.east)$) {$a_1$};
+      
+      \node[transition] (t0) at ($(p0)!0.5!(p1)-(0, 1)$) [label={left:$t_0$}] {}
+      edge[pre, bend right=20] (p0)
+      edge[pre, bend left=20] (p1)
+      edge[post] (p2);
+      
+      \node[right =3pt of t0, yshift=+5pt] {$f_0$};
+      \node[right =3pt of t0, yshift=-5pt] {$c_0$};
+      
+      \node[transition] (t1) at ($(p2)-(0, 1)$) [label={left:$t_1$}] {}
+      edge[pre] (p2)
+      edge[post, bend left=45] (p0);
+      
+      \node[right =3pt of t1] {$c_1$};
+    \end{tikzpicture}
+  };
+
+  \node[anchor=west] (tab) at ($(pn.east)+(.4,0)$) {
+    \begin{tabular}{|l|}
+      \hline
+      $c_0$: $\mathtt{i}>10^{\circ}$C \\
+      $f_0$: \texttt{set\_temperature}($\mathtt{o}_1$,$\mathtt{s}$) \\
+      $c_1$: $\mathtt{i}\le{}10^{\circ}$C \texttt{and} $\mathtt{s}$ \\
+      $a_0$: \texttt{green\_LED\_on}($\mathtt{o}_2$) \\
+      $a_1$: \texttt{red\_LED\_on}($\mathtt{o}_2$) \\
+      \hline
+    \end{tabular}
+  };
+  
+\end{tikzpicture}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:

@@ -27,6 +27,12 @@
 \def\lwidth{\dimexpr\linewidth-2\fboxsep-2\fboxrule}
 \def\ocaml{\textsf{OCaml}}
 
+
+% Circled text
+
+\newcommand\circled[1]{\tikz[baseline=(char.base)]{\node (char) [draw, circle,
+    inner sep=1pt] {\small #1};}}
+
 %%% Local Variables:
 %%% mode: latex
 %%% TeX-master: "main"
