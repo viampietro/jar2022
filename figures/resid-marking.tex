@@ -62,15 +62,22 @@
     \begin{tikzpicture}
       \node[place, tokens=2] (p0) [label={above:$p_0$}] {};
       
-      \node[transition, anchor=north east] (t0) at ($(p0.south west)-(.5,.5)$) [label={left:\textcolor{red}{$t_0$}}] {}
+      \node[transition, anchor=north east] (t0) at ($(p0.south west)-(.5,.5)$) [label={left:$\mathbf{t_0}$}] {}
       edge[pre, bend left] (p0);
 
-      \node[transition, anchor=north west] (t2) at ($(p0.south east)+(.5,-.5)$) [label={right:$t_2$}] {}
+      \node[transition, anchor=north west] (t2) at ($(p0.south east)+(.5,-.5)$) [label={left:$t_2$}] {}
       edge[pre, bend right] (p0);
 
-      \node[transition] (t1) at ($(t0)!.5!(t2)$) [label={left:$t_1$}] {}
+      \node[transition] (t1) at ($(t0)!.5!(t2)$) {}
       edge[pre] (p0);
-      \node[anchor=west] at ($(t1.east)$) {\textcolor{red}{$c_0$}};
+      \node[anchor=east] at ($(t1.west)+(0,.1)$) {
+        \renewcommand{\arraystretch}{.8}
+        \begin{tabular}{@{}c@{}}
+          $t_1$ \\
+          $c_0$ \\
+        \end{tabular}
+
+      };
 
       \draw ($(t0.south)$) edge[bend right, dotted, ->] ($(t1.south west)$);
       \draw ($(t1.south)$) edge[bend right, dotted, ->] ($(t2.south west)$);
@@ -86,12 +93,17 @@
       \node[transition, anchor=north east] (t0) at ($(p0.south west)-(.5,.5)$) [label={left:$t_0$}] {}
       edge[pre, bend left] (p0);
 
-      \node[transition, anchor=north west] (t2) at ($(p0.south east)+(.5,-.5)$) [label={right:$t_2$}] {}
+      \node[transition, anchor=north west] (t2) at ($(p0.south east)+(.5,-.5)$) [label={left:$t_2$}] {}
       edge[pre, bend right] (p0);
 
-      \node[transition] (t1) at ($(t0)!.5!(t2)$) [label={left:\textcolor{red}{$t_1$}}] {}
+      \node[transition] (t1) at ($(t0)!.5!(t2)$) {}
       edge[pre] (p0);
-      \node[anchor=west] at ($(t1.east)$) {\textcolor{red}{$c_0$}};
+      \node[anchor=east] at ($(t1.west)+(0,.1)$) {
+        \renewcommand{\arraystretch}{.8}
+        \begin{tabular}{@{}c@{}}
+          $\mathbf{t_1}$ \\
+          $c_0$ \\
+        \end{tabular}};
       \draw ($(t0.south)$) edge[bend right, dotted, ->] ($(t1.south west)$);
       \draw ($(t1.south)$) edge[bend right, dotted, ->] ($(t2.south west)$);
     \end{tikzpicture}
@@ -107,12 +119,17 @@
       \node[transition, anchor=north east] (t0) at ($(p0.south west)-(.5,.5)$) [label={left:$t_0$}] {}
       edge[pre, bend left] (p0);
 
-      \node[transition, anchor=north west] (t2) at ($(p0.south east)+(.5,-.5)$) [label={right:\textcolor{red}{$t_2$}}] {}
+      \node[transition, anchor=north west] (t2) at ($(p0.south east)+(.5,-.5)$) [label={left:$\mathbf{t_2}$}] {}
       edge[pre, bend right] (p0);
 
-      \node[transition] (t1) at ($(t0)!.5!(t2)$) [label={left:$t_1$}] {}
+      \node[transition] (t1) at ($(t0)!.5!(t2)$) {}
       edge[pre] (p0);
-      \node[anchor=west] at ($(t1.east)$) {\textcolor{red}{$c_0$}};      
+      \node[anchor=east] at ($(t1.west)+(0,.1)$) {
+        \renewcommand{\arraystretch}{.8}
+        \begin{tabular}{@{}c@{}}
+          $t_1$ \\
+          $c_0$ \\
+        \end{tabular}};
       \draw ($(t0.south)$) edge[bend right, dotted, ->] ($(t1.south west)$);
       \draw ($(t1.south)$) edge[bend right, dotted, ->] ($(t2.south west)$);
     \end{tikzpicture}

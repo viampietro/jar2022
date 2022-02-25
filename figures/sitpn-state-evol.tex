@@ -68,11 +68,8 @@
       % PLACES AND TRANSITIONS
       
       \node[place,tokens=2] (p0) {};
-      
       \node[transition] (t0) at ($(p0)-(0,1)$) {};
-      
       \node[place] (p1) at ($(t0)-(0,1)$) {};
-
       \node[transition] (t1) at ($(p1)-(0,1)$) {};
 
       % LABELS
@@ -82,25 +79,25 @@
         \begin{tabular}{@{}c@{}}
           $t_0$ \\
           $[2,4]$ \\
-          \textcolor{red}{${<}$2${>}$} \\
+          ${<}2{>}$ \\
         \end{tabular}
       };
-      \node (poLabel) at ($(p1)-(.7,0)$) { $p_1$};
-      \node (tzLabel) at ($(t1)-(.5,.2)$) { $t_1$};
+      \node (poLabel) at ($(p1)-(.7,0)$) {$p_1$};
+      \node (tzLabel) at ($(t1)-(.5,.2)$) {$t_1$};
 
       % ACTIONS, FUNCTIONS, CONDITIONS AND TIME ITVALS
 
-      \node (a0) at ($(p0.east)+(.3,0)$) {\textcolor{Green}{$a_0$}};
-      \node (a1) at ($(p1.east)+(.3,0)$) {\textcolor{red}{$a_1$}};
+      \node (a0) at ($(p0.east)+(.3,0)$) {$\mathbf{a_0}$};
+      \node (a1) at ($(p1.east)+(.3,0)$) {$a_1$};
 
       \node[anchor=west] (c0) at ($(t0.east)$) {
         \begin{tabular}{@{}l@{}}
-          \textcolor{Green}{$c_0$} \\
-          \textcolor{red}{$f_0$} \\
+          $\mathbf{c_0}$ \\
+          $f_0$ \\
         \end{tabular}
       };
       
-      \node (c1) at ($(t1.east)+(.3,0)$) {\textcolor{red}{$c_1$}};
+      \node (c1) at ($(t1.east)+(.3,0)$) {$c_1$};
       
       % ARCS
       
@@ -134,7 +131,7 @@
         \begin{tabular}{@{}c@{}}
           $t_0$ \\
           $[2,4]$ \\
-          \textcolor{blue}{${<}$2${>}$} \\
+          $\mathbf{{>}2{<}}$ \\
         \end{tabular}
       };
       \node (poLabel) at ($(p1)-(.7,0)$) { $p_1$};
@@ -142,17 +139,17 @@
 
       % ACTIONS, FUNCTIONS, CONDITIONS AND TIME ITVALS
 
-      \node (a0) at ($(p02.east)+(.3,0)$) {\textcolor{Green}{$a_0$}};
-      \node (a1) at ($(p1.east)+(.3,0)$) {\textcolor{red}{$a_1$}};
+      \node (a0) at ($(p02.east)+(.3,0)$) {$\mathbf{a_0}$};
+      \node (a1) at ($(p1.east)+(.3,0)$) {$a_1$};
 
       \node[anchor=west] (c0) at ($(t02.east)$) {
         \begin{tabular}{@{}l@{}}
-          \textcolor{Green}{$c_0$} \\
-          \textcolor{Green}{$f_0$} \\
+          $\mathbf{c_0}$ \\
+          $\mathbf{f_0}$ \\
         \end{tabular}
       };
       
-      \node (c1) at ($(t1.east)+(.3,0)$) {\textcolor{red}{$c_1$}};
+      \node (c1) at ($(t1.east)+(.3,0)$) {$c_1$};
       
       % ARCS
       
@@ -186,7 +183,7 @@
         \begin{tabular}{@{}c@{}}
           $t_0$ \\
           $[2,4]$ \\
-          \textcolor{red}{${<}$1${>}$} \\
+          ${<}1{>}$ \\
         \end{tabular}
       };
       \node (poLabel) at ($(p1)-(.7,0)$) { $p_1$};
@@ -194,17 +191,17 @@
 
       % ACTIONS, FUNCTIONS, CONDITIONS AND TIME ITVALS
 
-      \node (a0) at ($(p02.east)+(.3,0)$) {\textcolor{Green}{$a_0$}};
-      \node (a1) at ($(p1.east)+(.3,0)$) {\textcolor{Green}{$a_1$}};
+      \node (a0) at ($(p02.east)+(.3,0)$) {$\mathbf{a_0}$};
+      \node (a1) at ($(p1.east)+(.3,0)$) {$\mathbf{a_1}$};
 
       \node[anchor=west] (c0) at ($(t02.east)$) {
         \begin{tabular}{@{}l@{}}
-          \textcolor{red}{$c_0$} \\
-          \textcolor{Green}{$f_0$} \\
+          $c_0$ \\
+          $\mathbf{f_0}$ \\
         \end{tabular}
       };
       
-      \node (c1) at ($(t1.east)+(.3,0)$) {\textcolor{red}{$c_1$}};
+      \node (c1) at ($(t1.east)+(.3,0)$) {$c_1$};
       
       % ARCS
       
