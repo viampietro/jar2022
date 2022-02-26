@@ -27,11 +27,29 @@
 \def\lwidth{\dimexpr\linewidth-2\fboxsep-2\fboxrule}
 \def\ocaml{\textsf{OCaml}}
 
-
 % Circled text
 
 \newcommand\circled[1]{\tikz[baseline=(char.base)]{\node (char) [draw, circle,
     inner sep=1pt] {\small #1};}}
+
+% MAth symbols
+
+\newcommand\srarrow[2]{%
+  \mathrel{%
+    \begin{tikzpicture}[%
+      baseline={(current bounding box.south)}
+      ]
+      \node[%
+      ,inner sep=1ex
+      ,align=center
+      ] (tmp) {#2 $#1$};
+      \path[%
+      ,draw,<-,] 
+      ($(tmp.south east)+(0,2pt)$) -- ($(tmp.south west)+(3pt,2pt)$);
+    \end{tikzpicture}
+  }
+}
+
 
 %%% Local Variables:
 %%% mode: latex
