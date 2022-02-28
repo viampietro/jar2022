@@ -6,17 +6,17 @@ transformation: Synchronously executed, extended, generalized,
 Interpreted Time Petri Nets with priorities (SITPNs). The
 formalization of the SITPN structure and semantics is mainly the
 result of two Ph.D. theses \cite{Leroux2014,Merzoug2018}. We made a
-preciser definition of both the SITPN structure and its semantics,
-where precision is needed for the purpose of proving semantic
-preservation. We have implemented both structure and semantics in
-\coq{}. Moreover, we added complementary definitions, concerning the
-well-definition of an SITPN input model, that are required to express
-our semantic preservation theorem. In this section, we assume that the
-reader has some knowledge of the Petri net formalism and its
-semantics, so that words like firing, or marking, need no
-explanation. For more information on the topic of Petri nets, the
-reader can refer to \cite{David1994}, \cite{Murata1989}, or
-\cite{Diaz2001}.
+preciser definition of both the SITPN structure and its semantics, as
+precision is needed for proving semantic preservation. We have
+implemented both structure and semantics in
+\coq{}\footnote{\url{https://github.com/viampietro/ver-hilecop/tree/master/sitpn}}. Moreover,
+we added complementary definitions, concerning the well-definition of
+an SITPN input model, that are required to express our semantic
+preservation theorem. In this section, we assume that the reader has
+some knowledge of the Petri net formalism and its semantics, so that
+words like firing, or marking, need no explanation. For more
+information on the topic of Petri nets, the reader can refer to
+\cite{David1994}, \cite{Murata1989}, or \cite{Diaz2001}.
 
 \begin{figure}[H]
 \centering
@@ -29,7 +29,7 @@ reader can refer to \cite{David1994}, \cite{Murata1989}, or
 In \hilecop{}'s high-level formalism, a model of digital system is
 composed of boxes that represent the different components of the
 system. Figure~\ref{fig:abs-model} gives an example of such a model.
-The internal behavior of each component is defined by an SITPN model.
+The internal behavior of each component is defined by a SITPN model.
 The elements of a component's internal behavior can be connected to
 the elements of another component's behavior through an interface. Two
 elements are either connected through a place-transition (or
@@ -68,7 +68,7 @@ be a natural number instead of the default value of one (i.e. when no
 number is written above the arc). An extended Petri net introduces two
 kind of place-transition arcs, the \textit{inhibitor} arc,
 characterized by a white circle head, and the \textit{test} arc, which
-has a black circle head. These arcs condition the firing of a
+has a black circle head. These arcs add conditions the firing of a
 connected transition, however, they do not cause tokens to be removed
 from input places at firing time. In Figure~\ref{fig:impl-model}, the
 arc from place CycleCt to transition ExecFunction is an inhibitor arc,
@@ -76,7 +76,7 @@ and the arc from place WafterAnswer to ExecFunction is a test arc.
 Now, let us introduce more specifically the class of interpreted PNs,
 time PNs and PNs with priorities.
 
-\paragraph{Interpreted Petri nets}
+\paragraph{Interpreted Petri nets (IPNs)}
 % As stated in \cite{David1994}, Interpreted Petri Nets (IPN) ``can be
 % applied to various interpretations according to the use wished to be
 % made of it''.
@@ -104,81 +104,16 @@ associated to $t$ are executed once. In Figure \ref{fig:impl-model},
 \textbf{F-foo} is a function associated to the transition
 ExecFunction; \textbf{A-gLEDon} and \textbf{A-rLEDon} are two actions
 associated to the Compute and LogError places.
-% Figure~\ref{fig:ipn} illustrates the use of actions, functions and
-% conditions in an interpreted Petri net as applied in the \hilecop{}
-% high-level models.
 
-% \begin{figure}[H]
-%   \centering
-%   \includegraphics[keepaspectratio=true, width=.7\textwidth]{interpreted-pn.eps}
-%   \caption[An example of Interpreted Petri net.]{An example of
-%     interpreted Petri net; on the left side, the interpreted Petri
-%     net; on the right side, examples of tests associated to conditions
-%     and operations associated to actions and functions.}
-%   \label{fig:ipn}
-% \end{figure}%
-% %
-% In Figure~\ref{fig:ipn}, the set of \vhdl{} signals, on which the
-% interpretation elements act upon, is
-% $\{\mathit{i}, \mathtt{s}, \mathtt{o}_1, \mathtt{o}_2\}$. Here, signal
-% \texttt{i} is an input port of the hardware, \texttt{s} is an internal
-% signal, and \texttt{o}$_1$ and \texttt{o}$_2$ are two output
-% ports. The action $a_0$ is activated as place $p_0$ is marked; thus,
-% the operation \texttt{green\_LED\_on}(\texttt{o}$_2$) is currently
-% executed. Also, function $f_0$ will be executed (i.e. operation
-% \texttt{set\_temperature}(\texttt{o}$_1$, \texttt{s})) at the firing
-% of $t_0$% , that is if condition $c_0$ is \texttt{true} and $t_0$ is
-% % sensitized
-% . On the right side of Figure~\ref{fig:ipn}, we associate Boolean
-% expressions with conditions; these expressions depend on the value of
-% the signals declared by the model. Also, we associate actions and
-% functions with operations that handle the signals of the model which
-% are passed as inputs. Concretely, in the \hilecop{} high-level models,
-% functions and actions are declared as \vhdl{}
-% procedures. Listing~\ref{lst:vhdl-fun} gives one possible
-% implementation of the \texttt{set\_temperature} operation as a \vhdl{}
-% procedure; the \texttt{set\_temperature} operation is associated with
-% function $f_0$ in Figure~\ref{fig:ipn}.
+\paragraph{Time Petri nets (TPNs)}
 
-% \begin{lstlisting}[language=vhdl,
-% caption={[An example of \vhdl{} procedure implementing a function.]An example of \vhdl{} procedure implementing the operation \texttt{set\_temperature} associated with the function $f_0$.},label={lst:vhdl-fun},framexleftmargin=1.5em,xleftmargin=2em,numbers=left,numberstyle=\tiny\ttfamily]
-% procedure set_temperature(signal tmp : out integer; signal flag : inout std_logic) is
-% begin
-%   if flag = '1' then
-%     tmp <= 30;
-%     flag <= '0';
-%   else 
-%     tmp <= 10;
-%     flag <= '1';
-%   endif;
-% end set_temperature;
-% \end{lstlisting}
-
-% In Listing~\ref{lst:vhdl-fun}, the \texttt{set\_temperature} procedure
-% declares two parameters: the \texttt{tmp} signal which is a write-only
-% signal of type \texttt{integer}, and the \texttt{flag} signal which is
-% a both readable and writable signal of the Boolean type
-% (\texttt{std\_logic} in \vhdl{}). The \texttt{set\_temperature}
-% procedure checks the value of the \texttt{flag} signal and assigns a
-% new value to the \texttt{tmp} and \texttt{flag} signals
-% accordingly.
-% The $\Leftarrow$ operator is the assignment operator for
-% signals in the \vhdl{} syntax (more on that in
-% Section~\ref{sec:hvhdl}).
-
-\paragraph{Time Petri nets}
-
-In a time Petri net (TPN), time intervals can be associated to
-transitions, along with a dynamic time counter value. Thus, the firing
-of a transition must happen in a certain time window. In the
-\hilecop{} version of TPNs, time intervals are of the form $[a, b]$,
-where $a\in\mathbb{N}^{*}$ and
-$b\in\mathbb{N}^{*}\sqcup\{\infty\}$. % Other definitions of time
-% intervals exist for TPNs (e.g. with real numbers), but here we will
-% only consider the latter definition.
-In Figure~\ref{fig:impl-model},
-transitions SustainrLED and TimeOut are both associated with time
-intervals.
+In a TPN, time intervals can be associated to transitions, along with
+a dynamic time counter value. Thus, the firing of a transition must
+happen in a certain time window. In the \hilecop{} version of TPNs,
+time intervals are of the form $[a, b]$, where $a\in\mathbb{N}^{*}$
+and $b\in\mathbb{N}^{*}\sqcup\{\infty\}$.  In
+Figure~\ref{fig:impl-model}, transitions SustainrLED and TimeOut are
+both associated with time intervals.
 
 \paragraph{Petri nets with priorities}
 
@@ -241,16 +176,6 @@ transition RecvQuery is graphically represented by a dotted arrow. \\
   \end{enumerate}
 \end{definition}
 
-
-
-% In Definition~\ref{def:sitpn}, the structure holds the \textit{static}
-% elements of a SITPN model, i.e. all the elements which value does not
-% evolve with the execution of the model. Therefore, the value of time
-% counters associated with transitions does not appear in the SITPN
-% structure. As the value of time counters is \textit{dynamic}, i.e. it
-% evolves with the execution of an SITPN model, it is a part of the
-% SITPN state.
-
 In Definition~\ref{def:sitpn}, we do not consider the set of \vhdl{}
 signals manipulated by a SITPN model. As a consequence, the structure
 holds neither the association between conditions and Boolean
@@ -260,25 +185,15 @@ this simplified version of the SITPN structure, conditions, actions
 and functions are only considered as finite sets of indexed elements
 associated with the places and transitions of an SITPN.
 
-\todo[inline]{Add a ref. to the Coq implementation of the SITPN structure.}
-
 \subsection{Synchronous execution semantics}
 \label{subsec:hpn-particularities}
 
-% The aspect of SITPNs that constitutes the originality of the formalism
-% compared to the standard PN semantics is its synchronous execution.
-% The class of interpreted Petri nets increases the expressiveness of
-% the \hilecop{} high-level models. However, to ensure the safe
-% execution of functions after synthesis on a physical device, the whole
-% system must be synchronized with a clock signal \cite{Leroux2014}. As
-% a consequence, a clock signal regulates the evolution of SITPNS
-% (i.e. it is a part of their semantics). 
- The SITPN semantics describes
-the evolution of the state of an SITPN through a given number of clock
-cycles; thus, we must first define the SITPN state structure. In what
-follows, for a given $sitpn\in{}SITPN$, $T_i$ denotes the definition
-domain of $I_s$, i.e. the set of transitions associated with a time
-interval, referred to as \textit{time transitions}.
+The SITPN semantics describes the evolution of the state of a SITPN
+through a given number of clock cycles; thus, we must first define the
+SITPN state structure. In what follows, for a given $sitpn\in{}SITPN$,
+$T_i$ denotes the definition domain of $I_s$, i.e. the set of
+transitions associated with a time interval, referred to as
+\textit{time transitions}.
 
 \begin{definition}[SITPN State]
   \label{def:sitpnstate}
@@ -310,15 +225,12 @@ actions/functions (Boolean values), and the value of conditions (also
 Boolean). Regarding actions and functions, note that we are only
 interested in the fact that a given action/function is
 activated/executed but no more in actually executing the associated
-operation.
+operation.\\
 
-\todo[inline]{Add a ref. to the Coq implementation of the SITPN
-  state.}
-
-Before defining the SITPN state transition relation, let us formally
-introduce the definition of the sensitization of a given transition by
-a given marking, and the definition of the firability of a given
-transition with respect to a given SITPN state.
+Before describing the SITPN state transition relation, we need to
+formally define the sensitization of a given transition by a given
+marking, and the firability of a given transition with respect to a
+given SITPN state.
 
 \begin{definition}[Sensitization]
   \label{def:sens}
@@ -337,21 +249,20 @@ transition with respect to a given SITPN state.
   = 1$ and $\mathbb{C}(t, c) = -1 \Rightarrow cond(c) = 0$.
 \end{definition}
 
-When a transition $t$ is firable at a given SITPN state $s$, and if
-$t$ is a top-priority transition (i.e. there exists no transition with
-a higher firing priority than $t$), then $t$ belongs to the set of
-\textit{fired} transitions at state $s$.  When a transition $t$ is
-involved in a structural conflict solved with priorities, $t$ is
-firable at a given state $s$ is no longer equivalent to $t$ is fired
-at $s$.  As illustrated in Figure~\ref{fig:resid-marking}, to
-determine which transitions of $t_0$, $t_1$ and $t_2$ must be fired, a
-\emph{residual marking} is computed by following the priority
-order. For each transition of the group $t_0$, $t_1$ and $t_2$, the
-residual marking represents the remaining tokens in $p_0$ after the
-firing of transitions with a higher firing priority. To be fired, a
-transition must be firable \emph{and} must be enabled by the residual
-marking. Thus, the recursive definition of the set of fired
-transitions at a given SITPN state is as follows:
+
+All transitions that are firable at a given state are possible members
+of the set of fired transitions. A firable transition is also a fired
+transition if it is still enabled by the \textit{residual} marking,
+that is, the marking resulting from the firing of transitions with a
+higher priority.  Priorities are defined with the priority relation,
+which is a part of the SITPN structure.  As illustrated in
+Figure~\ref{fig:resid-marking}, to determine which transitions of
+$t_0$, $t_1$ and $t_2$ are fired, a \emph{residual marking} is
+computed by following the priority order. For each transition of the
+group $t_0$, $t_1$ and $t_2$, the residual marking represents the
+remaining tokens in $p_0$ after the firing of transitions with a
+higher firing priority.  Thus, the recursive definition of the set of
+fired transitions at a given SITPN state is as follows:
 
 \begin{definition}[Fired]
   \label{def:fired}
@@ -365,7 +276,7 @@ transitions at a given SITPN state is as follows:
 
 \begin{figure}[H]
   \centering
-  \includegraphics[keepaspectratio=true, width=.9\textwidth]{resid-marking.eps}
+  \includegraphics[keepaspectratio=true, width=.8\textwidth]{resid-marking.eps}
   \caption[Computation of the residual marking of a group of
   conflicting transitions.]{Computation of the residual marking for a
     group of conflicting transitions. At \circled{1}
@@ -380,45 +291,33 @@ Note that the computation of the residual marking only involves the
 consumption phase of the firing process; tokens are withdrawn from
 places, but none are generated.
 
-% Figure~\ref{fig:sync-exec} depicts the process of state evolution,
-% following the clock signal.
-
-% \begin{figure}[H]
-%   \centering
-%   \includegraphics[keepaspectratio=true, width=.9\textwidth]{sync-exec.eps}
-%   \caption{Evolution of an SITPN synchronized with a clock signal.}
-%   \label{fig:sync-exec}
-% \end{figure}
+Note also that there is an equivalence between being firable and being
+fired at a given state when considering a \textit{top-priority}
+transition, i.e. a transition for which there exists no transition
+with a higher firing priority.
 
 \paragraph{The state transition relation}
 
 The evolution of the state of a SITPN is \textit{synchronized} with
 the rising edge event and the falling edge event of a clock signal.
-% As shown in Figure~\ref{fig:sync-exec}, the state evolution process
-% of a SITPN is divided into two steps.
-The rising edge event triggers the marking update, which is the
-consequence of transition firing; all time transitions that have been
-fired or disabled by the firing process receive time counter reset
-orders; all functions associated with fired transitions are
-executed. On the falling edge of the clock signal, the value of
-conditions are updated. As the SITPN structure does not hold the link
-between Boolean expressions computed over \vhdl{} signals and
-conditions, the update of condition values is represented by the
-injection of fresh Boolean values coming from an
-environment. Moreover, the falling edge event triggers the evolution
-of the time counter values; values are incremented, reset, or stalling
-in the case where a time counter has reached the upper bound of its
-associated time interval. Finally, all actions associated with marked
-places are activated. Figure~\ref{fig:sitpn-state-exec} gives an
-example of the evolution of the state of a given SITPN through one
-clock cycle, happening in the middle of other clock cycles. % The
-% aim of this figure and the explanation that follows is to give some
-% hints to the reader about the semantics of SITPNs before giving its
-% formal definition in Section~\ref{sec:sitpn-sem}.
+The rising edge event triggers the marking update, the computation of
+time counter reset orders, and the execution of functions. On the
+falling edge of the clock signal, the value of conditions are
+updated. As the SITPN structure does not hold the link between Boolean
+expressions computed over \vhdl{} signals and conditions, the update
+of condition values is represented by the injection of fresh Boolean
+values coming from an environment. Moreover, the falling edge event
+triggers the evolution of the time counter values; values are
+incremented, reset, or stalling in the case where a time counter has
+reached the upper bound of its associated time interval. Finally, all
+actions associated with marked places are
+activated. Figure~\ref{fig:sitpn-state-exec} gives an example of the
+evolution of the state of a given SITPN through one clock cycle,
+happening in the middle of other clock cycles.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[keepaspectratio=true, width=.9\textwidth]{sitpn-state-evol.eps}
+  \includegraphics[keepaspectratio=true, width=.8\textwidth]{sitpn-state-evol.eps}
   \caption[Evolution of an SITPN over one clock cycle.]{The evolution
     of a SITPN over one clock cycle. Conditions (i.e. $c_0$ and $c_1$)
     appear in bold font when \texttt{true}; actions (i.e. $a_0$ and
@@ -431,21 +330,8 @@ clock cycle, happening in the middle of other clock cycles. % The
 
 In Figure~\ref{fig:sitpn-state-exec}, from Step~1 to Step~2, the
 rising edge of the clock signal triggers the firing of transition
-$t_0$. % At Step~1, transition $t_0$ gathers all the necessary
-% conditions to trigger the firing process. Transition $t_0$ is said to
-% be \textit{firable}, namely:
-
-% \begin{itemize}[label=--]
-% \item $t_0$ is sensitized, or enabled, by the current marking.
-% \item Condition $c_0$ is \texttt{true} (appears in bold font).
-% \item The value of $t_0$'s time counter is within the associated time
-%   interval ($2\in[2,4]$).
-% \end{itemize}
-
-
-% In Figure~\ref{fig:sitpn-state-exec},
-As transition $t_0$ is firable and is not in effective conflict with
-other transitions, $t_0$ is fired: one token is consumed in place
+$t_0$. As transition $t_0$ is firable and is not in effective conflict
+with other transitions, $t_0$ is fired: one token is consumed in place
 $p_0$ and one token is produced in place $p_1$. Also, function $f_0$
 is executed at the occurrence of the rising edge of the clock signal,
 and thus, $f_0$ appears in bold font at Step~2. Consequently to the
@@ -465,16 +351,8 @@ condition. As a consequence, condition $c_0$ takes the value
 We formalize the evolution of a SITPN state synchronized with the
 events of a clock signal with the following state transition relation:
 
-\begin{definition}[SITPN state transition relation]
+\begin{definition}[SITPN state transition]
   \label{def:semantics}
-  % \begin{itemize}[label=-]
-  % \item
-  %   $E_c\in{}\mathbb{N}\rightarrow\mathcal{C}\rightarrow\mathbb{B}$ is
-  %   the environment function, which gives (Boolean) values to
-  %   conditions ($\mathcal{C}$) depending on the count of clock cycles
-  %   ($\mathbb{N}$).
-  % \item $\rightarrow\subseteq{}S(sitpn)\times{}L\times{}S(sitpn)$ is the SITPN state
-  %   transition relation
   For a given $sitpn\in{}SITPN$, the SITPN state transition relation
   $\rightarrow\subseteq{}(\mathbb{N}\rightarrow\mathcal{C}\rightarrow\mathbb{B})\times{}\mathbb{N}\times{}S(sitpn)\times{}\{\uparrow,\downarrow\}\times{}S(sitpn)$
   is noted as follows $E_c,\tau\vdash{}s\xrightarrow{clk}s'$, where
@@ -579,40 +457,6 @@ events of a clock signal with the following state transition relation:
   \end{itemize}
 \end{definition}
 
-% The definition of the SITPN state transition relation can be
-% equivalently represented with the following rule instances, named
-% \textsc{Rising} and \textsc{Falling}. Here, the premises of the rules
-% refer to the items of Definition~\ref{def:semantics}:
-
-% \begin{figure}[H]
-%   \centering
-%   \begin{minipage}{.39\linewidth}
-%     \begin{tabular}{@{}l}
-%       {\fontsize{9}{12}\selectfont\textsc{Rising}} \\    
-%       {\begin{prooftree}
-%           \hypo{\ref{it:new-marking}}
-%           \hypo{\ref{it:reset-order}}
-%           \hypo{\ref{it:exec-fun}}
-%           \infer3{E_c,\tau\vdash{}s\xrightarrow{\uparrow}s'}
-%         \end{prooftree}} \\
-%     \end{tabular}
-%   \end{minipage}
-%   \begin{minipage}{.49\linewidth}
-%     \begin{tabular}{@{}l}
-%       {\fontsize{9}{12}\selectfont\textsc{Falling}} \\
-%       {\begin{prooftree}
-%           \hypo{~\ref{it:cond-env}}
-%           \hypo{\ref{it:activate-actions}}
-%           \hypo{\ref{it:reset-counters}}
-%           \hypo{\ref{it:inc-counters}}
-%           \hypo{\ref{it:locked-counters}}
-%           \hypo{\ref{it:reset-not-sens}}
-%           \infer6 {E_c,\tau\vdash{}s\xrightarrow{\downarrow}s'}
-%         \end{prooftree}} \\
-%     \end{tabular}
-%   \end{minipage}
-% \end{figure}
-
 Premises~\ref{it:new-marking} to \ref{it:exec-fun} describe the SITPN
 state evolution at the rising edge of the clock signal.
 Premise~\ref{it:new-marking} corresponds to the marking update. The
@@ -649,131 +493,40 @@ infinite upper bound. In Premises~\ref{it:inc-counters} and
 denotes the upper bound of the time interval, and $l(i)$ denotes the
 lower bound of the time interval.\\
 
-\todo[inline]{Add a ref. to the Coq implementation of the state
-  transition relation.}
-
 To give a small-step execution semantics to a SITPN model, we have
 defined an execution relation that binds a given SITPN model to an
 execution trace, i.e. a time-ordered list of states. The execution
 trace is built for a given number of clock cycles, starting from the
 initial state of the SITPN model. The execution relation is
 implemented in \coq{} by the \texttt{SitpnFullExec} inductive
-type\footnote{\url{https://github.com/viampietro/ver-hilecop/blob/master/sitpn/SitpnSemantics.v}}.
+type\footnote{\url{https://github.com/viampietro/ver-hilecop/blob/master/sitpn/SitpnSemantics.v}}. The
+initial state of a SITPN model is formally defined as follows:
 
-% \paragraph{The execution trace}
-
-% We define here the SITPN execution and SITPN full execution
-% relations. These relations bind a given SITPN to an execution trace,
-% i.e. a time-ordered list of states.  This execution trace represents
-% the successive states of the SITPN during its execution for a given
-% number of clock cycles. These two relations provide a small-step
-% semantics to the SITPNs, given that we are interested in keeping the
-% intermediary states in an execution trace.
-
-% \begin{definition}[SITPN execution]
-%   \label{def:sitpn-exec}
-%   For a given $sitpn\in{}SITPN$, the SITPN execution relation
-%   $\rightarrow\subseteq(\mathbb{N}\rightarrow{}\mathcal{C}\rightarrow{}\mathbb{B})\times{}\mathbb{N}\times{}S(sitpn)\times{}\mathtt{list}(S(sitpn))$
-%   is noted $E_c,\tau\vdash{}s\rightarrow{}\theta$, where
-%   $E_c\in\mathbb{N}\rightarrow{}\mathcal{C}\rightarrow{}\mathbb{B}$ is
-%   an environment that gives a Boolean value to conditions at a given
-%   clock count, $\tau\in\mathbb{N}$ is a starting clock count,
-%   $s\in{}S(sitpn)$ is a starting state, and
-%   $\theta\in\mathtt{list}(S(sitpn))$ is the execution trace obtained
-%   by executing $\tau$ clock cycles from the starting state $s$. The
-%   execution relation is defined by the two following rule instances:
-  
-%   \begin{table}[!h]
-%     \begin{tabular}{@{}l}
-%       {\fontsize{8}{12}\selectfont\textsc{ExecutionEnd}} \\      
-%       {\begin{prooftree}
-%           \infer0 {E_c,0\vdash{}s\rightarrow{}[~]}
-%         \end{prooftree}} 
-%     \end{tabular}
-%     \begin{tabular}{@{}l}
-%       {\fontsize{8}{12}\selectfont\textsc{ExecutionLoop}} \\
-%       {\begin{prooftree}[template={\inserttext}]
-%           \hypo{$E_c,\tau\vdash{}s\xrightarrow{\uparrow}s'$}
-%           \hypo{$E_c,\tau\vdash{}s'\xrightarrow{\downarrow}s''$}
-%           \hypo{$E_c,\tau-1\vdash{}s''\rightarrow{}\theta$}
-%           \infer3[$\tau>0$]{$E_c,\tau\vdash{}s\rightarrow{}(s' :: s'' :: \theta)$}
-%         \end{prooftree}} 
-%     \end{tabular}
-%   \end{table}
-% \end{definition}
-
-% The \textsc{ExecutionEnd} rule states that the execution of a
-% $sitpn\in{}SITPN$, starting from a state $s\in{}S(sitpn)$ in the
-% environment
-% $E_c\in{}\mathbb{N}\rightarrow\mathcal{C}\rightarrow\mathbb{B}$,
-% yields an empty execution trace if the clock count comes down to $0$.
-% The \textsc{ExecuteLoop} rule describes how the execution trace
-% related to the execution of a $sitpn\in{}SITPN$ is built in the case
-% where the clock count $\tau$ is greater than zero. The final execution
-% trace is composed of a head state $s'$, followed by state $s''$ and
-% the tail trace $\theta$. The $::$ operator builds a new trace by
-% adding a new element at the head of an existing trace. Starting from
-% state $s$, $sitpn$ reaches state $s'$ after a rising edge event; then
-% from state $s'$, it reaches state $s''$ after a falling edge event.
-% Finally, the execution trace $\theta$ is obtained through the
-% recursive call to the SITPN execution relation where $sitpn$ is
-% executed during $\tau-1$ cycles starting from state $s''$.
-
-% \begin{definition}[SITPN full execution]
-%   \label{def:sitpn-full-exec}
-%   For a given $sitpn\in{}SITPN$, a clock cycle count
-%   $\tau\in\mathbb{N}$, and an environment
-%   $E_c\in\mathbb{N}\rightarrow{}\mathcal{C}\rightarrow{}\mathbb{B}$,
-%   $sitpn$ yields the execution trace $\theta$ starting from its
-%   initial state $s_0\in{}S(sitpn)$, written
-%   $E_c,\tau\vdash{}sitpn\rightarrow{}\theta$, by following the two
-%   rules below:
-  
-%   \begin{table}[!h]
-%     \begin{tabular}{@{}l}
-%       {\fontsize{8}{12}\selectfont\textsc{FullExec0}} \\
-      
-%       {\begin{prooftree}[template={\inserttext}]
-          
-%           \infer0{$E_c,0\vdash{}sitpn\xrightarrow{full}[s_0]$}
-%         \end{prooftree}} 
-%     \end{tabular}
-%     \begin{tabular}{l}
-%       {\fontsize{8}{12}\selectfont\textsc{FullExecCons}} \\      
-%       {\begin{prooftree}[template={\inserttext}]
-%           \hypo{$E_c,\tau\vdash{}s_0\xrightarrow{\downarrow}s$}
-%           \hypo{$E_c,\tau-1\vdash{}s\rightarrow\theta_s$}
-%           \infer2[$\tau>0$]{$E_c,\tau\vdash{}sitpn\xrightarrow{full}(s_0 :: s_0 :: s :: \theta_s)$}
-%         \end{prooftree}} 
-%     \end{tabular}
-%   \end{table}
-% \end{definition}
-
-% The \textsc{FullExecCons} rule of the SITPN full execution relation
-% (Definition~\ref{def:sitpn-full-exec}) appeals to the SITPN execution
-% relation (Definition~\ref{def:sitpn-exec}). However, the definition of
-% the SITPN full execution relation is necessary because the first cycle
-% of execution, starting from the initial state $s_0$, is particular. As
-% a matter of fact, no transitions are fired during the first rising
-% edge. Thus, the first rising edge does not change the initial state
-% $s_0$. This is why the execution trace of Rule~\textsc{FullExecCons}
-% begins with two states $s_0$, thus representing the idle first rising
-% edge.
+\begin{definition}[Initial state]
+  \label{def:sitpn-init-state}
+  For a given $sitpn\in{}SITPN$, $s_0\in{}S(sitpn)$ is the initial
+  state of $sitpn$, such that
+  $s_0=<M_0,O_\mathbb{N},O_\mathbb{B},O_\mathbb{B},O_\mathbb{B}>$,
+  where $M_0$ is the initial marking of the SITPN, $O_\mathbb{N}$ is a
+  function that always returns 0, $O_\mathbb{B}$ is a function that
+  always returns \texttt{false}.
+\end{definition}
 
 \subsection{Well-definition of a SITPN}
 \label{sec:sitpn-wd}
 
-The synchronous execution semanctics of SITPNs implies that all
+The synchronous execution semantics of SITPNs implies that all
 transitions are fired at the same time. In
 Figure~\ref{fig:double-consum}, transitions $t_0$ and $t_1$ are both
-firable before the rising edge event, and consequently are both fired
-at the occurrence of the event. The system acts as if two tokens were
+firable before the rising edge event. As no priority relation is drawn
+between the two conflicting transitions, they are both fired at the
+occurrence of the event. The system acts as if two tokens were
 available in place $p_0$, one for the firing of $t_0$ and another for
 the firing of $t_1$.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[keepaspectratio=true, width=.6\textwidth]{double-consum.eps}
+  \includegraphics[keepaspectratio=true, width=.5\textwidth]{double-consum.eps}
   \caption[Double consumption of token in a SITPN.]{Double consumption
     of one token in a SITPN. On the left side, the current marking
     before the firing of $t_0$ and $t_1$; on the right side, the
@@ -784,130 +537,52 @@ the firing of $t_1$.
 \end{figure}
 
 In the context of a SITPN, a branching like the one of
-Figure~\ref{fig:sitpn-state-exec}, normally interpreted as a
-disjunctive branching, takes the semantics of a conjunctive branching
-if no priority are specified between the conflicting transitions. To
-avoid the phenomenon of ``double consumption'' of tokens, we enforce
-the resolution of any structural conflict by means of mutual exclusion
-or through the application of priorities. This policy about the
+Figure~\ref{fig:double-consum}, normally interpreted as a disjunctive
+branching, takes the semantics of a conjunctive branching if no
+priority are specified between the conflicting transitions. To avoid
+the phenomenon of ``double consumption'' of tokens, we enforce the
+resolution of any structural conflict by means of mutual exclusion or
+through the application of priorities. This policy about the
 resolution of structural conflicts is part of the definition of a
-\emph{well-defined} SITPN (cf. Section~\ref{sec:sitpn-wd}). The
-property of well-definition is mandatory to produce safe models of
-digital systems.
+\emph{well-defined} SITPN. We must be able to decide which transition
+in a conflicting pair will be fired when the conflict becomes
+effective. Thus, we give place-centered definition of a group of
+transitions in conflict:
 
-To be able to transform a given SITPN into a \vhdl{} design and also
-to perform the proof of semantic preservation, a SITPN must verify
-some properties ensuring its \emph{well-definition}. Here, we
-formalize the predicate stating that a given SITPN is well-defined.
-
-% \paragraph{Conflict Definition} In the definition of an SITPN, the
-% priority relation is a mean to solve a situation of conflict in a pair
-% of transitions. We will keep the definition of a conflict as simple as
-% possible. Informally, the transitions of a pair are in conflict if
-% they have an common input place, and if both are linked to this input
-% place by a \texttt{basic} arc. Figure~\ref{fig:basic-conflict} depicts
-% a situation of conflict between two transitions.
-
-% At some point of the execution of the SITPN, the marking possibly
-% enables the two transitions of a conflicting pair in such a manner
-% that the firing of one transition disables the other; then, the
-% conflict is said to be \emph{effective}. The behavior of PNs is
-% fundamentally asynchronous, and a token can only be consumed by one
-% transition. However, in a synchronous setting as the one of the SITPN,
-% all transitions are first elected to be fired, and then all fired at
-% the same time.  Therefore, the situation can arise where a same token
-% is consumed by two transitions, on behalf of them being transitions in
-% effective conflict that are both elected to be fired (e.g,
-% Figure~\ref{fig:basic-conflict}). 
-
-% \begin{figure}[H]
-%   \centering
-%   \includegraphics[keepaspectratio,width=.3\linewidth]{Figures/SITPN/struct-conflict-with-basic}
-%   \caption{Example of conflict between two transitions}
-%   \label{fig:basic-conflict}
-% \end{figure}
-
-
-The main interest of the well-definition predicate is to prevent the
-phenomenon of the ``double consumption'' of tokens at the execution of
-a SITPN. In a well-defined SITPN, a conflict resolution strategy must
-be applied to every group of transitions in structural conflict.  We
-must be able to decide which transition in a conflicting pair will be
-fired when the conflict becomes effective. Thus, we give the formal
-definitions of a conflicting pair of transitions and a conflict group.
-
-\begin{definition}[Conflict]
-  \label{def:conflict}
-  For a given $sitpn\in{}SITPN$, two transitions $t,t'\in{}T$ are in
-  conflict if there exist a place $p\in{}P$ and two weights
-  $\omega,\omega'\in\mathbb{N}^{*}$ such that
-  $pre(p,t)=(\omega,\mathtt{basic})$ and
-  $pre(p,t')=(\omega',\mathtt{basic})$.
-\end{definition}
-
-A conflict group qualifies a finite set of transitions that are all in
-conflict with each other through at least a common input place. In
-Figure~\ref{fig:conflict-not-trans}, the set $\{t_0,t_3,t_1\}$ is a
-conflict group.  The formal definition of a conflict group is as
-follows:
-
-\begin{definition}[Conflict Group]
+\begin{definition}[Conflicting group of transitions]
   \label{def:cgroup}
-  For a given $sitpn\in{}SITPN$, $T_c\subseteq{}T$ is a conflict group
-  if there exists a place $p$ such that
-  $\forall{}t\in{}T,\big(\exists{}\omega\in\mathbb{N}^{*},~pre(p,t)=(\omega,\mathtt{basic})\big)\Leftrightarrow{}t\in{}T_c$.
+  For a given $sitpn\in{}SITPN$, the conflicting transitions of a
+  given place $p$, noted $conflict(p)$, are all transitions related to
+  $p$ with a \texttt{basic} place-transition arc,
+  i.e.
+  $conflict(p)=\{t\in{}T~\vert~\exists{}\omega\in\mathbb{N}^{*},~pre(p,t)=(\omega,\mathtt{basic})\}$.
 \end{definition}
 
-Contrary to the statement made in \cite[p. 67]{Leroux2014}, we no more
-consider the notion of conflict as being transitive. To illustrate
-this, Figure~\ref{fig:conflict-not-trans} shows two conflict groups:
-$\{t_0,t_3,t_1\}$ and $\{t_1,t_2\}$. In a well-defined SITPN (see
-Section~\ref{sec:sitpn-wd}), all conflicts in a conflict group must be
-considered, i.e. for all pair of transitions in the group the conflict
-must be solved. However, we no more consider transitions $t_0$ and
-$t_2$, and $t_3$ and $t_2$, as in conflict. It was believed by the
-author of \cite{Leroux2014} that, if no conflict resolution technique
-was applied between transitions in the same situation as $t_0$ and
-$t_2$, and $t_3$ and $t_2$, then this could result in the
-double-consumption of a token, or in the case where a transition is
-not elected to be fired even though it ought to be. However, the
-author does not provide an example where such a situation arises. We
-argue that such a situation can never arise and contrive to prove it
-later.  Therefore, we no more consider the construction of merged
-conflict group (i.e, conflict groups must be merged into one if their
-intersection is not empty; e.g, $\{t_0,t_1,t_2\}$ in
-Figure~\ref{fig:conflict-not-trans}) as being necessary. As a
-consequence, the definition of a conflict group is simpler than in
-\cite{Leroux2014} and does not impact the \hilecop{} model-to-text
-transformation.
+This view of a conflict group reflects the place-centered view of
+conflicts as implemented in the \vhdl{} code generated by the
+model-to-text transformation.  Figure~\ref{fig:conflict-groups} shows
+the conflict group related to place $p_0$ and $p_1$, namely:
+$\{t_0,t_3\}$ and $\{t_1,t_4\}$.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[keepaspectratio,width=.4\linewidth]{Figures/SITPN/conflict-not-trans}
+  \includegraphics[keepaspectratio,width=.3\linewidth]{conflict-groups.eps}
   \caption[An example of two separate conflict groups.]{An example of
-    two separate conflict groups, namely: $\{t_0,t_3,t_1\}$ and
-    $\{t_1,t_2\}$.}
-  \label{fig:conflict-not-trans}
+    two separate conflict groups, namely: $\{t_0,t_3\}$ and
+    $\{t_1,t_4\}$.}
+  \label{fig:conflict-groups}
 \end{figure}
 
-When the conflict between a pair of transitions becomes effective,
-there are two ways to be sure that only one transition will be
-fired. The first way is to define a firing order through a priority
-relation. The second way is to use a mean of mutual exclusion. A mean
-of mutual exclusion ensures that the two transitions of a conflicting
-pair will never be firable at the same time. We only consider two ways
-of mutual exclusion, namely: mutual exclusion with complementary
-conditions and mutual exclusion with inhibitor arcs. Here, we give the
-formal definition of these two means of mutual exclusion.
-
-% \begin{definition}[Mutual exclusion with disjoint time intervals]
-%   \label{def:mutex-ti}
-%   Given two conflicting transitions $t_0$ and $t_1$, $t_0$ and $t_1$
-%   are in mutual exclusion with disjoint time intervals if there exists
-%   $a,b\in\mathbb{N}^{*}$ and $c,d\in\mathbb{N}^{*}\sqcup\{\infty\}$
-%   such that $I_s(t_0)=[a,b]$ and $I_s(t_1)=[c,d]$ and there is no
-%   overlapping between $[a,b]$ and $[c,d]$.
-% \end{definition}
+In a well-defined SITPN, all conflicts in a conflict group must be
+considered, i.e. for all pair of transitions in the group the conflict
+must be solved. When the conflict between a pair of transitions
+becomes effective, there are two ways to be sure that only one
+transition will be fired. The first way is to define a firing order
+through a priority relation. The second way is to use a mean of mutual
+exclusion. A mean of mutual exclusion ensures that the two transitions
+of a conflicting pair will never be firable at the same time. We only
+consider two ways of mutual exclusion, namely: mutual exclusion with
+complementary conditions and mutual exclusion with inhibitor arcs.
 
 \begin{definition}[Mutual exclusion with complementary conditions]
   \label{def:mutex-conds}
@@ -932,7 +607,7 @@ that can be applied to solve a conflict between two transitions.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[keepaspectratio,width=.5\linewidth]{Figures/SITPN/mutex}
+  \includegraphics[keepaspectratio,width=.45\linewidth]{mutex.eps}
   \caption[Examples of conflicting transitions in mutual exclusion.]{
     Examples of conflicting transitions in mutual exclusion. At
     \circled{1}, an example of mutual exclusion with complementary
@@ -948,26 +623,21 @@ the arcs $(p_0,t_0)$ and $(p_0,t_1)$ ensure the mutual exclusion
 between transitions $t_0$ and $t_1$. Note that in the structure of
 mutual exclusion with an inhibitor arc, the weight of the inhibitor
 arc and of the one of the basic or test arc must be the same;
-otherwise, the mutual exclusion is not effective.
+otherwise, the mutual exclusion is not effective.\\
 
-A given $sitpn\in{}SITPN$ is well-defined if it enforces some
-properties needed on the \hilecop{} source models before the
-transformation into \vhdl{}. If the properties, given in
-Definition~\ref{def:wd-sitpn}, are not ensured, they will lead to
-compile-time errors during the transformation of the SITPN into a
-\vhdl{} design.
+\noindent{}A well-defined SITPN is defined as follows:
 
 \begin{definition}[Well-defined SITPN]\label{def:wd-sitpn}
   A given $sitpn\in{}SITPN$ is well-defined if:
   \begin{itemize}
-  \item $T\neq\emptyset$, the set of transitions must not be empty.
-  \item $P\neq\emptyset$, the set of places must not be empty.
-  \item There is no isolated place, i.e, a place that has neither
+  \item $T\neq\emptyset$, the set of transitions is not empty.
+  \item $P\neq\emptyset$, the set of places is not empty.
+  \item There is no isolated place, i.e. a place that has neither
     input nor output transitions:\\
     $\nexists{}p\in{}P,~input(p)=\emptyset\wedge{}output(p)=\emptyset$,
     where $input(p)$ (resp. $output(p)$) denotes the set of input
     (resp. output) transitions of $p$.
-  \item There is no isolated transition, i.e, a transition that has
+  \item There is no isolated transition, i.e. a transition that has
     neither
     input nor output places:\\
     $\nexists{}t\in{}T,~input(t)=\emptyset\wedge{}output(t)=\emptyset$,
@@ -977,10 +647,13 @@ compile-time errors during the transformation of the SITPN into a
     Definition~\ref{def:cgroup}, either all conflicts (i.e. for all
     pair of transitions in the conflict group) are solved by one of
     the mean of mutual exclusion, or, the priority relation is a
-    strict total order over the transitions of the conflict group.
+    \emph{strict total} order over the transitions of the conflict group.
   \end{itemize}
 \end{definition}
 
+If the properties, given in Definition~\ref{def:wd-sitpn}, are not
+ensured, they will lead to compile-time errors during the
+transformation of a SITPN model into a \vhdl{} design.
 
 
 %%% Local Variables:
