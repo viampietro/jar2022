@@ -129,7 +129,7 @@ associated with a certain type indication.
       & \quad\quad\quad\quad${}g=\{(id\Rightarrow{}e)^{*}\},$ & generic constant map \\
       & \quad\quad\quad\quad${}i=\{(name\Rightarrow{}e)^{*}\},$ & input port map \\
     & \quad\quad\quad\quad$o=\{\big((id\Rightarrow{}(name\vert{}\mathtt{open}))$ & output port map \\
-    & \quad\quad\quad\quad\quad\quad\quad$\vert{}(id(e)\Rightarrow{}name)\big)^{*}\})$ &  \\
+    & \quad\quad\quad\quad\quad\quad\quad$\big\vert{}(id(e)\Rightarrow{}name)\big)^{*}\})$ &  \\
     & & \\
     \hline
   \end{tabular}
@@ -169,7 +169,12 @@ The highest construct of the \hvhdl{} language is the design. A design
 represents a whole circuit by itself. Once defined, a design can be
 later be instantiated to define the behavior of other designs. A
 design that is not instantiated as a part of the behavior of another
-design is referred to as a \textit{top-level} design.
+design is referred to as a \textit{top-level} design. A design
+declares a set of generic constants (i.e. \textit{gens}) which purpose
+is to dimension the other parts of the circuit. A design also declares
+a set of input and output ports (i.e. $ports$), and a set of internal
+signals (i.e. $sigs$). Finally, a design declares an internal behavior
+(i.e. $behavior$) which is defined by a concurrent statement.
 
 \todo[inline]{Give an example of \vhdl{} design in concrete and
   abstract syntax.}
@@ -233,8 +238,8 @@ expressions.
     & & \\
     $v$ & ::= $b$ & Boolean \\
     & \quad $\vert~{}n$ & natural number (limited to $\mathtt{NATMAX}$) \\
-    & \quad $\vert~(v^{+})$ & array of values \\
-    && \\
+    & \quad $\vert~a$ & array of values \\
+    $a$ & ::= $(v^{+})$ & \\
     \hline
   \end{tabular}    
 \end{table}
@@ -284,25 +289,24 @@ as follows:
 \begin{definition}[Elaborated design]
   \label{def:elab-design}
   An elaborated design $\Delta\in{}ElDesign$ is a record\\
-  ${<}Gens, Ins, Outs, Sigs, Ps, Comps{>}$ where:
+  ${<}G, I, O, S, P, C{>}$ where:
   \begin{itemize}[label=$-$]
-  \item $Gens\in{}generic\mhyphen{}id\rightarrow{}(t\times{}v)$
+  \item $G\in{}id\nrightarrow{}(t\times{}v)$
     is the function yielding the type and the value of generic
     constants.
-  \item $Ins\in{}input\mhyphen{}id\rightarrow{}t$ is the function
+  \item $I\in{}id\nrightarrow{}t$ is the function
     yielding the type of input ports.
-  \item $Outs\in{}output\mhyphen{}id\rightarrow{}t$ is the function
+  \item $O\in{}id\nrightarrow{}t$ is the function
     yielding the type of output ports.
   \item
-    $Sigs\in{}declared\mhyphen{}signal\mhyphen{}id\rightarrow{}t$
+    $S\in{}id\nrightarrow{}t$
     is the function yielding the type of declared signals.
-  \item
-    $Ps\in{}process\mhyphen{}id\rightarrow(variable\mhyphen{}id\rightarrow{}(t\times{}v))$
-    is the function associating process identifiers to their local
+  \item $P\in{}id\nrightarrow(id\nrightarrow{}(t\times{}v))$ is the
+    function associating process identifiers to their local variable
     environment.
-  \item $Comps\in{}component\mhyphen{}id{}\rightarrow{}ElDesign$ is
-    the function mapping component instance identifiers to their own
-    elaborated design version.
+  \item $C\in{}id{}\nrightarrow{}ElDesign$ is the function mapping
+    design instance identifiers to their own elaborated design
+    version.
   \end{itemize}
 \end{definition}
 
@@ -323,47 +327,199 @@ $\mathcal{F}$ is a field of $\Delta$, when more precision is needed
 regarding the lookup of identifier $x$ in the record $\Delta$.\\
 
 Now let us define the run-time state of a design, i.e. the state that
-describes the value of signals and component instances in the course
-of a simulation. Let $\Sigma$ be the set of design states.  A design
-state of $\sigma\in{}\Sigma$ is defined as follows:
+describes the value of signals and design instances in the course of a
+simulation. Let $\Sigma$ be the set of design states.  A design state
+of $\sigma\in{}\Sigma$ is defined as follows:
 
 \begin{definition}[Design state]
   \label{def:design-state}
   A design state $\sigma\in\Sigma$ is a record
   ${<}\mathcal{S},\mathcal{C},\mathcal{E}{>}$ where:
   \begin{itemize}[label=$-$]
-  \item $\mathcal{S}\in{}signal\mhyphen{}id\rightarrow{}v$ is the
-    signal store, i.e. the function yielding the current values of
-    ports and declared signals.
-  \item $\mathcal{C}\in{}component\mhyphen{}id\rightarrow{}\Sigma$ is
-    the component store, i.e.  the function yielding the current state
-    of component instances.
-  \item
-    $\mathcal{E}\subseteq{}signal\mhyphen{}id\cup{}component\mhyphen{}id$,
-    is the set of signal and component instance identifiers that
-    generated an event at the current design state.
+  \item $\mathcal{S}\in{}id\nrightarrow{}v$ is the signal store,
+    i.e. the function yielding the current value of signals
+    (i.e. ports and internal signals).
+  \item $\mathcal{C}\in{}id\nrightarrow{}\Sigma$ is the component
+    store, i.e.  the function yielding the current state of design
+    instances.
+  \item $\mathcal{E}\subseteq{}id$, is the set of signal and design
+    instance identifiers that generated an event at the current design
+    state.
   \end{itemize}
 \end{definition}
 
-The $signal\mhyphen{}id$ subset is the union between the
-$input\mhyphen{}id$, $output\mhyphen{}id$ and
-$declared\mhyphen{}signal\mhyphen{}id$ subsets. When there is no
-ambiguity regarding which store a given identifier belongs, we use
-$\sigma(id)$ to denote the value associated to an identifier in the
-signal store $\mathcal{S}$ or in the component store $\mathcal{C}$
-fields.  We write $id\in\sigma$ to state that an identifier is defined
-in either the signal store $\mathcal{S}$ or the component store
-$\mathcal{C}$ fields. Also, when there is no ambiguity, we rely on
-indices or exponents to qualify the signal store, the component
-instance store and the set of events of a given design state. For
-instance, $\mathcal{C}_0$ denotes the component instance store of
-design state $\sigma_0$, and $\mathcal{E}'$ denotes the set of events
-of design state $\sigma'$, etc.
+When there is no ambiguity regarding which store a given identifier
+belongs to, we use $\sigma(id)$ as a shorthand notation for
+$\mathcal{S}(\sigma)(id)$ or $\mathcal{C}(\sigma)(id)$.  Similarly, we
+write $id\in\sigma$ as a shorthand notation for
+$id\in\mathsf{dom}(\mathcal{S}(\sigma))$ or
+$id\in\mathsf{dom}(\mathcal{C}(\sigma))$.
 
 \subsubsection{Evaluation of expressions}
 \label{subsubsec:expr-eval}
 
+\begin{table}[!htbp]
+  \begin{tabular}{l}
+    {\fontsize{8}{10}\selectfont\textsc{Sig}} \\
+    {\begin{prooftree}
+        \hypo{\sigma(id)=\lfloor{}v\rfloor}
+        \infer1
+        [{
+          \begin{tabular}{@{}l}
+            ${}id\in{}S(\Delta)\cup{}I(\Delta)$ \\
+          \end{tabular}
+        }]
+        {
+          \Delta,\sigma,\Lambda\vdash{}id\xrightarrow{e}v
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  \begin{tabular}{l}
+    {\fontsize{8}{10}\selectfont\textsc{Var}} \\
+    {\begin{prooftree}
+        \hypo{\Lambda({}id)=\lfloor(t,v)\rfloor}
+        \infer1
+        {
+          \Delta,\sigma,\Lambda\vdash{}id\xrightarrow{e}v
+        }
+      \end{prooftree}} \\
+  \end{tabular}
 
+  \vspace{10pt}
+  
+  \begin{tabular}{l}
+    {\fontsize{8}{10}\selectfont\textsc{Gen}} \\
+    {\begin{prooftree}
+        \hypo{\Delta(id)=\lfloor(t,v)\rfloor}
+        \infer1
+        [{
+          \begin{tabular}{@{}l}
+            $id\in{}G(\Delta)$ \\
+          \end{tabular}
+        }]
+        {
+          \Delta,\sigma,\Lambda\vdash{}id\xrightarrow{e}v
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  \begin{tabular}{l}
+    {\fontsize{8}{10}\selectfont\textsc{Out}} \\
+    {\begin{prooftree}
+        \hypo{\sigma(id)=\lfloor{}v\rfloor}
+        \infer1
+        [{
+          \begin{tabular}{@{}l}
+            ${}id\in{}O(\Delta)$ \\
+          \end{tabular}
+        }] {
+          \Delta,\sigma\vdash
+          {}id
+          \xrightarrow{e_o}
+          v
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{10pt}
+  
+  % Idx name expressions.
+  \begin{tabular}{l}
+    {\fontsize{8}{10}\selectfont\textsc{IdxSig}} \\
+    {\begin{prooftree}
+
+        % Evaluates e_i.
+        \hypo{\Delta,\sigma,\Lambda\vdash{}e_i\xrightarrow{e}n_i}
+
+        % Reading array a at index i yields value v. 
+        \hypo{a[i]=\lfloor{}v\rfloor}
+        
+        % Conclusion.
+        \infer2
+        [{
+          \begin{tabular}{@{}l}
+            ${}id\in{}S(\Delta)\cup{}I(\Delta)$ \\
+            $\Delta(id)={}\lfloor\mathtt{array}(t,n,m)\rfloor$ \\
+            $\sigma(id)={}\lfloor{}a\rfloor$ \\
+            $i=n_i-n$ \\
+          \end{tabular}
+        }]
+        {
+          \Delta,\sigma,\Lambda\vdash
+          {}id({}e_i)
+          \xrightarrow{e}
+          v
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  \begin{tabular}{l}
+    {\fontsize{8}{10}\selectfont\textsc{Cst}} \\
+    {\begin{prooftree}
+        \hypo{\mathtt{vcst}(cst)=\lfloor{}v\rfloor}
+        \infer1
+        {
+          \Delta,\sigma,\Lambda\vdash{}cst\xrightarrow{e}v
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{10pt}
+  
+  \begin{tabular}{l}
+    {\fontsize{8}{10}\selectfont\textsc{BOp}}  \\
+    {\begin{prooftree}
+
+        % Evaluates e1.
+        \hypo{\Delta,\sigma,\Lambda\vdash{}e_1\xrightarrow{e}v_1}
+
+        % Evaluates e2.
+        \hypo{\Delta,\sigma,\Lambda\vdash{}e_2\xrightarrow{e}v_2}
+
+        % Evaluates bop(v1,v2).
+        \hypo{\mathtt{vbop}(bop,v_1,v_2)=\lfloor{}v\rfloor}
+
+        % Conclusion.
+        \infer3
+        {
+          \Delta,\sigma,\Lambda\vdash
+          bop(e_1,e_2)\xrightarrow{e}v
+        }
+      \end{prooftree}}\\
+  \end{tabular}
+
+  \vspace{10pt}
+  
+  \begin{tabular}{l}
+    {\fontsize{8}{10}\selectfont\textsc{Not}} \\    
+    {\begin{prooftree}
+
+        % Evaluates e.
+        \hypo{\Delta,\sigma,\Lambda\vdash{}e\xrightarrow{e}b}
+        
+        % Conclusion.
+        \infer1
+        {
+          \Delta,\sigma,\Lambda\vdash\mathtt{not}(e)\xrightarrow{e}\lnot{}b
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  % Aggregate.
+  \begin{tabular}{l}
+    {\fontsize{8}{10}\selectfont\textsc{Aggreg}} \\
+    {\begin{prooftree}
+
+        % Evaluates e.
+        \hypo{\Delta,\sigma,\Lambda\vdash{}e_i\xrightarrow{e}v_i}
+
+        % Conclusion.
+        \infer1
+        [$i=1,\dots,n$]
+        {
+          \Delta,\sigma,\Lambda\vdash\mathtt{(}{}e_1,\dots,{}e_n\mathtt{)}\xrightarrow{e}(v_1,\dots,v_n)
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  
+\end{table}
 
 %%% Local Variables:
 %%% mode: latex
