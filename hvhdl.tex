@@ -333,18 +333,15 @@ of $\sigma\in{}\Sigma$ is defined as follows:
 
 \begin{definition}[Design state]
   \label{def:design-state}
-  A design state $\sigma\in\Sigma$ is a record
-  ${<}\mathcal{S},\mathcal{C},\mathcal{E}{>}$ where:
+  A design state $\sigma\in\Sigma$ is a couple
+  $(\mathcal{S},\mathcal{C})$ where:
   \begin{itemize}[label=$-$]
   \item $\mathcal{S}\in{}id\nrightarrow{}v$ is the signal store,
     i.e. the function yielding the current value of signals
     (i.e. ports and internal signals).
-  \item $\mathcal{C}\in{}id\nrightarrow{}\Sigma$ is the component
-    store, i.e.  the function yielding the current state of design
-    instances.
-  \item $\mathcal{E}\subseteq{}id$, is the set of signal and design
-    instance identifiers that generated an event at the current design
-    state.
+  \item $\mathcal{C}\in{}id\nrightarrow{}\Sigma$ is the design
+    instance store, i.e.  the function yielding the current state of
+    design instances.
   \end{itemize}
 \end{definition}
 
@@ -358,11 +355,71 @@ $id\in\mathsf{dom}(\mathcal{C}(\sigma))$.
 \subsubsection{Evaluation of expressions}
 \label{subsubsec:expr-eval}
 
-\begin{table}[!htbp]
+In what follows, we use the option type to express partial functions,
+or functions that can return errors.  We write
+$f(x)=\lfloor{}y\rfloor$ to state that some value $y$ is associated
+with the input $x$ through function $f$; we write $f(x)=\emptyset$ to
+state that either $x$ is not the definition domain of $f$, or that an
+error is returned for the input $x$.
+
+Table~\ref{tab:expr-eval} presents the rules to evaluate the
+expressions defined in the \hvhdl{} abstract syntax. A rule instance
+of the expression evaluation relation is written
+$\Delta,\mathcal{S},\Lambda\vdash{}e\xrightarrow{e}v$, where
+$\Delta\in{}ElDesign$ is an elaborated design,
+$\mathcal{S}\in{}id\nrightarrow{}v$ is a signal store,
+$\Lambda\in{}id\nrightarrow(t\times{}v)$ is a local variable
+environment, $e$ is an expression and $v$ the value resulting from the
+evaluation of $e$.
+
+When the evaluated expression is an identifier, the associated value
+is looked up in the appropriate location, i.e. in the signal store for
+a signal identifier, in the local environment for a local variable or
+in the elaborated design for a generic constant. Note that the
+expression evaluation relation is deterministic only if the definition
+domains of $G(\Delta)$ (i.e. the generic constants of $\Delta$), the
+signal store $\mathcal{S}$ and the local variable environment
+$\Lambda$ are not overlapping. We enforce this property through the
+elaboration of the design that comes before the simulation. We add a
+rule to evaluate an identifier expression that refers to an output
+port identifier. Normally, output ports are write-only constructs,
+however, we must be able to read their value to evaluate output port
+maps in design instantiation statements. We write
+$\Delta,\mathcal{S},\Lambda\vdash{}e\xrightarrow{e_o}v$ to enable the
+reading of output port identifiers through the expression evaluation
+relation.
+
+In Table~\ref{tab:expr-eval}, we also give an example of evaluation of
+an indexed identifier expression in the case where the identifier is
+an input port or an internal signal. The rule checks that an array is
+associated with identifier in the signal store $\mathcal{S}$, then the
+index of reading is computed. In the \hvhdl{} language, the index
+range of an array type does not necessarily start from zero. This
+feature is convenient to represent, for instance, a binary word with
+multiple composite signals, e.g. one representing bits 0 to 7, the
+other bits 8 to 16, etc. However, in our semantics, all arrays start
+from the index 0, and we must explicitly convert the index to a zero
+starting range when evaluating an indexed identifier expression. In
+Table~\ref{tab:expr-eval}, we omit the evaluation rules for the cases
+of an indexed local variable identifier and an indexed output port
+identifier as they are almost similar to the given example. We use to
+primitive operations to read from and to write to an array at a
+certain index. We write $a[i]$ when reading from an array $a$ at index
+$i$, and $a[i]\leftarrow{}x$ to write $x$ at the position $i$ in array
+$a$. Both operations return an error if the index $i$ is out of the
+array bounds.
+
+The evaluation of binary operators mostly relies on the definition of
+the $\mathtt{vbop}$ function. We present some of the definition cases
+of the $\mathtt{vbop}$ function in Table~\ref{tab:expr-eval}.
+
+\begin{table}[!t]
+  \caption{Semantics for \hvhdl{} expressions}
+  \label{tab:expr-eval}
   \begin{tabular}{l}
-    {\fontsize{8}{10}\selectfont\textsc{Sig}} \\
+    % {\fontsize{10}{13}\selectfont\textsc{Sig}} \\
     {\begin{prooftree}
-        \hypo{\sigma(id)=\lfloor{}v\rfloor}
+        \hypo{\mathcal{S}(id)=\lfloor{}v\rfloor}
         \infer1
         [{
           \begin{tabular}{@{}l}
@@ -370,17 +427,28 @@ $id\in\mathsf{dom}(\mathcal{C}(\sigma))$.
           \end{tabular}
         }]
         {
-          \Delta,\sigma,\Lambda\vdash{}id\xrightarrow{e}v
+          \Delta,\mathcal{S},\Lambda\vdash{}id\xrightarrow{e}v
         }
       \end{prooftree}} \\
   \end{tabular}
   \begin{tabular}{l}
-    {\fontsize{8}{10}\selectfont\textsc{Var}} \\
+    % {\fontsize{10}{13}\selectfont\textsc{Var}} \\
     {\begin{prooftree}
         \hypo{\Lambda({}id)=\lfloor(t,v)\rfloor}
         \infer1
         {
-          \Delta,\sigma,\Lambda\vdash{}id\xrightarrow{e}v
+          \Delta,\mathcal{S},\Lambda\vdash{}id\xrightarrow{e}v
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{Gen}} \\
+    {\begin{prooftree}
+        \hypo{G(\Delta)(id)=\lfloor(t,v)\rfloor}
+        \infer1
+        []
+        {
+          \Delta,\mathcal{S},\Lambda\vdash{}id\xrightarrow{e}v
         }
       \end{prooftree}} \\
   \end{tabular}
@@ -388,34 +456,29 @@ $id\in\mathsf{dom}(\mathcal{C}(\sigma))$.
   \vspace{10pt}
   
   \begin{tabular}{l}
-    {\fontsize{8}{10}\selectfont\textsc{Gen}} \\
+    % {\fontsize{10}{13}\selectfont\textsc{Out}} \\
     {\begin{prooftree}
-        \hypo{\Delta(id)=\lfloor(t,v)\rfloor}
-        \infer1
-        [{
-          \begin{tabular}{@{}l}
-            $id\in{}G(\Delta)$ \\
-          \end{tabular}
-        }]
-        {
-          \Delta,\sigma,\Lambda\vdash{}id\xrightarrow{e}v
-        }
-      \end{prooftree}} \\
-  \end{tabular}
-  \begin{tabular}{l}
-    {\fontsize{8}{10}\selectfont\textsc{Out}} \\
-    {\begin{prooftree}
-        \hypo{\sigma(id)=\lfloor{}v\rfloor}
+        \hypo{\mathcal{S}(id)=\lfloor{}v\rfloor}
         \infer1
         [{
           \begin{tabular}{@{}l}
             ${}id\in{}O(\Delta)$ \\
           \end{tabular}
         }] {
-          \Delta,\sigma\vdash
+          \Delta,\mathcal{S}\vdash
           {}id
           \xrightarrow{e_o}
           v
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+    \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{Cst}} \\
+    {\begin{prooftree}
+        \hypo{\mathtt{vcst}(cst)=\lfloor{}v\rfloor}
+        \infer1
+        {
+          \Delta,\mathcal{S},\Lambda\vdash{}cst\xrightarrow{e}v
         }
       \end{prooftree}} \\
   \end{tabular}
@@ -424,11 +487,11 @@ $id\in\mathsf{dom}(\mathcal{C}(\sigma))$.
   
   % Idx name expressions.
   \begin{tabular}{l}
-    {\fontsize{8}{10}\selectfont\textsc{IdxSig}} \\
+    % {\fontsize{10}{13}\selectfont\textsc{IdxSig}} \\
     {\begin{prooftree}
 
         % Evaluates e_i.
-        \hypo{\Delta,\sigma,\Lambda\vdash{}e_i\xrightarrow{e}n_i}
+        \hypo{\Delta,\mathcal{S},\Lambda\vdash{}e_i\xrightarrow{e}n_i}
 
         % Reading array a at index i yields value v. 
         \hypo{a[i]=\lfloor{}v\rfloor}
@@ -439,25 +502,15 @@ $id\in\mathsf{dom}(\mathcal{C}(\sigma))$.
           \begin{tabular}{@{}l}
             ${}id\in{}S(\Delta)\cup{}I(\Delta)$ \\
             $\Delta(id)={}\lfloor\mathtt{array}(t,n,m)\rfloor$ \\
-            $\sigma(id)={}\lfloor{}a\rfloor$ \\
+            $\mathcal{S}(id)={}\lfloor{}a\rfloor$ \\
             $i=n_i-n$ \\
           \end{tabular}
         }]
         {
-          \Delta,\sigma,\Lambda\vdash
+          \Delta,\mathcal{S},\Lambda\vdash
           {}id({}e_i)
           \xrightarrow{e}
           v
-        }
-      \end{prooftree}} \\
-  \end{tabular}
-  \begin{tabular}{l}
-    {\fontsize{8}{10}\selectfont\textsc{Cst}} \\
-    {\begin{prooftree}
-        \hypo{\mathtt{vcst}(cst)=\lfloor{}v\rfloor}
-        \infer1
-        {
-          \Delta,\sigma,\Lambda\vdash{}cst\xrightarrow{e}v
         }
       \end{prooftree}} \\
   \end{tabular}
@@ -465,14 +518,14 @@ $id\in\mathsf{dom}(\mathcal{C}(\sigma))$.
   \vspace{10pt}
   
   \begin{tabular}{l}
-    {\fontsize{8}{10}\selectfont\textsc{BOp}}  \\
+    % {\fontsize{10}{13}\selectfont\textsc{BOp}}  \\
     {\begin{prooftree}
 
         % Evaluates e1.
-        \hypo{\Delta,\sigma,\Lambda\vdash{}e_1\xrightarrow{e}v_1}
+        \hypo{\Delta,\mathcal{S},\Lambda\vdash{}e_1\xrightarrow{e}v_1}
 
         % Evaluates e2.
-        \hypo{\Delta,\sigma,\Lambda\vdash{}e_2\xrightarrow{e}v_2}
+        \hypo{\Delta,\mathcal{S},\Lambda\vdash{}e_2\xrightarrow{e}v_2}
 
         % Evaluates bop(v1,v2).
         \hypo{\mathtt{vbop}(bop,v_1,v_2)=\lfloor{}v\rfloor}
@@ -480,7 +533,7 @@ $id\in\mathsf{dom}(\mathcal{C}(\sigma))$.
         % Conclusion.
         \infer3
         {
-          \Delta,\sigma,\Lambda\vdash
+          \Delta,\mathcal{S},\Lambda\vdash
           bop(e_1,e_2)\xrightarrow{e}v
         }
       \end{prooftree}}\\
@@ -489,37 +542,433 @@ $id\in\mathsf{dom}(\mathcal{C}(\sigma))$.
   \vspace{10pt}
   
   \begin{tabular}{l}
-    {\fontsize{8}{10}\selectfont\textsc{Not}} \\    
+    % {\fontsize{10}{13}\selectfont\textsc{Not}} \\    
     {\begin{prooftree}
 
         % Evaluates e.
-        \hypo{\Delta,\sigma,\Lambda\vdash{}e\xrightarrow{e}b}
+        \hypo{\Delta,\mathcal{S},\Lambda\vdash{}e\xrightarrow{e}b}
         
         % Conclusion.
         \infer1
         {
-          \Delta,\sigma,\Lambda\vdash\mathtt{not}(e)\xrightarrow{e}\lnot{}b
+          \Delta,\mathcal{S},\Lambda\vdash\mathtt{not}(e)\xrightarrow{e}\lnot{}b
         }
       \end{prooftree}} \\
   \end{tabular}
   % Aggregate.
   \begin{tabular}{l}
-    {\fontsize{8}{10}\selectfont\textsc{Aggreg}} \\
+    % {\fontsize{10}{13}\selectfont\textsc{Aggreg}} \\
     {\begin{prooftree}
 
         % Evaluates e.
-        \hypo{\Delta,\sigma,\Lambda\vdash{}e_i\xrightarrow{e}v_i}
+        \hypo{\Delta,\mathcal{S},\Lambda\vdash{}e_i\xrightarrow{e}v_i}
 
         % Conclusion.
         \infer1
         [$i=1,\dots,n$]
         {
-          \Delta,\sigma,\Lambda\vdash\mathtt{(}{}e_1,\dots,{}e_n\mathtt{)}\xrightarrow{e}(v_1,\dots,v_n)
+          \Delta,\mathcal{S},\Lambda\vdash\mathtt{(}{}e_1,\dots,{}e_n\mathtt{)}\xrightarrow{e}(v_1,\dots,v_n)
         }
       \end{prooftree}} \\
   \end{tabular}
+
+  \vspace{10pt}
+
+  \textbf{Evaluation of binary constants:}
+  \begin{eqnarray*}
+    \label{eq:vcst}
+    \mathtt{vcst}(b) & = & \lfloor{}b\rfloor \\
+    \mathtt{vcst}(n) & = & \begin{cases}
+                             \lfloor{}n\rfloor~\mathrm{if}~n\le\mathtt{NATMAX} \\
+                             \emptyset~\mathrm{otherwise} \end{cases} \\
+  \end{eqnarray*}
+  
+  \textbf{Evaluation of binary operators (selected cases):}
+  \begin{eqnarray*}
+    \label{eq:vbop}
+    \mathtt{vbop}(\mathtt{and}, b_1, b_2) & = & \lfloor{}b_1~\&\&~b_2\rfloor \\
+    \mathtt{vbop}(\mathtt{add}, n_1, n_2) & = & \begin{cases}
+                                                  \lfloor{}n_1+n_2\rfloor~\mathrm{if}~n_1+n_2\le\mathtt{NATMAX} \\
+                                                  \emptyset~\mathrm{otherwise} \end{cases} \\
+    \mathtt{vbop}(\mathtt{sub}, n_1, n_2) & = & \begin{cases}
+                                                  \lfloor{}n_1-n_2\rfloor~\mathrm{if}~n_1\ge{}n_2 \\
+                                                  \emptyset~\mathrm{otherwise}
+                                                \end{cases} \\
+  \end{eqnarray*}
   
 \end{table}
+
+\subsubsection{Evaluation of sequential statements and port maps}
+\label{subsubsec:ss-and-port-map-eval}
+
+\begin{table}[h]
+
+  \caption{Evaluation of sequential statements}
+  \label{tab:ss-eval}
+  
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{SigAssign}} \\
+    {\begin{prooftree}
+
+        % Evaluates e.
+        \hypo{\Delta,\mathcal{S}_r,\Lambda\vdash{}e\xrightarrow{e}v}
+        
+        % Checks that v complies with t.
+        \hypo{v\in_c{}t}
+        
+        % Conclusion.
+        \infer2
+        [{\begin{tabular}{l}
+            $id\in{}S(\Delta)\cup{}O(\Delta)$ \\
+            $\Delta(id)=\lfloor{}t\rfloor$ \\
+          \end{tabular}
+        }]
+        {
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash
+          {}id\Leftarrow{}e
+          \xrightarrow{ss}
+          \mathcal{S}_w(id)\leftarrow{}v,\Lambda
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{5pt}
+  
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{VarAssign}} \\ 
+    {\begin{prooftree}
+
+        % Evaluates e.
+        \hypo{\Delta,\mathcal{S}_r,\Lambda\vdash{}e\xrightarrow{e}v}
+
+        % Checks that v complies with t.
+        \hypo{v\in_c{}t}
+
+        % Conclusion.
+        \infer2[$\Lambda(id)=\lfloor(t,val)\rfloor$]
+        {
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash
+          {}id:={}e
+          \xrightarrow{ss}
+          \mathcal{S}_w,\Lambda(id)\leftarrow{}(t,v)
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{5pt}
+  
+  % \begin{tabular}{@{}l}
+  %   % {\fontsize{10}{13}\selectfont\textsc{IdxSigAssign}} \\
+  %   {\begin{prooftree}
+
+  %       % Evaluates e_i and e.
+  %       \hypo{\Delta,\mathcal{S}_r,\Lambda&\vdash{}e_i\xrightarrow{e}n_i}
+  %       \infer[no rule]1{\Delta,\mathcal{S}_r,\Lambda&\vdash{}e\xrightarrow{e}v}
+
+  %       % Checks that v complies with t.
+
+  %       \hypo{v&\in_c{}t}
+  %       \infer[no rule]1{n_i&\in_c{}\mathtt{nat}(n,m)}
+        
+  %       % Conclusion.
+  %       \infer2
+  %       [{\begin{tabular}{@{}l}
+  %           ${}id\in{}S(\Delta)\cup{}O(\Delta)$ \\
+  %           $\Delta(id)=\lfloor\mathtt{array}(t,n,m)\rfloor$ \\
+  %           $\mathcal{S}_w(id)=\lfloor{}a\rfloor$, $i=n_i-n$ \\
+  %           $a[i]\leftarrow{}v=\lfloor{}a'\rfloor$ \\
+  %         \end{tabular}
+  %       }]
+  %       {
+  %         \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash
+  %         {}id(e_i)\Leftarrow{}e
+  %         \xrightarrow{ss}
+  %         \mathcal{S}_w(id)\leftarrow{}a',\Lambda
+  %       }
+  %     \end{prooftree}} \\
+  % \end{tabular}
+
+  % \begin{tabular}{@{}l}
+  %   {\fontsize{10}{13}\selectfont\textsc{IdxVarAssign}} \\    
+  %   {\begin{prooftree}
+
+  %       % Evaluates e_i.
+  %       \hypo{\Delta,\mathcal{S}_r,\Lambda&\vdash{}e_i\xrightarrow{e}n_i}
+  %       \infer[no rule]1{\Delta,\mathcal{S}_r,\Lambda&\vdash{}e\xrightarrow{e}v}
+
+  %       % Checks that v complies with T.
+  %       \hypo{n_i&\in_c{}\mathtt{nat}(n,m)}
+  %       \infer[no rule]1{v&\in_c{}t}
+
+  %       % Conclusion.
+  %       \infer2
+  %       [{
+  %         \begin{tabular}{@{}l}
+  %           $\Lambda(id)=\lfloor\big(\mathtt{array}(t,n,m),a\big)\rfloor$ \\
+  %           $i=n_i-n$ \\
+  %           $a[i]\leftarrow{}v=\lfloor{}a'\rfloor$ \\
+  %         \end{tabular}
+  %       }]
+  %       {
+  %         \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash
+  %         {}id(e_i):={}e
+  %         \xrightarrow{ss}
+  %         \mathcal{S}_w,\Lambda(id)\leftarrow{}(t,a')
+  %       }
+  %     \end{prooftree}} \\
+  % \end{tabular}
+
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{IfElse}$\top$} \\    
+    {\begin{prooftree}
+
+        % Evaluates condition.
+        \hypo{\Delta,\mathcal{S}_r,\Lambda\vdash{}e\xrightarrow{e}\mathtt{true}}
+
+        % Evaluates ss.
+        \hypo{\Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash{}ss_1\xrightarrow{ss}\mathcal{S}'_w,\Lambda'}
+
+        % Conclusion.
+        \infer2
+        {
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash
+          \mathtt{if}(e)\{ss_1\}\mathtt{else}\{ss_2\}
+          \xrightarrow{ss}
+          \mathcal{S}'_w,\Lambda'
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{5pt}
+  
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{IfElse}$\bot$} \\  
+    {\begin{prooftree}
+
+        % Evaluates condition.
+        \hypo{\Delta,\mathcal{S}_r,\Lambda\vdash{}e\xrightarrow{e}\mathtt{false}}
+
+        % Evaluates ss.
+        \hypo{\Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash{}ss_2\xrightarrow{ss}\mathcal{S}'_w,\Lambda'}
+
+        % Conclusion.
+        \infer2
+        {
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash~
+          \mathtt{if}(e)\{ss_1\}\mathtt{else}\{ss_2\}
+          \xrightarrow{ss}
+          \mathcal{S}'_w,\Lambda'
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{5pt}
+  
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{Loop}$\bot$} \\
+    {\begin{prooftree}
+
+        % Evaluates upper bound check.
+        \hypo{\Delta,\mathcal{S}_r,\Lambda\vdash{}e_2>0\xrightarrow{e}\mathtt{true}}
+        \infer[no rule]1{\Delta,\mathcal{S}_r,\Lambda\vdash{}e_1\xrightarrow{e}v_1}
+        \infer[no rule]1{v_1\in_c\mathtt{nat}(0,\mathtt{NATMAX})}
+        
+        % Evaluates ss and recursive call.
+        \hypo{\Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda(id)\leftarrow{}\big(\mathtt{nat}(0,\mathtt{NATMAX}),v_1\big)
+          \vdash{}ss\xrightarrow{ss}\mathcal{S}'_w,\Lambda'}
+        
+        \infer[no rule]1{ \Delta,\mathcal{S}_r,\mathcal{S}'_w,\Lambda'\vdash
+          \mathtt{for}(id,e_1+1,e_2-1)\{ss\}
+          \xrightarrow{ss}\mathcal{S}''_w,\Lambda''
+        }
+        
+        % Conclusion. 
+        \infer2[]
+        {
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash
+          \mathtt{for}(id,e_1,e_2)\{ss\}
+          \xrightarrow{ss}
+          \mathcal{S}''_w,\Lambda''
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{5pt}
+  
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{Loop}$\top$} \\    
+    {\begin{prooftree}
+        
+        % Upper bound check true.
+        \hypo{\Delta,\mathcal{S}_r,\Lambda\vdash{}e_2=0\xrightarrow{e}\texttt{true}}
+
+        % Conclusion.
+        \infer1[]
+        {
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash
+          \mathtt{for}(id,e_1,e_2)\{ss\}
+          \xrightarrow{ss}
+          \mathcal{S}_w,\Lambda\setminus\{id\}
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{5pt}
+  
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{RisingEdgeDefault}} \\    
+    {\begin{prooftree}
+
+        \hypo{f\in\{\downarrow,i,c\}}
+        
+        % Conclusion.
+        \infer1
+        {
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash
+          \mathtt{rising}\{ss\}
+          \xrightarrow{ss_f}
+          \mathcal{S}_w,\Lambda
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{RisingEdgeExec}} \\    
+    {\begin{prooftree}
+
+        % Evaluates ss.
+        \hypo{\Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash{}ss\xrightarrow{ss_\uparrow}\mathcal{S}'_w,\Lambda'}
+        
+        % Conclusion.
+        \infer1
+        {
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash
+          \mathtt{rising}\{ss\}
+          \xrightarrow{ss_\uparrow}
+          \mathcal{S}'_w,\Lambda'
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{5pt}
+  
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{FallingEdgeDefault}} \\    
+    {\begin{prooftree}
+
+        \hypo{f\in\{\uparrow,i,c\}}
+        
+        % Conclusion.
+        \infer1{
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash
+          \mathtt{falling}\{ss\}
+          \xrightarrow{ss_f}
+          \mathcal{S}_w,\Lambda
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{FallingEdgeExec}} \\    
+    {\begin{prooftree}
+
+        % Evaluates ss.
+        \hypo{\Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash{}ss\xrightarrow{ss_\downarrow}\mathcal{S}'_w,\Lambda'}
+        
+        % Conclusion.
+        \infer1
+        {
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash
+          \mathtt{falling}\{ss\}
+          \xrightarrow{ss_\downarrow}
+          \mathcal{S}'_w,\Lambda'
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{5pt}
+  
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{RstDefault}} \\    
+    {\begin{prooftree}
+
+        % Evaluates ss.
+        \hypo{\Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash{}ss_2\xrightarrow{ss_f}\mathcal{S}'_w,\Lambda'}
+        
+        % Conclusion.
+        \infer1
+        [
+        \begin{tabular}{@{}l@{}}
+          $f\in\{\uparrow,\downarrow,c\}$ \\
+        \end{tabular}
+        ]
+        {
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash
+          \mathtt{rst}\{ss_1\}\mathtt{else}\{ss_2\}
+          \xrightarrow{ss_f}
+          \mathcal{S}'_w,\Lambda'
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{5pt}
+  
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{RstExec}} \\    
+    {\begin{prooftree}
+
+        % Evaluates ss.
+        \hypo{\Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash{}ss_1\xrightarrow{ss_i}\mathcal{S}'_w,\Lambda'}
+        
+        % Conclusion.
+        \infer1
+        {
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash
+          \mathtt{rst}\{ss_1\}\mathtt{else}\{ss_2\}
+          \xrightarrow{ss_i}
+          \mathcal{S}'_w,\Lambda'
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{5pt}
+  
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{Seq}} \\
+    {\begin{prooftree}
+        
+        % Evaluates ss.
+        \hypo{\Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash{}ss_1\xrightarrow{ss}\mathcal{S}'_w,\Lambda'}
+
+        % Evaluates ss'.
+        \infer[no rule]1{\Delta,\mathcal{S}_r,\mathcal{S}'_w,\Lambda'\vdash{}ss_2\xrightarrow{ss}\mathcal{S}''_w,\Lambda''}
+
+        % Conclusion.
+        \infer1{
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash{}ss_1\mathtt{;}~{}ss_2\xrightarrow{ss}\mathcal{S}''_w,\Lambda''
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{Null}} \\
+    {\begin{prooftree}        
+
+        % Conclusion.
+        \infer0{
+          \Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash\mathtt{null}\xrightarrow{ss}\mathcal{S}_w,\Lambda
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+\end{table}
+
+A rule instance of the sequential statement evaluation relation takes
+the form
+$\Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash{}ss\xrightarrow{ss}\mathcal{S}'_w,\Lambda'$
+where $\Delta\in{}ElDesign$ is an elaborated design,
+$\mathcal{S}_r,\mathcal{S}_w\in{}id\nrightarrow{}v$ are two signal
+stores, one to read the value of signals and one to override the value
+of signals, $\Lambda\in{}id\nrightarrow{}(t\times{}v)$ the local
+variable environment, $ss$ is a sequential statement, and
+$\mathcal{S}'_w,\Lambda'$ are the new signal store and local variable
+environment after the execution of $ss$.
 
 %%% Local Variables:
 %%% mode: latex
