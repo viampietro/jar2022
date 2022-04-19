@@ -88,6 +88,8 @@ conditional statements, derived from the concrete syntax of \vhdl{}.
 These statements are convenient to express block of statements to be
 executed only at certain phases of the simulation.
 
+\todo[inline]{Show the corresponding VHDL code represented by falling,
+  rising and rst blocks.}
 
 \begin{table}[!htbp]
   \caption{Type indication}
@@ -601,6 +603,10 @@ of the $\mathtt{vbop}$ function in Table~\ref{tab:expr-eval}.
 \subsubsection{Evaluation of sequential statements and port maps}
 \label{subsubsec:ss-and-port-map-eval}
 
+Table~\ref{tab:ss-eval} describes the evaluation of sequential
+statements. Sequential statements define the body of processes
+composing the behavior of a \hvhdl{} design.
+
 \begin{table}[h]
 
   \caption{Evaluation of sequential statements}
@@ -965,10 +971,358 @@ $\Delta,\mathcal{S}_r,\mathcal{S}_w,\Lambda\vdash{}ss\xrightarrow{ss}\mathcal{S}
 where $\Delta\in{}ElDesign$ is an elaborated design,
 $\mathcal{S}_r,\mathcal{S}_w\in{}id\nrightarrow{}v$ are two signal
 stores, one to read the value of signals and one to override the value
-of signals, $\Lambda\in{}id\nrightarrow{}(t\times{}v)$ the local
+of signals, $\Lambda\in{}id\nrightarrow{}(t\times{}v)$ is the local
 variable environment, $ss$ is a sequential statement, and
 $\mathcal{S}'_w,\Lambda'$ are the new signal store and local variable
 environment after the execution of $ss$.
+
+The sequential statement that characterizes the \vhdl{} language is
+the signal assignment statement. The evaluation of the signal
+assignment statement is given in the first rule of
+Table~\ref{tab:ss-eval}. An assignment operation can only be performed
+on an internal signal or an output signal identifier as stated in the
+side condition. Note that to evaluate the expression assigned to a
+signal identifier, the $\mathcal{S}_r$ signal store is used, and the
+new value of the signal is updated in the $\mathcal{S}_w$ signal
+store.
+
+\todo[inline]{Show the example of the swap.}
+
+Multiple signal assignment operations written in sequence must be
+interpreted as executed in parallel. For that reason, we need a
+read-only signal store to interpret the expressions found in
+sequential statements and another signal store to update the value of
+signals. As a consequence, the evaluation of the sequence statement
+(at the end of Table~\ref{tab:ss-eval}) uses the same signal store
+$\mathcal{S}_r$ to execute both statement $ss_1$ and $ss_2$. Only the
+update signal store $\mathcal{S}_w$ is modified and passed along from
+the execution of one statement to the other. On the contrary, variable
+assignment statements are interpreted in sequence. Each variable
+assignment modifies the local variable environment, and the modified
+environment is passed as an input to the next statement in the
+sequence. Note that, in the absence of variable assignment statements
+in its operands, the sequence operator is commutative, i.e. the order
+in which the statements of the sequence are evaluated does not impact
+the outcome of the evaluation.
+
+To evaluate the sequential statements which execution are related to
+specific parts of the simulation algorithm, we use a flag written as
+an index of the $ss$ symbol above the arrow symbol. The flag is a
+parameter of the relation. No flag means that the statement is
+interpreted regardless of the value of the flag. To interpret rising
+blocks (resp. falling blocks), the $\uparrow$ flag (resp. $\downarrow$
+flag) must be on, otherwise the interpretation of such blocks is idle.
+The first part of a reset block is interpreted only when the $i$ flag
+is on ($i$ standing for \textit{initialization}). Otherwise, the
+second part of the block is interpreted.
+
+Table~\ref{tab:pmap-eval} describes the evaluation of input and output
+port maps which are parts of design instantiation statements. 
+
+\begin{table}[!h]
+  \caption[Evaluation of port maps]{Evaluation of input and output port maps}
+  \label{tab:pmap-eval}
+
+    
+  \begin{tabular}{l}
+    {\begin{prooftree}
+
+        % Evaluates e.
+        \hypo{\Delta,\mathcal{S}\vdash{}e\xrightarrow{e}v}
+
+        % Checks that v complies with t.
+        \hypo{v\in_c{}t}
+
+        % Conclusion.
+        \infer2[{
+          \begin{tabular}{@{}l}
+            $id\in{}I(\Delta_c)$ \\
+            $\Delta_c(id)=\lfloor{}t\rfloor$ \\
+          \end{tabular}
+        }]
+        {
+          \Delta,\Delta_c,\mathcal{S},\mathcal{S}_c\vdash
+          (id\Rightarrow{}e)
+          \xrightarrow{mip}
+          \mathcal{S}_c(id)\leftarrow{}v
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  
+  \vspace{5pt}
+
+    \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{MopOpen}} \\
+    {\begin{prooftree}
+
+        % Conclusion
+        \infer
+        0
+        {
+          \Delta,\Delta_c,\mathcal{S},\mathcal{S}_c\vdash
+          (id\Rightarrow\mathtt{open})
+          \xrightarrow{mop}
+          \mathcal{S}
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{5pt}
+
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{MopSimple}} \\
+    {\begin{prooftree}
+
+        % Evaluates name.
+        \hypo{\Delta_c,\mathcal{S}_c\vdash{}name\xrightarrow{e_o}v}
+
+        % Checks that v complies with t.
+        \hypo{v\in_c{}t}
+        
+        % Conclusion.
+        \infer2
+        [{\begin{tabular}{@{}l}
+            $id\in{}S(\Delta)\cup{}O(\Delta)$ \\
+            $\Delta(id)=\lfloor{}t\rfloor$ \\
+          \end{tabular}
+        }]
+        {
+          \Delta,\Delta_c,\mathcal{S},\mathcal{S}_c\vdash
+          (name\Rightarrow{}id)
+          \xrightarrow{mop}
+          \mathcal{S}(id)\leftarrow{}v
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  % \begin{tabular}{@{}l}
+  %   % {\fontsize{10}{13}\selectfont\textsc{MopPartial}} \\
+  %   {\begin{prooftree}
+
+  %       % Evaluates id_f and e_i.
+  %       \hypo{&{}e_i\xrightarrow{e}n_i}
+  %       \infer[no rule]1{&\Delta_c,\mathcal{S}_c\vdash{}name\xrightarrow{e_o}v}
+
+  %       % Checks that v complies with t.
+  %       \hypo{v&\in_c{}t}
+  %       \infer[no rule]1{n_i&\in_c{}\mathtt{nat}(n,m)}
+
+  %       % Conclusion.
+  %       \infer2
+  %       [{\begin{tabular}{l}
+  %           ${}id\in{}S(\Delta)\cup{}O(\Delta)$ \\
+  %           $\Delta(id)=\lfloor\mathtt{array}(t,n,m)\rfloor$ \\
+  %           $i=n_i-n$ \\
+  %           $\mathcal{S}(id)=\lfloor{}a\rfloor$ \\
+  %           $a[i]\leftarrow{}v=\lfloor{}a'\rfloor$ \\
+  %         \end{tabular}
+  %       }]
+  %       {
+  %         \Delta,\Delta_c,\mathcal{S},\mathcal{S}_c\vdash
+  %         (name\Rightarrow{}id(e_i))
+  %         \xrightarrow{mop}
+  %         \mathcal{S}(id)\leftarrow{}a'
+  %       }
+  %     \end{prooftree}} \\
+  % \end{tabular}
+
+  % \begin{tabular}{l}
+  %   {\fontsize{10}{13}\selectfont\textsc{MopComp}} \\
+    
+  %   {\begin{prooftree}    
+  %       % Evaluates mip on assoc.
+  %       \hypo{\Delta,\Delta_c,\mathcal{S},\mathcal{S}_c\vdash{}assoc_{po}\xrightarrow{mop}\mathcal{S}'}
+
+  %       % Evaluates mip on portmap.
+  %       \hypo{\Delta,\Delta_c,\mathcal{S}',\mathcal{S}_c\vdash{}o\xrightarrow{mop}\mathcal{S}''}
+
+  %       % Conclusion.
+  %       \infer2
+  %       {
+  %         \Delta,\Delta_c,\mathcal{S},\mathcal{S}_c\vdash
+  %         assoc_{po},o
+  %         \xrightarrow{mop}\mathcal{S}''
+  %       }
+  %     \end{prooftree}} \\
+  % \end{tabular}
+\end{table}
+
+An input port map is a mapping from expressions (possibly reading the
+value of the signals of the embedding design) to the input ports of a
+design instance. It is expressed as a list of associations between an
+expression and an input port identifier.  All associations composing
+an input port map are evaluated in sequence.  The evaluation of an
+association modifies the signal store of the design instance that
+declares the input port map. Thus, the relation that evaluates an
+input port map association is written
+$\Delta,\Delta_c,\mathcal{S},\mathcal{S}_c\vdash{}(name\Rightarrow{}e)\xrightarrow{mip}\mathcal{S}'_c$,
+where $\Delta\in{}ElDesign$ is the elaborated embedding design,
+$\Delta_c\in{}ElDesign$ is the elaborated design instance,
+$\mathcal{S}\in{}id\nrightarrow{}v$ is the signal store of the
+embedding design, $\mathcal{S}_c\in{}id\nrightarrow{}v$ is the signal
+store of the design instance, $name$ is an input port identifier, $e$
+is an expression, and $\mathcal{S}'_c$ is the signal store resulting
+of the evaluation of the association. In Table~\ref{tab:pmap-eval}, we
+give the example of the evaluation of an association between a simple
+port identifier and an expression. The expression is evaluated in the
+context of the embedding elaborated design $\Delta$ and the signal
+store $\mathcal{S}$, and the result is assigned in signal store
+$\mathcal{S}_c$ to the identifier $id$. Here, we do not show the
+evaluation of an association between an indexed identifier and an
+expression, and the evaluation of the sequence of associations
+composing an input port map.
+
+An output port map is a list of associations between the output ports
+of a design instance to the internal signals or output ports of an
+embedding design.  The evaluation an output port map modifies the
+signal store of the embedding design by propagating the value of the
+output ports of the design instance. The evaluation relation for an
+output port map association is written
+$\Delta,\Delta_c,\mathcal{S},\mathcal{S}_c\vdash{}assoc_{op}\xrightarrow{mop}\mathcal{S}'_c$,
+where $\Delta\in{}ElDesign$ is the elaborated embedding design,
+$\Delta_c\in{}ElDesign$ is the elaborated design instance,
+$\mathcal{S}\in{}id\nrightarrow{}v$ is the signal store of the
+embedding design, $\mathcal{S}_c\in{}id\nrightarrow{}v$ is the signal
+store of the design instance,
+$assoc_{op}::=(id\Rightarrow{}(name|\mathtt{open}))\big|(id(e)\Rightarrow{}name)$
+is an output port map association, and $\mathcal{S}'_c$ is the signal
+store resulting of the evaluation of the association. When an output
+port is left unconnected is the output port map of a design instance,
+it is connected to the \texttt{open} keyword. As shown in
+Table~\ref{tab:pmap-eval}, the evaluation of an unconnected output
+port does not impact the signal store of the embedding design. 
+
+\subsubsection{Evaluation of concurrent statements}
+\label{subsubsec:cs-eval}
+
+\subsection{Evaluation of concurrent statements}
+\label{subsec:comb-eval}
+
+\begin{lstlisting}[language=PseudoCoq,label={lst:merge-functionr},
+caption={[The \texttt{merge} function.] The \texttt{merge} function that fuses together an origin state $\sigma$, with two states $\sigma'$ and $\sigma''$ generated by the execution of two \hvhdl{} concurrent statements.},framexleftmargin=1.5em,xleftmargin=2em,numbers=left,
+numberstyle=\tiny\ttfamily]
+Definition merge($\sigma$, $\sigma'$, $\sigma''$) :=
+   let $\sigma$ = ($\mathcal{S}$, $\mathcal{C}$) in
+   let $\sigma'$ = ($\mathcal{S}'$, $\mathcal{C}'$) in
+   let $\sigma''$ = ($\mathcal{S}''$, $\mathcal{C}''$) in
+   let $\mathcal{S}_m(id)$ = $\begin{cases} 
+     \mathcal{S}'(id) & \mathtt{if}~\mathcal{S}'(id)\neq\mathcal{S}(id) \\ 
+     \mathcal{S}''(id) & \mathtt{if}~\mathcal{S}''(id)\neq\mathcal{S}(id) \\
+     \mathcal{S}(id) & \mathrm{otherwise}
+   \end{cases}$ in
+   let $\mathcal{C}_m(id)$ = $\begin{cases} 
+     \mathcal{C}'(id) & \mathtt{if}~\mathcal{C}'(id)\neq\mathcal{C}(id) \\ 
+     \mathcal{C}''(id) & \mathtt{if}~\mathcal{C}''(id)\neq\mathcal{C}(id) \\
+     \mathcal{C}(id) & \mathrm{otherwise}
+   \end{cases}$ in 
+   ($\mathcal{S}_m$, $\mathcal{C}_m$).
+\end{lstlisting}
+
+The \texttt{merge} function is correct if the three input design
+states assume the same domains in their signal store and design
+instance store, and also if there are no multiply driven signal,
+i.e. a signal that would have a value that is different from the
+original signal store $\mathcal{S}$ in both signal stores
+$\mathcal{S}'$ and $\mathcal{S}''$. In practice, the case where a
+design instance identifier could be associated with a different state
+in both design instance store $\mathcal{C}'$ and $\mathcal{C''}$ is
+not possible. Such a case could only arise if two design instances
+with the same identifier exist in a design's behavior, and such a
+design can never be elaborated.
+
+\begin{table}[!h]
+  \begin{tabular}{@{}l}
+    {\fontsize{10}{13}\selectfont\textsc{Ps}} \\
+    {\begin{prooftree}[template=\inserttext]
+        
+        % Runs seq.
+        \hypo{$\Delta,\mathcal{S},\mathcal{S},\Lambda\vdash{}ss\xrightarrow{ss_f}{}\mathcal{S}',\Lambda'$}
+
+        % Conlcusion.
+        \infer1
+        [{
+          \begin{tabular}{@{}l}
+            $\Delta(id)=\lfloor\Lambda\rfloor$\\
+            $\sigma=(\mathcal{S},\mathcal{C})$ \\
+          \end{tabular}
+        }]
+        {
+          $\mathcal{D},\Delta,\sigma\vdash$
+          $\mathtt{ps}(id, vars, ss)$
+          $\xrightarrow{cs_f}(\mathcal{S}',\mathcal{C})$
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  \begin{tabular}{@{}l}
+    {\fontsize{10}{13}\selectfont\textsc{Comp}} \\
+    {\begin{prooftree}[template=\inserttext]
+        
+        % Builds mapping for in ports.
+        \hypo{$\Delta,\Delta_c,\mathcal{S},\mathcal{S}_c\vdash{}i\xrightarrow{mip}\mathcal{S}'_c$}
+        
+        % Executes component instance behavior.
+        \infer[no rule]1{$\mathcal{D},\Delta_c,(\mathcal{S}'_c,\mathcal{C}_c)\vdash{}d.behavior\xrightarrow{cs_f}\sigma_c''$}
+        
+        % Builds mapping for out ports.
+        \infer[no rule]1{
+          $\Delta,\Delta_c,\mathcal{S},\mathcal{S}_c''\vdash$
+          $o$
+          $\xrightarrow{mop}$
+          $\mathcal{S}'$
+        }
+        
+        % Conclusion.
+        \infer1
+        [{\renewcommand{\arraystretch}{1.5}
+          \begin{tabular}{@{}l}
+            $\mathcal{D}(id_e)=\lfloor{}d\rfloor$ \\
+            $\Delta(id_c)=\lfloor\Delta_c\rfloor$\\
+            $\sigma(id_c)=\lfloor\sigma_c\rfloor$ \\
+            $\sigma=(\mathcal{S},\mathcal{C})$\\
+            $\sigma_c=(\mathcal{S}_c,\mathcal{C}_c)$ \\
+            $\sigma''_c=(\mathcal{S}''_c,\mathcal{C}''_c)$ \\
+          \end{tabular}
+        }]
+        {
+          $\mathcal{D},\Delta,\sigma\vdash$
+          $\mathtt{comp}(id_c, id_e, g, i, o)$          
+          $\xrightarrow{cs_f}$
+          $(\mathcal{S}',\mathcal{C}(id_c)\leftarrow{}\sigma''_c)$
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \begin{tabular}{l}
+    {\fontsize{10}{13}\selectfont\textsc{Par}} \\
+    {\begin{prooftree}
+        \hypo{\mathcal{D},\Delta,\sigma\vdash{}cs\xrightarrow{cs_f}\sigma'}
+        \hypo{\mathcal{D},\Delta,\sigma\vdash{}cs'\xrightarrow{cs_f}\sigma''}
+        \infer2{
+          \mathcal{D},\Delta,\sigma\vdash{}cs~\mathtt{||}~{}cs'\xrightarrow{cs_f}
+          \mathtt{merge}(\sigma,\sigma',\sigma'')
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  \begin{tabular}{l}
+    {\fontsize{10}{13}\selectfont\textsc{Null}} \\
+    {\begin{prooftree}
+        \infer0
+        {
+          \Delta,\sigma\vdash\mathtt{null}\xrightarrow{cs_f}\sigma
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+\end{table}
+
+\noindent{}where $f\in\{i,\uparrow,\downarrow,c\}$. The $i$ flag
+(resp. $\uparrow,\downarrow,c$) stands for the evaluation of
+concurrent statements during the initialization phase (resp.  rising
+edge, falling edge and stabilization phases).
+
+We choose to remove from the side condition of the rule \textsc{Par}
+that was stating the absence of multiply-driven signal, and of twin
+design instances. The two can be obtain after a successful elaboration
+phase.
 
 %%% Local Variables:
 %%% mode: latex
