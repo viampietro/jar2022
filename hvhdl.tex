@@ -1195,8 +1195,159 @@ port does not impact the signal store of the embedding design.
 \subsubsection{Evaluation of concurrent statements}
 \label{subsubsec:cs-eval}
 
-\subsection{Evaluation of concurrent statements}
-\label{subsec:comb-eval}
+Concurrent statements define the behavior of a \hvhdl{} design. The
+execution of concurrent statements modify the state of the \hvhdl{}
+design that is currently simulated. Table~\ref{tab:cs-eval} describes
+the relation that evaluates concurrent statements. The relation is
+written
+$\mathcal{D},\Delta,\sigma\vdash{}cs\xrightarrow{cs_f}\sigma'$, where
+$\mathcal{D}\in{}id\nrightarrow{}design$ is a design store,
+$\Delta\in{}ElDesign$ is an elaborated design, $\sigma\in\Sigma$ is
+the design state before the evaluation of concurrent statement $cs$,
+$\sigma'\in\Sigma$ is the design state resulting after the execution
+of $cs$, and $f\in\{i,\uparrow,\downarrow,c\}$ is a flag representing
+the current phase of simulation under which the concurrent statement
+$cs$ is evaluated.
+
+\begin{table}[!h]
+  \caption{Evaluation of concurrent statements}
+  \label{tab:cs-eval}
+  
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{Ps}} \\
+    {\begin{prooftree}[template=\inserttext]
+        
+        % Runs seq.
+        \hypo{$\Delta,\mathcal{S},\mathcal{S},\Lambda\vdash{}ss\xrightarrow{ss_f}{}\mathcal{S}',\Lambda'$}
+
+        % Conlcusion.
+        \infer1
+        [{
+          \begin{tabular}{@{}l}
+            $\Delta(id)=\lfloor\Lambda\rfloor$\\
+            $\sigma=(\mathcal{S},\mathcal{C})$ \\
+          \end{tabular}
+        }]
+        {
+          $\mathcal{D},\Delta,\sigma\vdash$
+          $\mathtt{ps}(id, vars, ss)$
+          $\xrightarrow{cs_f}(\mathcal{S}',\mathcal{C})$
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{10pt}
+  
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{Comp}} \\
+    {\begin{prooftree}[template=\inserttext]
+        
+        % Builds mapping for in ports.
+        \hypo{$\Delta,\Delta_c,\mathcal{S},\mathcal{S}_c\vdash{}i\xrightarrow{mip}\mathcal{S}'_c$}
+        
+        % Executes component instance behavior.
+        \infer[no rule]1{$\mathcal{D},\Delta_c,(\mathcal{S}'_c,\mathcal{C}_c)\vdash{}d.behavior\xrightarrow{cs_f}\sigma_c''$}
+        
+        % Builds mapping for out ports.
+        \infer[no rule]1{
+          $\Delta,\Delta_c,\mathcal{S},\mathcal{S}_c''\vdash$
+          $o$
+          $\xrightarrow{mop}$
+          $\mathcal{S}'$
+        }
+        
+        % Conclusion.
+        \infer1
+        [{\begin{tabular}{@{}l}
+            $\mathcal{D}(id_e)=\lfloor{}d\rfloor$ \\
+            $\Delta(id_c)=\lfloor\Delta_c\rfloor$\\
+            $\sigma(id_c)=\lfloor\sigma_c\rfloor$ \\
+            $\sigma=(\mathcal{S},\mathcal{C})$\\
+            $\sigma_c=(\mathcal{S}_c,\mathcal{C}_c)$ \\
+            $\sigma''_c=(\mathcal{S}''_c,\mathcal{C}''_c)$ \\
+          \end{tabular}
+        }]
+        {
+          $\mathcal{D},\Delta,\sigma\vdash$
+          $\mathtt{comp}(id_c, id_e, g, i, o)$          
+          $\xrightarrow{cs_f}$
+          $(\mathcal{S}',\mathcal{C}(id_c)\leftarrow{}\sigma''_c)$
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{15pt}
+  
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{Par}} \\
+    {\begin{prooftree}
+        \hypo{\mathcal{D},\Delta,\sigma\vdash{}cs\xrightarrow{cs_f}\sigma'}
+        \hypo{\mathcal{D},\Delta,\sigma\vdash{}cs'\xrightarrow{cs_f}\sigma''}
+        \infer2{
+          \mathcal{D},\Delta,\sigma\vdash{}cs~\mathtt{||}~{}cs'\xrightarrow{cs_f}
+          \mathtt{merge}(\sigma,\sigma',\sigma'')
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{Null}} \\
+    {\begin{prooftree}
+        \infer0
+        {
+          \mathcal{D},\Delta,\sigma\vdash\mathtt{null}\xrightarrow{cs_f}\sigma
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+\end{table}
+
+In Table~\ref{tab:cs-eval}, the evaluation of a process statement
+modifies the signal store by executing the body of the process under
+the current simulation flag $f$. The evaluation of design
+instantiation statement modifies both the signal store and the design
+instance store of the embedding design. The current state of the
+design instance $id_c$ and its elaborated version, namely $\sigma_c$
+and $\Delta_c$, are retrieved from the elaborated design $\Delta$ and
+the state $\sigma$ (i.e. the elaborated version and the current state
+of the embedding design). The design instance $id_c$ is an
+instantiation of the design $id_e$ and thus to execute the design
+instance $id_c$ amounts to execute the behavior of the design
+$id_e$. The behavior of the design $id_e$ is retrieved from the design
+store $\mathcal{D}$. Then, the evaluation of the design instance
+$id_c$ follows a three-step procedure: first, the input port map of
+the design instance is evaluated and produces a new signal store
+$\mathcal{S}'_c$; second, the internal behavior of the design instance
+is executed under the simulation flag $f$ and with the new signal
+store $\mathcal{S}'_c$ resulting from the evaluation of the input port
+map as input; third, the output port map of the design instance is
+executed and modifies the signal store of the embedding design to
+yield a signal store $\mathcal{S}'$. Finally, $\mathcal{S}'$ becomes
+the signal store of the resulting state, and the state associated with
+the design instance $id_c$ is overriden with the new state
+$\sigma''_c$ in the design instance store $\mathcal{C}$.  The
+evaluation of the parallel composition of two concurrent statements
+$cs$ and $cs'$ executes the two statements individually with the same
+starting state $\sigma$. The individual execution of the concurrent
+statements yields two states $\sigma'$ and $\sigma''$. These states
+are merged together, thanks to the \texttt{merge} function, with the
+origin state $\sigma$ to yield the state resulting from the evaluation
+of the parallel composition.
+
+As presented in Listing~\ref{lst:merge-functionr}, the \texttt{merge}
+returns a new state based on the parameters $\sigma$, $\sigma'$ and
+$\sigma''$. Here, $\sigma$ is intended to be an origin state, and
+$\sigma'$ and $\sigma''$ are two states resulting from the execution
+of two different concurrent statements. For each signal identifier
+$id$, the signal store of the resulting state yields the freshest
+value for $id$. If the value of $id$ has changed from state $\sigma$
+to state $\sigma'$, then the value of $id$ at state $\sigma'$ is
+returned. If the value of $id$ has changed from state $\sigma$ to
+state $\sigma''$, then the value of $id$ at state $\sigma''$ is
+returned; otherwise, the value of $id$ at state $\sigma$ is returned
+(i.e. the value of $id$ has not changed). 
+% We choose to remove from the side condition of the rule
+% \textsc{Par} that was stating the absence of multiply-driven signal,
+% and of twin design instances. The two can be obtain after a successful
+% elaboration phase.
 
 \begin{lstlisting}[language=PseudoCoq,label={lst:merge-functionr},
 caption={[The \texttt{merge} function.] The \texttt{merge} function that fuses together an origin state $\sigma$, with two states $\sigma'$ and $\sigma''$ generated by the execution of two \hvhdl{} concurrent statements.},framexleftmargin=1.5em,xleftmargin=2em,numbers=left,
@@ -1218,111 +1369,30 @@ Definition merge($\sigma$, $\sigma'$, $\sigma''$) :=
    ($\mathcal{S}_m$, $\mathcal{C}_m$).
 \end{lstlisting}
 
-The \texttt{merge} function is correct if the three input design
-states assume the same domains in their signal store and design
-instance store, and also if there are no multiply driven signal,
-i.e. a signal that would have a value that is different from the
-original signal store $\mathcal{S}$ in both signal stores
-$\mathcal{S}'$ and $\mathcal{S}''$. In practice, the case where a
-design instance identifier could be associated with a different state
-in both design instance store $\mathcal{C}'$ and $\mathcal{C''}$ is
-not possible. Such a case could only arise if two design instances
-with the same identifier exist in a design's behavior, and such a
-design can never be elaborated.
-
-\begin{table}[!h]
-  \begin{tabular}{@{}l}
-    {\fontsize{10}{13}\selectfont\textsc{Ps}} \\
-    {\begin{prooftree}[template=\inserttext]
-        
-        % Runs seq.
-        \hypo{$\Delta,\mathcal{S},\mathcal{S},\Lambda\vdash{}ss\xrightarrow{ss_f}{}\mathcal{S}',\Lambda'$}
-
-        % Conlcusion.
-        \infer1
-        [{
-          \begin{tabular}{@{}l}
-            $\Delta(id)=\lfloor\Lambda\rfloor$\\
-            $\sigma=(\mathcal{S},\mathcal{C})$ \\
-          \end{tabular}
-        }]
-        {
-          $\mathcal{D},\Delta,\sigma\vdash$
-          $\mathtt{ps}(id, vars, ss)$
-          $\xrightarrow{cs_f}(\mathcal{S}',\mathcal{C})$
-        }
-      \end{prooftree}} \\
-  \end{tabular}
-  \begin{tabular}{@{}l}
-    {\fontsize{10}{13}\selectfont\textsc{Comp}} \\
-    {\begin{prooftree}[template=\inserttext]
-        
-        % Builds mapping for in ports.
-        \hypo{$\Delta,\Delta_c,\mathcal{S},\mathcal{S}_c\vdash{}i\xrightarrow{mip}\mathcal{S}'_c$}
-        
-        % Executes component instance behavior.
-        \infer[no rule]1{$\mathcal{D},\Delta_c,(\mathcal{S}'_c,\mathcal{C}_c)\vdash{}d.behavior\xrightarrow{cs_f}\sigma_c''$}
-        
-        % Builds mapping for out ports.
-        \infer[no rule]1{
-          $\Delta,\Delta_c,\mathcal{S},\mathcal{S}_c''\vdash$
-          $o$
-          $\xrightarrow{mop}$
-          $\mathcal{S}'$
-        }
-        
-        % Conclusion.
-        \infer1
-        [{\renewcommand{\arraystretch}{1.5}
-          \begin{tabular}{@{}l}
-            $\mathcal{D}(id_e)=\lfloor{}d\rfloor$ \\
-            $\Delta(id_c)=\lfloor\Delta_c\rfloor$\\
-            $\sigma(id_c)=\lfloor\sigma_c\rfloor$ \\
-            $\sigma=(\mathcal{S},\mathcal{C})$\\
-            $\sigma_c=(\mathcal{S}_c,\mathcal{C}_c)$ \\
-            $\sigma''_c=(\mathcal{S}''_c,\mathcal{C}''_c)$ \\
-          \end{tabular}
-        }]
-        {
-          $\mathcal{D},\Delta,\sigma\vdash$
-          $\mathtt{comp}(id_c, id_e, g, i, o)$          
-          $\xrightarrow{cs_f}$
-          $(\mathcal{S}',\mathcal{C}(id_c)\leftarrow{}\sigma''_c)$
-        }
-      \end{prooftree}} \\
-  \end{tabular}
-
-  \begin{tabular}{l}
-    {\fontsize{10}{13}\selectfont\textsc{Par}} \\
-    {\begin{prooftree}
-        \hypo{\mathcal{D},\Delta,\sigma\vdash{}cs\xrightarrow{cs_f}\sigma'}
-        \hypo{\mathcal{D},\Delta,\sigma\vdash{}cs'\xrightarrow{cs_f}\sigma''}
-        \infer2{
-          \mathcal{D},\Delta,\sigma\vdash{}cs~\mathtt{||}~{}cs'\xrightarrow{cs_f}
-          \mathtt{merge}(\sigma,\sigma',\sigma'')
-        }
-      \end{prooftree}} \\
-  \end{tabular}
-  \begin{tabular}{l}
-    {\fontsize{10}{13}\selectfont\textsc{Null}} \\
-    {\begin{prooftree}
-        \infer0
-        {
-          \Delta,\sigma\vdash\mathtt{null}\xrightarrow{cs_f}\sigma
-        }
-      \end{prooftree}} \\
-  \end{tabular}
-\end{table}
-
-\noindent{}where $f\in\{i,\uparrow,\downarrow,c\}$. The $i$ flag
-(resp. $\uparrow,\downarrow,c$) stands for the evaluation of
-concurrent statements during the initialization phase (resp.  rising
-edge, falling edge and stabilization phases).
-
-We choose to remove from the side condition of the rule \textsc{Par}
-that was stating the absence of multiply-driven signal, and of twin
-design instances. The two can be obtain after a successful elaboration
+For the \texttt{merge} function to be sound, there must be no signal
+identifier, or design instance identifier, that has a value different
+from $\sigma$ in both $\sigma'$ and $\sigma''$. For a signal
+identifier, this refers to a case of multiply-driven signal, i.e. a
+signal that is assigned in two different concurrent statements. For a
+design instance identifier, this refers to a case of \textit{twin}
+design instances, i.e. two design instances with the same
+identifier. Both cases are prevented by a successful elaboration
 phase.
+
+% The \texttt{merge} function is correct if the three input design
+% states assume the same domains in their signal store and design
+% instance store, and also if there are no multiply driven signal,
+% i.e. a signal that would have a value that is different from the
+% original signal store $\mathcal{S}$ in both signal stores
+% $\mathcal{S}'$ and $\mathcal{S}''$. In practice, the case where a
+% design instance identifier could be associated with a different state
+% in both design instance store $\mathcal{C}'$ and $\mathcal{C''}$ is
+% not possible. Such a case could only arise if two design instances
+% with the same identifier exist in a design's behavior, and such a
+% design can never be elaborated.
+
+
+
 
 %%% Local Variables:
 %%% mode: latex
