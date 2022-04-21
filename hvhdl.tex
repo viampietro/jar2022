@@ -1391,8 +1391,224 @@ phase.
 % with the same identifier exist in a design's behavior, and such a
 % design can never be elaborated.
 
+\subsubsection{Simulation phases}
+\label{subsubsec:sim-phases}
+
+The simulation of a \hvhdl{} design goes through multiple phases. Each
+phase is related to the execution of a particular part of the design's
+behavior.
+
+\paragraph{Stabilization}
+
+During a stabilization phase, all the combinational parts of a
+design's behavior are executed. In the \hvhdl{} language, all
+statements that are not enclosed in falling or rising blocks are
+considered as combinational statements (with the exception of the
+first part of reset blocks), and are thus executed during the
+stabilization phase. In Table~\ref{tab:stabilization}, we define the
+stabilization phase through a stabilization relation written
+$\mathcal{D},\Delta,\sigma\vdash{}cs\xrightarrow{\rightsquigarrow}\sigma'$,
+where $\mathcal{D}\in{}id\nrightarrow{}design$ is a design store,
+$\Delta\in{}ElDesign$ is the elaborated version of the design being
+simulated, $\sigma\in{}\Sigma$ is the design state at the beginning of
+the stabilization phase, $cs$ is a concurrent statement representing
+the behavior of the design being simulated, and $\sigma'\in\Sigma$ is
+the design state at the end of the stabilization phase.
+
+\begin{table}[!h]
+  \caption{Evaluation of a \hvhdl{} design's behavior during a
+    stabilization phase.}
+  \label{tab:stabilization}
+  
+  \begin{tabular}{@{}l}
+    % {\fontsize{10}{13}\selectfont\textsc{StabilizeEnd}} \\    
+    {\begin{prooftree}[template=\inserttext]
+
+        \hypo{$\mathcal{D},\Delta,\sigma\vdash{}cs\xrightarrow{cs_c}\sigma'$}
+        \infer1[$\sigma\stackrel{\Sigma}{=}\sigma'$]
+        {
+          $\mathcal{D},\Delta,\sigma\vdash{}cs\xrightarrow{\rightsquigarrow}\sigma'$
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+  \begin{tabular}{l}
+    % {\fontsize{10}{13}\selectfont\textsc{StabilizeLoop}} \\
+    {\begin{prooftree}[template=\inserttext]
+        \hypo{$\mathcal{D},\Delta,\sigma\vdash{}cs\xrightarrow{cs_c}\sigma'$}
+        \hypo{$\mathcal{D},\Delta,\sigma'\vdash{}cs\xrightarrow{\rightsquigarrow}\sigma''$}
+        \infer2[$\sigma\stackrel{\Sigma}{\neq}\sigma'$]
+        {
+          $\mathcal{D},\Delta,\sigma\vdash{}cs\xrightarrow{\rightsquigarrow}\sigma''$
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+\end{table}
+
+As expressed in Table~\ref{tab:stabilization}, if after the execution
+of $cs$, the starting state and the resulting state are equal
+(i.e. the evaluation of the behavior does no longer affect the value
+of signals or design instance states) regarding the
+$\stackrel{\Sigma}{=}$ relation, then a stable state has been reached
+and the stabilization phase ends.  Otherwise, the behavior is executed
+with the resulting state as input until a stable state is reached. Note
+that in the presence of combinational loops (i.e. when a signal that
+is the target of an assignment operation refers to its own value in
+the right part of the assignment), the execution of a design's
+behavior possibly leads to an infinite stabilization loop.
+
+The state equality relation is inductively defined as follows: two
+states $\sigma,\sigma'\in{}\Sigma$ are \textit{state}-equal if the
+value of the signals referenced in their signal store are equal, and
+if the state of all design instances referenced in their design
+instance store are state-equal. Namely:
+$\sigma\stackrel{\Sigma}{=}\sigma'\equiv
+\big(\forall{}id_s,~\mathcal{S}(\sigma)(id_s)=\mathcal{S}(\sigma')(id_s)\big)
+\land\big(\forall{}id_c,~\mathcal{C}(\sigma)(id_c)\stackrel{\Sigma}{=}\mathcal{C}(\sigma')(id_c)\big)$
+
+% \begin{table}[!h]
+
+%   \caption{Evaluation of a \hvhdl{} design's behavior during the
+%     initialization phase.}
+%   \label{tab:init}
+  
+%   % {\fontsize{10}{13}\selectfont\textsc{Init}}
+%   \begin{prooftree}[template=\inserttext]
+
+%     % Run all processes once.
+%     \hypo{$\mathcal{D},\Delta,\sigma\vdash\mathrm{cs}\xrightarrow{cs_i}{}\sigma'$}
+
+%     % Stabilization phase after runinit.
+%     \hypo{$\mathcal{D},\Delta,\sigma'\vdash\mathrm{cs}\xrightarrow{\rightsquigarrow}{}\sigma_0$}
+
+%     % Conclusion.
+%     \infer2
+%     {
+%       $\mathcal{D},\Delta,\sigma\vdash\mathrm{cs}\xrightarrow{init}\sigma_0$
+%     }
+
+%   \end{prooftree}
+% \end{table}
+
+\paragraph{Main loop and full simulation}
+
+\begin{definition}[Input port values update]
+  Given a simulation environment
+  $E_p\in\mathbb{N}\rightarrow(id\nrightarrow{}v)$, let us define the
+  function that update of the value of signals at a given design state
+  $\sigma\in\Sigma$ and clock cycle count $\tau\in{}\mathbb{N}$. The
+  function is defined as follows:
+  $\mathtt{inj}(\sigma,E_p,\tau)=(\mathcal{S}_i,\mathcal{C})$ where
+  $\sigma=(\mathcal{S},\mathcal{C})$, and $\mathcal{S}_i(x)=\begin{cases}
+                                                  E_p(\tau)(x) & \mathrm{if}~x\in\mathtt{dom}(E_p(\tau)) \\
+                                                  \mathcal{S}(x)& \mathrm{otherwise} \\
+ \end{cases}$.
+\end{definition}
+
+% \begin{table}[!h]
+%   % {\fontsize{10}{13}\selectfont\textsc{Cycle}}
+  
+%   \begin{prooftree}[template=\inserttext]
+
+%     % Rising
+%     \hypo{$\mathcal{D},\Delta,\mathtt{inject}(\sigma,E_p,\tau)\vdash{}cs\xrightarrow{cs_\uparrow}\sigma_\uparrow$}
+
+%     % Stabilize after rising.
+%     \hypo{$\mathcal{D},\Delta,\sigma_\uparrow\vdash{}cs\xrightarrow{\rightsquigarrow}\sigma'$}
+
+%     % Falling
+%     \hypo{$\mathcal{D},\Delta,\sigma'\vdash{}cs\xrightarrow{cs_\downarrow}\sigma_\downarrow$}
+    
+%     % Stabilize after falling.
+%     \hypo{$\mathcal{D},\Delta,\sigma_\downarrow\vdash{}cs\xrightarrow{\rightsquigarrow}\sigma''$}
+    
+%     \infer4 [{}] {
+%       $\mathcal{D},E_p,\Delta,\tau,\sigma\vdash{}cs\xrightarrow{\uparrow,\downarrow}$
+%       $\sigma',\sigma''$ }
+%   \end{prooftree}
+% \end{table}
+
+\begin{table}[!h]
+  \caption{Simulation main loop}
+  \label{tab:sim-loop}
+  
+    \begin{tabular}{l}
+    % SIMULATION LOOP
+    
+    % {\fontsize{10}{13}\selectfont\textsc{SimLoop}} \\
+    
+    {\begin{prooftree}[template=\inserttext]
+        
+        % First column.
+        % Rising
+        \hypo{$\mathcal{D},\Delta,\mathtt{inj}(\sigma,E_p,\tau)\vdash{}cs\xrightarrow{cs_\uparrow}\sigma_\uparrow$}
+
+        % Stabilize after rising.
+        \infer[no rule]1{$\mathcal{D},\Delta,\sigma_\uparrow\vdash{}cs\xrightarrow{\rightsquigarrow}\sigma'$}
+
+        % Falling
+        \infer[no rule]1{$\mathcal{D},\Delta,\sigma'\vdash{}cs\xrightarrow{cs_\downarrow}\sigma_\downarrow$}
+        
+        % Stabilize after falling.
+        \infer[no rule]1{$\mathcal{D},\Delta,\sigma_\downarrow\vdash{}cs\xrightarrow{\rightsquigarrow}\sigma''$}
+
+        % Second column.
+        \hypo{$\mathcal{D},E_p,\Delta,\tau-1,\sigma''\vdash{}cs\rightarrow\theta$}
+        
+        \infer2 [$\tau>0$] {
+          $\mathcal{D},E_p,\Delta,\tau,\sigma\vdash{}cs\rightarrow(\sigma'
+          :: \sigma'' :: \theta)$ }
+      \end{prooftree}} \\
+  \end{tabular}
+
+  \vspace{10pt}
+  
+  \begin{tabular}{l}
+    %%% SIMULATION END.
+    
+    % {\fontsize{10}{13}\selectfont\textsc{SimEnd}} \\
+    
+    {\begin{prooftree}[template=\inserttext]
+        \infer0 {
+          $\mathcal{D},E_p,\Delta,0,\sigma\vdash{}cs\rightarrow{}[~]$
+        }
+      \end{prooftree}} \\
+  \end{tabular}
+
+\end{table}
 
 
+\begin{table}[!h]
+  % {\fontsize{10}{13}\selectfont\textsc{FullSim}}
+  
+  \begin{prooftree}[template=\inserttext]
+
+    % Design elab.
+    \hypo{$\mathcal{D},\mathcal{M}_g\vdash{}d\xrightarrow{elab}\Delta,\sigma$}
+
+    % Initialization.
+    
+    % Run all processes once.
+    \hypo{$\mathcal{D},\Delta,\sigma\vdash{}d.cs\xrightarrow{cs_i}{}\sigma'$}
+
+    % Stabilization phase after runinit.
+    \infer[no rule]1{$\mathcal{D},\Delta,\sigma'\vdash{}d.cs\xrightarrow{\rightsquigarrow}{}\sigma_0$}
+    
+    % Simulation loop.
+    \hypo{$\mathcal{D},E_p,\Delta,\tau,\sigma_0\vdash{}{}d.cs\rightarrow\theta$}
+    
+    \infer3 [$\mathsf{dom}(E_p)\subseteq{}I(\Delta)$] { $\mathcal{D},\mathcal{M}_g,E_p,\tau\vdash$
+      ${}d\xrightarrow{full}(\sigma_0::\theta)$ }
+  \end{prooftree}
+\end{table}
+
+During the initialization phase, the first part of reset blocks are
+executed. This execution corresponds to the virtual activation of a
+reset signal at the beginning of the simulation. This reset signal
+triggers the execution of certain part of the behavior responsible for
+the initialization of the value of certain signal, which are all
+associated to an implicit default value
+otherwise. Table~\ref{tab:init} presents the initialization relation
+written $\mathcal{D},\Delta,\sigma\vdash{}cs\xrightarrow{init}$
 
 %%% Local Variables:
 %%% mode: latex
