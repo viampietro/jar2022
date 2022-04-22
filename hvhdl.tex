@@ -161,7 +161,7 @@ to the other parts of the embedding design through a input port
     $design$ & ::= $\{{}gens=\{(id,\tau,e)^{*}\},$ & generic constants \\
     & \quad\quad${}ports=\{((\mathtt{in}\vert\mathtt{out}),id,\tau)^{*}\},$ & input and output ports \\
     & \quad\quad${}sigs=\{(id,\tau)^{*}\},$ & internal signals \\
-    & \quad\quad${}behavior=cs\}$ & design behavior \\
+    & \quad\quad${}beh=cs\}$ & design behavior \\
     & & \\
     \hline
   \end{tabular}
@@ -1197,9 +1197,8 @@ port does not impact the signal store of the embedding design.
 
 Concurrent statements define the behavior of a \hvhdl{} design. The
 execution of concurrent statements modify the state of the \hvhdl{}
-design that is currently simulated. Table~\ref{tab:cs-eval} describes
-the relation that evaluates concurrent statements. The relation is
-written
+design under simulation. Table~\ref{tab:cs-eval} describes the
+relation that evaluates concurrent statements. The relation is written
 $\mathcal{D},\Delta,\sigma\vdash{}cs\xrightarrow{cs_f}\sigma'$, where
 $\mathcal{D}\in{}id\nrightarrow{}design$ is a design store,
 $\Delta\in{}ElDesign$ is an elaborated design, $\sigma\in\Sigma$ is
@@ -1333,17 +1332,17 @@ origin state $\sigma$ to yield the state resulting from the evaluation
 of the parallel composition.
 
 As presented in Listing~\ref{lst:merge-functionr}, the \texttt{merge}
-returns a new state based on the parameters $\sigma$, $\sigma'$ and
-$\sigma''$. Here, $\sigma$ is intended to be an origin state, and
-$\sigma'$ and $\sigma''$ are two states resulting from the execution
-of two different concurrent statements. For each signal identifier
-$id$, the signal store of the resulting state yields the freshest
-value for $id$. If the value of $id$ has changed from state $\sigma$
-to state $\sigma'$, then the value of $id$ at state $\sigma'$ is
-returned. If the value of $id$ has changed from state $\sigma$ to
+function returns a new state based on the parameters $\sigma$,
+$\sigma'$ and $\sigma''$. Here, $\sigma$ is intended to be an origin
+state, and $\sigma'$ and $\sigma''$ are two states resulting from the
+execution of two different concurrent statements. For each signal
+identifier $id$, the signal store of the resulting state yields the
+freshest value for $id$. If the value of $id$ has changed from state
+$\sigma$ to state $\sigma'$, then the value of $id$ at state $\sigma'$
+is returned. If the value of $id$ has changed from state $\sigma$ to
 state $\sigma''$, then the value of $id$ at state $\sigma''$ is
 returned; otherwise, the value of $id$ at state $\sigma$ is returned
-(i.e. the value of $id$ has not changed). 
+(i.e. the value of $id$ has not changed).
 % We choose to remove from the side condition of the rule
 % \textsc{Par} that was stating the absence of multiply-driven signal,
 % and of twin design instances. The two can be obtain after a successful
@@ -1391,17 +1390,32 @@ phase.
 % with the same identifier exist in a design's behavior, and such a
 % design can never be elaborated.
 
-\subsubsection{Simulation phases}
-\label{subsubsec:sim-phases}
+\subsubsection{The simulation algorithm}
+\label{subsubsec:sim-algo}
 
-The simulation of a \hvhdl{} design goes through multiple phases. Each
-phase is related to the execution of a particular part of the design's
-behavior.
+Now, let us introduce our formalization of the simulation algorithm
+devised specifically for \hvhdl{} designs. Our algorithm is much
+simpler than the one expressed in the \vhdl{} LRM\cite{VHDL2000} and
+in other formalization of the \vhdl{} language
+semantics\cite{Borger1995}, mostly due to the fact that we are
+targetting a very precise subset of the language, free of time
+constructs and with explicit synchronous blocks, aimed at the
+expression of designs both synthesizable and synchronous. Our
+simulation algorithm is fit for all such designs. Our aim is to
+simplify as much as possible our formal setting to ease the proof of
+semantic preservation and its mechanization. Simplifying as much as
+possible the simulation algorithm will lead to straight-forward
+reasoning at the time of proofs, whereas the formalization of
+fully-fledged simulation algorithm, however not deprived of interests
+(e.g. to set the formal specification of a \vhdl{} simulator), will
+only contribute to add complexity to our proofs.
 
 \paragraph{Stabilization}
 
-During a stabilization phase, all the combinational parts of a
-design's behavior are executed. In the \hvhdl{} language, all
+The simulation of a \hvhdl{} design goes through multiple phases. Each
+phase is related to the execution of a particular part of the design's
+behavior. During a stabilization phase, all the combinational parts of
+a design's behavior are executed. In the \hvhdl{} language, all
 statements that are not enclosed in falling or rising blocks are
 considered as combinational statements (with the exception of the
 first part of reset blocks), and are thus executed during the
@@ -1491,41 +1505,28 @@ $\sigma\stackrel{\Sigma}{=}\sigma'\equiv
 
 \paragraph{Main loop and full simulation}
 
-\begin{definition}[Input port values update]
-  Given a simulation environment
-  $E_p\in\mathbb{N}\rightarrow(id\nrightarrow{}v)$, let us define the
-  function that update of the value of signals at a given design state
-  $\sigma\in\Sigma$ and clock cycle count $\tau\in{}\mathbb{N}$. The
-  function is defined as follows:
-  $\mathtt{inj}(\sigma,E_p,\tau)=(\mathcal{S}_i,\mathcal{C})$ where
-  $\sigma=(\mathcal{S},\mathcal{C})$, and $\mathcal{S}_i(x)=\begin{cases}
-                                                  E_p(\tau)(x) & \mathrm{if}~x\in\mathtt{dom}(E_p(\tau)) \\
-                                                  \mathcal{S}(x)& \mathrm{otherwise} \\
- \end{cases}$.
-\end{definition}
 
-% \begin{table}[!h]
-%   % {\fontsize{10}{13}\selectfont\textsc{Cycle}}
-  
-%   \begin{prooftree}[template=\inserttext]
 
-%     % Rising
-%     \hypo{$\mathcal{D},\Delta,\mathtt{inject}(\sigma,E_p,\tau)\vdash{}cs\xrightarrow{cs_\uparrow}\sigma_\uparrow$}
-
-%     % Stabilize after rising.
-%     \hypo{$\mathcal{D},\Delta,\sigma_\uparrow\vdash{}cs\xrightarrow{\rightsquigarrow}\sigma'$}
-
-%     % Falling
-%     \hypo{$\mathcal{D},\Delta,\sigma'\vdash{}cs\xrightarrow{cs_\downarrow}\sigma_\downarrow$}
-    
-%     % Stabilize after falling.
-%     \hypo{$\mathcal{D},\Delta,\sigma_\downarrow\vdash{}cs\xrightarrow{\rightsquigarrow}\sigma''$}
-    
-%     \infer4 [{}] {
-%       $\mathcal{D},E_p,\Delta,\tau,\sigma\vdash{}cs\xrightarrow{\uparrow,\downarrow}$
-%       $\sigma',\sigma''$ }
-%   \end{prooftree}
-% \end{table}
+The rules of Table~\ref{tab:sim-loop} define the \hvhdl{} simulation
+relation which is a relational definition of the simulation algorithm
+given in a structural \textit{small-step} setting (i.e. all
+intermediary states are preserved in a simulation trace).  The
+relation written
+$\mathcal{D},E_p,\Delta,\tau,\sigma\vdash{}cs\rightarrow\theta$. The
+\hvhdl{} simulation relation associates the execution of a behavior
+$cs$ with a simulation trace $\theta\in\mathtt{list}(\Sigma)$ in a
+context $\mathcal{D},E_p,\Delta,\tau,\sigma$ where
+$\mathcal{D}\in{}id\nrightarrow{}design$ is a design store,
+$E_p\in\mathbb{N}\rightarrow(id\nrightarrow{}v)$ is a simulation
+environment that will be used to update the value of primary input
+ports at the beginning of each simulation cycle, $\Delta\in{}ElDesign$
+is the elaborated version of the design under simulation, $\tau$ is
+the number of clock cycles to be performed during the simulation, and
+$\sigma$ is the design state at the beginning of the simulation. The
+simulation trace $\theta$, which is a list of time-ordered design
+states, is the result of the execution of the design behavior $cs$
+during $\tau$ clock cycles. Here, $cs$ represents the behavior of the
+\hvhdl{} design under simulation.
 
 \begin{table}[!h]
   \caption{Simulation main loop}
@@ -1533,7 +1534,6 @@ $\sigma\stackrel{\Sigma}{=}\sigma'\equiv
   
     \begin{tabular}{l}
     % SIMULATION LOOP
-    
     % {\fontsize{10}{13}\selectfont\textsc{SimLoop}} \\
     
     {\begin{prooftree}[template=\inserttext]
@@ -1573,11 +1573,85 @@ $\sigma\stackrel{\Sigma}{=}\sigma'\equiv
         }
       \end{prooftree}} \\
   \end{tabular}
-
 \end{table}
 
 
+The \hvhdl{} simulation relation is defined through two rule
+instances.  In the case where $\tau$ is equal to zero, the simulation
+ends and the execution of $cs$ returns an empty trace. In the case
+where $\tau$ is greater than zero, one simulation cycle is performed
+with $\sigma$ as the starting state. At the beginning of the cycle,
+the value of the input ports of the design under simulation are
+updated with the values yielded by the simulation environment $E_p$ at
+clock count $\tau$. Given a simulation environment
+$E_p\in\mathbb{N}\rightarrow(id\nrightarrow{}v)$, the \texttt{inj}
+function that update of the value of signals at a given design state
+$\sigma\in\Sigma$ and clock cycle count $\tau\in{}\mathbb{N}$ is
+defined as follows:
+$\mathtt{inj}(\sigma,E_p,\tau)=(\mathcal{S}_i,\mathcal{C})$ where
+$\sigma=(\mathcal{S},\mathcal{C}), $ and $\mathcal{S}_i(x)=
+\begin{cases}
+  E_p(\tau)(x) & \mathrm{if}~x\in\mathtt{dom}(E_p(\tau)) \\
+  \mathcal{S}(x) & \mathrm{otherwise}
+\end{cases}$.
+
+After the update of the input ports, the following sequence performs
+the different phases of a clock cycle. First, all rising blocks
+defined in the behavior of the design under simulation are
+executed. The rising blocks correspond to the part of the design
+behavior that are sensitive to the rising edge event of the clock
+signal. % Remember that a \hvhdl{} design represents a synchronous
+% design, meaning that its execution is synchronized with a clock
+% signal.
+The $\uparrow$ flag is appended to the evaluation relation for
+concurrent statements to execute rising blocks. Then, follows a
+stabilization phase that produces a stable state $\sigma'$. After
+that, the falling blocks are executed in response to the occurrence of
+the falling edge event of the clock signal. To the execution of the
+falling blocks also follows a stabilization phase that produces a
+stable state $\sigma''$.  Then, the \hvhdl{} simulation relation calls
+itself recursively with a decremented cycle count and state $\sigma''$
+as the starting state. The recursive call yields a trace $\theta$
+which is appended to the states $\sigma'$ and $\sigma''$ to form the
+final simulation trace. Note that we preserve in the simulation trace
+only stable states, i.e. states at half a clock cycle and states at
+the end of a clock cycle.
+
+Table~\ref{tab:full-sim} presents the relation that formalizes our
+entire simulation algorithm by appealing to the elaboration relation
+(that do not present in this article, but which content is detailled
+here\cite{Iampietro2021}), and to the simulation relation presented in
+Table~\ref{tab:sim-loop}. The full simulation relation states that the
+simulation of a design $d$ during $\tau$ clock cycles yields the trace
+$(\sigma_0::\theta)$ in the context of the design store
+$\mathcal{D}\in{}id\nrightarrow{}design$, the dimensioning function
+$\mathcal{M}_g\in{}id\nrightarrow{}v$ (used for the elaboration of
+design $d$), and under the simulation environment
+$E_p\in\mathbb{N}\rightarrow(id\nrightarrow{}v)$. Here $\sigma_0$
+represents the initial state of the design. The initial is computed
+through an initialization phase consisting of the execution of the
+first part of reset blocks (the $i$ flag is on) followed by a
+stabilization phase. The execution of reset blocks corresponds to the
+virtual activation of a reset signal at the beginning of the
+simulation. This reset signal triggers the execution of certain part
+of the behavior responsible for the initialization of the value of
+chosen signals, which are all associated to an implicit default value
+otherwise\footnote{In the default state, i.e. the state yielded after
+  the elaboration of a design, all signals have are associated to the
+  implicit default value of their type in the signal store. }. Then,
+the simulation trace $\theta$ is the result of the simulation of
+design $d$ during $\tau$ clock cycles with $\sigma_0$ as starting
+state. As a side condition, we enforce the fact that, at every clock
+count of the simulation, the definition domain of the simulation
+environment is a subset of the input port identifiers. Otherwise, the
+update of signal values happening at the beginning of a clock cycle
+possibly the value of signals other than input ports.
+
+
 \begin{table}[!h]
+
+  \caption{Full simulation}
+  \label{tab:full-sim}
   % {\fontsize{10}{13}\selectfont\textsc{FullSim}}
   
   \begin{prooftree}[template=\inserttext]
@@ -1588,27 +1662,19 @@ $\sigma\stackrel{\Sigma}{=}\sigma'\equiv
     % Initialization.
     
     % Run all processes once.
-    \hypo{$\mathcal{D},\Delta,\sigma\vdash{}d.cs\xrightarrow{cs_i}{}\sigma'$}
+    \hypo{$\mathcal{D},\Delta,\sigma\vdash{}d.beh\xrightarrow{cs_i}{}\sigma'$}
 
-    % Stabilization phase after runinit.
-    \infer[no rule]1{$\mathcal{D},\Delta,\sigma'\vdash{}d.cs\xrightarrow{\rightsquigarrow}{}\sigma_0$}
+    % Stabilization phase after init.
+    \infer[no rule]1{$\mathcal{D},\Delta,\sigma'\vdash{}d.beh\xrightarrow{\rightsquigarrow}{}\sigma_0$}
     
-    % Simulation loop.
-    \hypo{$\mathcal{D},E_p,\Delta,\tau,\sigma_0\vdash{}{}d.cs\rightarrow\theta$}
+    % Simulation main loop.
+    \infer[no rule]1{$\mathcal{D},E_p,\Delta,\tau,\sigma_0\vdash{}{}d.beh\rightarrow\theta$}
     
-    \infer3 [$\mathsf{dom}(E_p)\subseteq{}I(\Delta)$] { $\mathcal{D},\mathcal{M}_g,E_p,\tau\vdash$
+    \infer2 [$\forall\tau_i\in\mathbb{N},~\mathsf{dom}(E_p)(\tau_i)\subseteq{}\mathsf{dom}(I(\Delta))$] { $\mathcal{D},\mathcal{M}_g,E_p,\tau\vdash$
       ${}d\xrightarrow{full}(\sigma_0::\theta)$ }
   \end{prooftree}
 \end{table}
 
-During the initialization phase, the first part of reset blocks are
-executed. This execution corresponds to the virtual activation of a
-reset signal at the beginning of the simulation. This reset signal
-triggers the execution of certain part of the behavior responsible for
-the initialization of the value of certain signal, which are all
-associated to an implicit default value
-otherwise. Table~\ref{tab:init} presents the initialization relation
-written $\mathcal{D},\Delta,\sigma\vdash{}cs\xrightarrow{init}$
 
 %%% Local Variables:
 %%% mode: latex
