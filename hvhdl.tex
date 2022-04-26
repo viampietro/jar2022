@@ -238,53 +238,89 @@ a set of input and output ports (i.e. $ports$), and a set of internal
 signals (i.e. $sigs$). Finally, a design declares an internal behavior
 (i.e. $behavior$) which is defined by a concurrent statement.
 
+Table~\ref{tab:design-hvhdl-vhdl} presents the correspondence between
+a design described in concrete \vhdl{} syntax and its equivalent in
+\hvhdl{} syntax. A \hvhdl{} design merges together the couple
+entity-architecture which the way to describe a hardware in
+\vhdl{}. The declarative parts of the entity-architecture couple find
+their equivalent in $gens$, $ports$ and $sigs$ sets on the \hvhdl{}
+side. The type indications of variables and signals are converted from
+the concrete syntax to match our type system: \texttt{std\_logic}
+becomes the \texttt{bool} type, vectors are converted into arrays,
+etc. Note that although the \texttt{clk} and \texttt{rst} signals,
+i.e. the synchronization signal and the reset signal of the design,
+are explicitly declared as input ports in the entity port clause, they
+are not registered as input ports in \hvhdl{} syntax as these two
+signals are an inherent part of the system.
+
+In Table~\ref{tab:design-hvhdl-vhdl}, the behavior of the design
+corresponds the behavioral part of the architecture. It is composed of
+two processes and one design instantiation statement. The \texttt{sum}
+process is purely combinational process, i.e. its execution does not
+depend on any time-related synchronization signal. On the contrary,
+the \texttt{sout} process is a synchronous process as part of its
+statement body is executed at the occurrence of the rising edge of the
+synchronization signal. The design instantiation statement declares an
+instance of the \texttt{notgate} design. The instance is named
+\texttt{notsubcmp}. This implies that the \texttt{notgate} design has
+been previously through another entity-architecture couple. The
+\texttt{notsubcmp} design instance declares an empty generic map, and
+its port map connects the synchronization and reset signals of the
+embedding design to its own synchronization and reset input
+ports. Note that these connections are not replicated in \hvhdl{} for
+the reasons cited above.
+
 \begin{table}[!h]
-  \begin{tabular}{l|l}
-    \hline
-    & \\
-    \vhdl{} concrete syntax & \hvhdl{} abstract syntax \\
-    & \\
-    \vhdle|entity nand_gate is| &  $\{$ \\
-    \quad\vhdle|generic (ports_nb : natural := 1);| & \quad$gens=\{(\mathtt{ports\_nb}, \mathtt{nat}(0,\mathtt{NATMAX}), 1)\},$\\
-    \quad\vhdle|port (| & \quad$ports=\{$ \\
-    \quad\quad\vhdle|clk : in std_logic;| & \\ 
-    \quad\quad\vhdle|rst : in std_logic;| & \\
-    \quad\quad\vhdle|a : in std_logic_vector (0 to ports_nb $-$ 1);|
-    & \quad\quad$(\mathtt{in}, \mathtt{a}, \mathtt{array}(\mathtt{bool}, 0, \mathtt{ports\_nb}-1)),$ \\
-    \quad\quad\vhdle|o : out std_logic|
-    & \quad\quad$(\mathtt{out}, \mathtt{o}, \mathtt{bool})$ \\
-    \quad\vhdle|);| & \quad$\},$ \\
-    \vhdle|end nand_gate;| & \\
-    & \\
-    \vhdle|architecture nand_gate_arch of nand_gate is| & \\
-    \quad\vhdle|signal s : std_logic;|& \quad$sigs=\{(\mathtt{s}, \mathtt{bool})\},$\\
-    \vhdle|begin| & \quad$beh=$\\
-    \quad\vhdle|sum : process (a)|& \quad\quad $\mathtt{ps}(\mathtt{sum},$ \\
-    \quad\quad\vhdle|variable v_sum : std_logic;|& \quad\quad\quad $vars=\{(\mathtt{v\_sum}, \mathtt{bool})\},$\\
-    \quad\vhdle|begin|& \quad\quad\quad $body=$ \\
-    \quad\quad \vhdle|v_sum := 0;|& \quad\quad\quad\quad $\mathtt{v\_sum:=0};$ \\
-    \quad\quad \vhdle|for i in 0 to ports_number$-$1 loop|& \quad\quad\quad\quad $\mathtt{for}(\mathtt{i}, \mathtt{0}, \mathtt{ports\_nb}-1) \{$ \\
-    \quad\quad\quad \vhdle|v_sum := v_sum and a(i);|& \quad\quad\quad\quad\quad $\mathtt{v\_sum:=v\_sum~and~a(i)}$\\
-    \quad\quad \vhdle|end loop;|& \quad\quad\quad\quad $\};$\\
-    \quad\quad \vhdle|s <= v_sum;|& \quad\quad\quad\quad $\mathtt{s}\Leftarrow\mathtt{v\_sum}$ \\
-    \quad\vhdle|end process sum;|& \quad\quad $)$\\
-    & \quad\quad$\vert\vert$ \\
-    \quad\vhdle|sout : process (clk, rst)|& \quad\quad $\mathtt{ps}(\mathtt{sout}, vars=\emptyset, $ \\
-    \quad\vhdle|begin|& \quad\quad\quad $body=$ \\
-    \quad\quad \vhdle|if rst = '0' then o <= '0'| & \quad\quad\quad\quad $\mathtt{rst} \{~\mathtt{o}\Leftarrow\mathtt{false}~\} $ \\
-    \quad\quad \vhdle|elsif rising_edge(clk) then|& \quad\quad\quad\quad $\mathtt{else} \{~\mathtt{rising} \{\mathtt{o}\Leftarrow\mathtt{not}~\mathtt{s}\}~\}$ \\
-    \quad\quad\quad \vhdle|o <= not s;|& \quad\quad $)$ \\
-    \quad\quad \vhdle|end if;|& \\
-    \quad\vhdle|end process sout;|& \\
-    & \quad\quad $\vert\vert$ \\
-    \quad\vhdle|notsubcmp : entity notgate | & \quad\quad$\mathtt{comp}(\mathtt{notsubcmp}, \mathtt{notgate}, $\\
-    \quad\quad\vhdle|generic map ()| & \quad\quad\quad $g=\emptyset,$\\
-    \quad\quad\vhdle|port map (i=>s, no=>o);| & \quad\quad\quad $i=\{(\mathtt{i}\Rightarrow\mathtt{s})\},o=\{(\mathtt{no}\Rightarrow\mathtt{o})\}$\\
-    & \quad\quad $)$ \\
-    \vhdle|end nand_gate_arch;| & $\}$\\
-    \hline
-  \end{tabular}
-  \caption[]{ }
+  \resizebox{\textwidth}{!}{%  
+    \begin{tabular}{l|l}
+      \hline
+      & \\
+      \vhdl{} concrete syntax & \hvhdl{} abstract syntax \\
+      & \\
+      \vhdle|entity nand_gate is| &  $\{$ \\
+      \quad\vhdle|generic (ports_nb : natural := 1);| & \quad$gens=\{(\mathtt{ports\_nb}, \mathtt{nat}(0,\mathtt{NATMAX}), 1)\},$\\
+      \quad\vhdle|port (| & \quad$ports=\{$ \\
+      \quad\quad\vhdle|clk : in std_logic;| & \\ 
+      \quad\quad\vhdle|rst : in std_logic;| & \\
+      \quad\quad\vhdle|a : in std_logic_vector (0 to ports_nb $-$ 1);|
+      & \quad\quad$(\mathtt{in}, \mathtt{a}, \mathtt{array}(\mathtt{bool}, 0, \mathtt{ports\_nb}-1)),$ \\
+      \quad\quad\vhdle|o : out std_logic|
+      & \quad\quad$(\mathtt{out}, \mathtt{o}, \mathtt{bool})$ \\
+      \quad\vhdle|);| & \quad$\},$ \\
+      \vhdle|end nand_gate;| & \\
+      & \\
+      \vhdle|architecture nand_gate_arch of nand_gate is| & \\
+      \quad\vhdle|signal s : std_logic;|& \quad$sigs=\{(\mathtt{s}, \mathtt{bool})\},$\\
+      \vhdle|begin| & \quad$beh=$\\
+      \quad\vhdle|sum : process (a)|& \quad\quad $\mathtt{ps}(\mathtt{sum},$ \\
+      \quad\quad\vhdle|variable v_sum : std_logic;|& \quad\quad\quad $vars=\{(\mathtt{v\_sum}, \mathtt{bool})\},$\\
+      \quad\vhdle|begin|& \quad\quad\quad $body=$ \\
+      \quad\quad \vhdle|v_sum := 0;|& \quad\quad\quad\quad $\mathtt{v\_sum:=0};$ \\
+      \quad\quad \vhdle|for i in 0 to ports_number$-$1 loop|& \quad\quad\quad\quad $\mathtt{for}(\mathtt{i}, \mathtt{0}, \mathtt{ports\_nb}-1) \{$ \\
+      \quad\quad\quad \vhdle|v_sum := v_sum and a(i);|& \quad\quad\quad\quad\quad $\mathtt{v\_sum:=v\_sum~and~a(i)}$\\
+      \quad\quad \vhdle|end loop;|& \quad\quad\quad\quad $\};$\\
+      \quad\quad \vhdle|s <= v_sum;|& \quad\quad\quad\quad $\mathtt{s}\Leftarrow\mathtt{v\_sum}$ \\
+      \quad\vhdle|end process sum;|& \quad\quad $)$\\
+      & \quad\quad$\vert\vert$ \\
+      \quad\vhdle|sout : process (clk, rst)|& \quad\quad $\mathtt{ps}(\mathtt{sout}, vars=\emptyset, $ \\
+      \quad\vhdle|begin|& \quad\quad\quad $body=$ \\
+      \quad\quad \vhdle|if rst = '0' then o <= '0'| & \quad\quad\quad\quad $\mathtt{rst} \{~\mathtt{o}\Leftarrow\mathtt{false}~\} $ \\
+      \quad\quad \vhdle|elsif rising_edge(clk) then|& \quad\quad\quad\quad $\mathtt{else} \{~\mathtt{rising} \{\mathtt{o}\Leftarrow\mathtt{not}~\mathtt{s}\}~\}$ \\
+      \quad\quad\quad \vhdle|o <= not s;|& \quad\quad $)$ \\
+      \quad\quad \vhdle|end if;|& \\
+      \quad\vhdle|end process sout;|& \\
+      & \quad\quad $\vert\vert$ \\
+      \quad\vhdle|notsubcmp : entity notgate | & \quad\quad$\mathtt{comp}(\mathtt{notsubcmp}, \mathtt{notgate}, $\\
+      \quad\quad\vhdle|generic map ()| & \quad\quad\quad $g=\emptyset,$\\
+      \quad\quad\vhdle|port map (clk=>clk, rst=>rst, i=>s, no=>o);| & \quad\quad\quad $i=\{(\mathtt{i}\Rightarrow\mathtt{s})\},o=\{(\mathtt{no}\Rightarrow\mathtt{o})\}$\\
+      & \quad\quad $)$ \\
+      \vhdle|end nand_gate_arch;| & $\}$\\
+      &\\
+      \hline
+    \end{tabular}}
+  
+  \caption[A design in \vhdl{} and \hvhdl{}.]{A design in concrete \vhdl{} and in abstract \hvhdl{}
+    syntax.}
   \label{tab:design-hvhdl-vhdl}
 \end{table}
 
@@ -293,41 +329,41 @@ signals (i.e. $sigs$). Finally, a design declares an internal behavior
 \label{subsec:sim-semantics}
 
 The \vhdl{} Language Reference Manual\cite{VHDL2000} defines the
-semantics of a \vhdl{} design with a simulation algorithm. The
-simulation algorithm is informally presented in the LRM. Many
-formalization of the algorithm exist in the scientific
+semantics of a \vhdl{} design with an informally presented simulation
+algorithm.  Many formalization of the algorithm exist in the
+scientific
 literature\cite{Borger1995,Borrione1995,Breuer1994,Breuer1995,Breuer1995a,Deharbe1995,Dohmen1995,Fuchs1995,Goossens1995,Kloos2012,Olcoz1995,Pandey1999,Reetz1995,Shankar1997,Thirunarayan2001,VanTassel1995}. Considering
 our specific needs regarding the \vhdl{} designs generated by the
 \hilecop{} transformation, a particular simulation semantics has been
-defined for the \hvhdl{} language. We give a formal definition of the
-simulation algorithm. The simplification of the algorithm is a
-consequence of two characteristics of the \hvhdl{} designs. First, the
-\hilecop{}-generated \hvhdl{} designs are \textit{synthezisable},
-i.e. they target a physical implementation. Thus, certain constructs
-of the \vhdl{} language such as wait statements, unit-delay signal
-assignments (a.k.a. timed constructs) are not considered, as they can
-not lead to a physical implementation. Removing the timed constructs
-from the subset of \vhdl{} we are dealing with considerably simplifies
-the expression of the simulation algorithm. Second, the
-\hilecop{}-generated \hvhdl{} designs are \textit{synchronous},
-i.e. the execution of certain parts of their behavior is triggered by
-certain events of a clock signal. Thus, the expression of our
-simulation algorithm explicitly takes into account the clock signal
-events. In what follows, we give a formal definition of the simulation
-algorithm that gives a semantics to the execution of \hvhdl{}
-designs. Our semantics takes the form of a big-step operational
-semantics. Our main inspirations were the operational semantics of
-J. Van Tassel\cite{VanTassel1995}, and the denational semantics for a
-synchronous subset of \vhdl{} by D. Borrione\cite{Borrione1995}. The
-rules of the semantics will be presented in a bottom-up manner,
-starting from the evaluation of expressions to the definition of the
-whole simulation algorithm.
+defined for the \hvhdl{} language through the formalization of a
+simulation algorithm that is much simpler than the LRM definition.
+The simplification of the algorithm is a consequence of two
+characteristics of the \hvhdl{} designs. First, the
+\hilecop{}-generated \hvhdl{} designs are
+\textit{synthezisable}. Thus, certain constructs of the \vhdl{}
+language such as wait statements, unit-delay signal assignments
+(a.k.a. timed constructs) are not considered, as they can not lead to
+a physical implementation. Removing the timed constructs from the
+subset of \vhdl{} we are dealing with considerably simplifies the
+expression of the simulation algorithm. Second, the
+\hilecop{}-generated \hvhdl{} designs are \textit{synchronous}. Thus,
+the expression of our simulation algorithm explicitly takes into
+account the clock signal events. In what follows, we give a formal
+definition of the simulation algorithm that gives a semantics to the
+execution of \hvhdl{} designs. Our semantics takes the form of a
+big-step operational semantics. Our main inspirations were the
+operational semantics of J. Van Tassel\cite{VanTassel1995}, and the
+denotational semantics for a synchronous subset of \vhdl{} by
+D. Borrione and A. Salem\cite{Borrione1995}. The rules of the
+semantics will be presented in a bottom-up manner, starting from the
+evaluation of expressions to the definition of the whole simulation
+algorithm.
 
 \subsubsection{Semantic domains}
 \label{subsubsec:sem-domains}
 
-Before detailling the semantics rules, we must introduce the sets
-representing the types and values of the semantics. We must also
+Before detailing the semantics rules, we must introduce the
+representation of the types and values of the semantics. We must also
 introduce the definitions of an elaborated design, and the notion of
 design state, as the simulation of a design computes the evolution of
 a design state through multiple clock cycles.
@@ -351,47 +387,46 @@ a design state through multiple clock cycles.
   \end{tabular}    
 \end{table}
 
-In Table~\ref{tab:type-value}, the $type$ set directly reflects the
-type indication set used in the abstract syntax of \hvhdl{}. In the
-$type$ set, the bounds of a natural number range and the index range
-of an array have all been evaluated to natural numbers. In the
-\hvhdl{} semantics, a value can be a Boolean, a natural number, or an
-array of values. $\mathtt{NATMAX}$ denotes the maximum value for a
-natural number.  The $\mathtt{NATMAX}$ value depends on the
-implementation of the \textsf{VHDL} language; $\mathtt{NATMAX}$ must
-at least be equal to $2^{31}-1$.
+In Table~\ref{tab:type-value}, a type $t$ directly reflects a type
+indication $\tau$ of the abstract syntax. The difference lies in the
+interpretation of the bounds of a natural number range and the index
+range of an array. In a type $t$, these bounds have all been evaluated
+to natural numbers. In the \hvhdl{} semantics, a value can be a
+Boolean, a natural number, or an array of values. $\mathtt{NATMAX}$
+denotes the maximum value for a natural number.  The $\mathtt{NATMAX}$
+value depends on the implementation of the \textsf{VHDL} language;
+$\mathtt{NATMAX}$ must at least be equal to $2^{31}-1$.
 
-Now, let us define the structure of \textit{elaborated design}. An
-elaborated design is built during the elaboration of a \hvhdl{}
-design. Then, the elaborated design will act as a runtime environment
-in the expression of the simulation rules. The elaboration phase
-corresponds to the creation of the global environment of the
-simulation. During the elaboration phase as described in the LRM, a
-design is statically type-checked, and certain tests are performed
-regarding the well-formedness of the design (e.g. connections in port
-maps, multiply-driven signals, etc.). In the LRM, the elaboration
-phase also involves the transformation of design instantiation
-statements into \textit{block} statements; it corresponds to the
-flattening of the structure of subcomponents brought by the design
-instantiation statements. We have formally defined the elaboration
-phase through an elaboration relation. In our formalization, we do not
-take into account the transformation of design instantiation
-statements into block statements. For the purpose of the proof of
-semantic preservation, we are interested in preserving the
-hierarchical structure provided by the design instantiation
-statements, arguing that it permits us to better relate the structure
-of a SITPN model to the structure of the corresponding \hvhdl{} design
-obtained through the \hilecop{} transformation. The full formalization
-of the elaboration relation is presented here\cite{Iampietro2021}.
+Now, let us define the structure of \textit{elaborated design} which
+is the result of the elaboration phase conducted on a \hvhdl{}
+design. The elaborated version of a design will act as a global
+environment in the expression of the simulation rules. During the
+elaboration phase as described in the LRM, a design is statically
+type-checked, and certain tests are performed regarding its syntactic
+well-formedness (e.g. connections in port maps, multiply-driven
+signals, etc.). In the LRM, the elaboration phase also involves the
+transformation of design instantiation statements into \textit{block}
+statements; it corresponds to the flattening of the composite
+structure of a design.  We have formalized the elaboration phase
+through an elaboration relation. Our formalization does not take into
+account the transformation of design instantiation statements into
+block statements. For the purpose of the proof of semantic
+preservation, we are interested in preserving the hierarchical
+structure provided by design instantiation statements, arguing that it
+permits us to better relate the structure of a SITPN model to the
+structure of the corresponding \hvhdl{} design. The full formalization
+of the elaboration relation is presented
+here\cite{Iampietro2021}\todo{Maybe refer to the H-VHDL reference
+  semantics, put content on Arxiv or european equivalent. }.
 
 Let $ElDesign$ be the set of elaborated designs. An elaborated design
 is a composite environment built out of multiple sub-environments.
-Each sub-environment is a table, represented as a function, mapping
-identifiers of a certain category of constructs (e.g, input port
-identifiers) to their declaration information (e.g, type indication
-for input ports). We represent an elaborated design as a record where
-the fields are the sub-environments. An elaborated design is defined
-as follows:
+Each sub-environment is a table, represented as a partial function,
+mapping identifiers of a certain category of constructs (e.g, input
+port identifiers) to their declaration information (e.g, type
+indication for input ports). We represent an elaborated design as a
+record where the fields are the sub-environments. An elaborated design
+is defined as follows:
 
 \begin{definition}[Elaborated design]
   \label{def:elab-design}
@@ -418,13 +453,13 @@ as follows:
 \end{definition}
 
 We assume that there is no overlapping between the identifiers of the
-sub-environments of an elaborate design (i.e, an identifier belongs to
-at most one sub-environment), and also between the identifiers of the
-sub-environments and the identifiers of local environments. When there
-is no ambiguity, we write $\Delta(x)$ to denote the value returned for
-identifier $x$, where $x$ is looked up in the appropriate field of
-$\Delta$. We write $x\in\Delta$ to state that identifier $x$ is
-defined in the domain of one of $\Delta$'s field. We note
+sub-environments of an elaborated design (i.e, an identifier belongs
+to at most one sub-environment), and also between the identifiers of
+the sub-environments and the identifiers of local environments. When
+there is no ambiguity, we write $\Delta(x)$ to denote the value
+returned for identifier $x$, where $x$ is looked up in the appropriate
+field of $\Delta$. We write $x\in\Delta$ to state that identifier $x$
+is defined in the domain of one of $\Delta$'s field. We note
 $\Delta(x)\leftarrow{}v$ the overriding of the value associated to
 identifier $x$ with value $v$ in the appropriate field of $\Delta$,
 $\Delta\cup{}(x,v)$ to note the addition of the mapping from
@@ -466,8 +501,8 @@ In what follows, we use the option type to express partial functions,
 or functions that can return errors.  We write
 $f(x)=\lfloor{}y\rfloor$ to state that some value $y$ is associated
 with the input $x$ through function $f$; we write $f(x)=\emptyset$ to
-state that either $x$ is not the definition domain of $f$, or that an
-error is returned for the input $x$.
+state that either $x$ is not in the definition domain of $f$, or that
+an error is returned for the input $x$.
 
 Table~\ref{tab:expr-eval} presents the rules to evaluate the
 expressions defined in the \hvhdl{} abstract syntax. A rule instance
@@ -499,8 +534,8 @@ relation.
 In Table~\ref{tab:expr-eval}, we also give an example of evaluation of
 an indexed identifier expression in the case where the identifier is
 an input port or an internal signal. The rule checks that an array is
-associated with identifier in the signal store $\mathcal{S}$, then the
-index of reading is computed. In the \hvhdl{} language, the index
+associated with the identifier in the signal store $\mathcal{S}$, then
+the index of reading is computed. In the \hvhdl{} language, the index
 range of an array type does not necessarily start from zero. This
 feature is convenient to represent, for instance, a binary word with
 multiple composite signals, e.g. one representing bits 0 to 7, the
@@ -1091,7 +1126,7 @@ signal identifier, the $\mathcal{S}_r$ signal store is used, and the
 new value of the signal is updated in the $\mathcal{S}_w$ signal
 store.
 
-\todo[inline]{Show the example of the swap.}
+% \todo[inline]{Show the example of the swap.}
 
 Multiple signal assignment operations written in sequence must be
 interpreted as executed in parallel. For that reason, we need a
@@ -1105,10 +1140,10 @@ the execution of one statement to the other. On the contrary, variable
 assignment statements are interpreted in sequence. Each variable
 assignment modifies the local variable environment, and the modified
 environment is passed as an input to the next statement in the
-sequence. Note that, in the absence of variable assignment statements
-in its operands, the sequence operator is commutative, i.e. the order
-in which the statements of the sequence are evaluated does not impact
-the outcome of the evaluation.
+sequence. % Note that, in the absence of variable assignment statements
+% in its operands, the sequence operator is commutative, i.e. the order
+% in which the statements of the sequence are evaluated does not impact
+% the outcome of the evaluation.
 
 To evaluate the sequential statements which execution are related to
 specific parts of the simulation algorithm, we use a flag written as
@@ -1122,7 +1157,7 @@ is on ($i$ standing for \textit{initialization}). Otherwise, the
 second part of the block is interpreted.
 
 Table~\ref{tab:pmap-eval} describes the evaluation of input and output
-port maps which are parts of design instantiation statements. 
+port maps which are defined in design instantiation statements.
 
 \begin{table}[!h]
   \caption[Evaluation of port maps]{Evaluation of input and output port maps}
@@ -1267,11 +1302,11 @@ $\mathcal{S}\in{}id\nrightarrow{}v$ is the signal store of the
 embedding design, $\mathcal{S}_c\in{}id\nrightarrow{}v$ is the signal
 store of the design instance, $name$ is an input port identifier, $e$
 is an expression, and $\mathcal{S}'_c$ is the signal store resulting
-of the evaluation of the association. In Table~\ref{tab:pmap-eval}, we
-give the example of the evaluation of an association between a simple
-port identifier and an expression. The expression is evaluated in the
-context of the embedding elaborated design $\Delta$ and the signal
-store $\mathcal{S}$, and the result is assigned in signal store
+from the evaluation of the association. In Table~\ref{tab:pmap-eval},
+we give the example of the evaluation of an association between a
+simple port identifier and an expression. The expression is evaluated
+in the context of the embedding elaborated design $\Delta$ and the
+signal store $\mathcal{S}$, and the result is assigned in signal store
 $\mathcal{S}_c$ to the identifier $id$. Here, we do not show the
 evaluation of an association between an indexed identifier and an
 expression, and the evaluation of the sequence of associations
@@ -1291,11 +1326,11 @@ embedding design, $\mathcal{S}_c\in{}id\nrightarrow{}v$ is the signal
 store of the design instance,
 $assoc_{op}::=(id\Rightarrow{}(name|\mathtt{open}))\big|(id(e)\Rightarrow{}name)$
 is an output port map association, and $\mathcal{S}'_c$ is the signal
-store resulting of the evaluation of the association. When an output
+store resulting from the evaluation of the association. When an output
 port is left unconnected is the output port map of a design instance,
-it is connected to the \texttt{open} keyword. As shown in
+it is associated to the \texttt{open} keyword. As shown in
 Table~\ref{tab:pmap-eval}, the evaluation of an unconnected output
-port does not impact the signal store of the embedding design. 
+port does not impact the signal store of the embedding design.
 
 \subsubsection{Evaluation of concurrent statements}
 \label{subsubsec:cs-eval}
@@ -1308,10 +1343,10 @@ $\mathcal{D},\Delta,\sigma\vdash{}cs\xrightarrow{cs_f}\sigma'$, where
 $\mathcal{D}\in{}id\nrightarrow{}design$ is a design store,
 $\Delta\in{}ElDesign$ is an elaborated design, $\sigma\in\Sigma$ is
 the design state before the evaluation of concurrent statement $cs$,
-$\sigma'\in\Sigma$ is the design state resulting after the execution
-of $cs$, and $f\in\{i,\uparrow,\downarrow,c\}$ is a flag representing
-the current phase of simulation under which the concurrent statement
-$cs$ is evaluated.
+$\sigma'\in\Sigma$ is the design state resulting from the execution of
+$cs$, and $f\in\{i,\uparrow,\downarrow,c\}$ is a flag representing the
+current phase of simulation under which the concurrent statement $cs$
+is evaluated.
 
 \begin{table}[!h]
   \caption{Evaluation of concurrent statements}
@@ -1406,7 +1441,7 @@ $cs$ is evaluated.
 
 In Table~\ref{tab:cs-eval}, the evaluation of a process statement
 modifies the signal store by executing the body of the process under
-the current simulation flag $f$. The evaluation of design
+the current simulation flag $f$. The evaluation of a design
 instantiation statement modifies both the signal store and the design
 instance store of the embedding design. The current state of the
 design instance $id_c$ and its elaborated version, namely $\sigma_c$
@@ -1414,15 +1449,16 @@ and $\Delta_c$, are retrieved from the elaborated design $\Delta$ and
 the state $\sigma$ (i.e. the elaborated version and the current state
 of the embedding design). The design instance $id_c$ is an
 instantiation of the design $id_e$ and thus to execute the design
-instance $id_c$ amounts to execute the behavior of the design
-$id_e$. The behavior of the design $id_e$ is retrieved from the design
-store $\mathcal{D}$. Then, the evaluation of the design instance
-$id_c$ follows a three-step procedure: first, the input port map of
-the design instance is evaluated and produces a new signal store
+instance $id_c$ amounts to the execution of the behavior of design
+$id_e$. This behavior is retrieved from the design store
+$\mathcal{D}$. Then, the evaluation of the design instance $id_c$
+follows a three-step procedure: first, the input port map of the
+design instance is evaluated and produces a new signal store
 $\mathcal{S}'_c$; second, the internal behavior of the design instance
 is executed under the simulation flag $f$ and with the new signal
-store $\mathcal{S}'_c$ resulting from the evaluation of the input port
-map as input; third, the output port map of the design instance is
+store $\mathcal{S}'_c$ % resulting from the evaluation of the input port
+% map
+as input; third, the output port map of the design instance is
 executed and modifies the signal store of the embedding design to
 yield a signal store $\mathcal{S}'$. Finally, $\mathcal{S}'$ becomes
 the signal store of the resulting state, and the state associated with
@@ -1432,14 +1468,13 @@ evaluation of the parallel composition of two concurrent statements
 $cs$ and $cs'$ executes the two statements individually with the same
 starting state $\sigma$. The individual execution of the concurrent
 statements yields two states $\sigma'$ and $\sigma''$. These states
-are merged together, thanks to the \texttt{merge} function, with the
-origin state $\sigma$ to yield the state resulting from the evaluation
-of the parallel composition.
+are merged together with the origin state $\sigma$ thanks to the
+\texttt{merge} function.
 
 As presented in Listing~\ref{lst:merge-functionr}, the \texttt{merge}
 function returns a new state based on the parameters $\sigma$,
-$\sigma'$ and $\sigma''$. Here, $\sigma$ is intended to be an origin
-state, and $\sigma'$ and $\sigma''$ are two states resulting from the
+$\sigma'$ and $\sigma''$. Here, $\sigma$ represents an origin state,
+and $\sigma'$ and $\sigma''$ are two states resulting from the
 execution of two different concurrent statements. For each signal
 identifier $id$, the signal store of the resulting state yields the
 freshest value for $id$. If the value of $id$ has changed from state
@@ -1476,12 +1511,11 @@ Definition merge($\sigma$, $\sigma'$, $\sigma''$) :=
 For the \texttt{merge} function to be sound, there must be no signal
 identifier, or design instance identifier, that has a value different
 from $\sigma$ in both $\sigma'$ and $\sigma''$. For a signal
-identifier, this refers to a case of multiply-driven signal, i.e. a
-signal that is assigned in two different concurrent statements. For a
-design instance identifier, this refers to a case of \textit{twin}
-design instances, i.e. two design instances with the same
-identifier. Both cases are prevented by a successful elaboration
-phase.
+identifier, this refers to a case of multiple driving, i.e. a signal
+that is assigned in two different concurrent statements. For a design
+instance identifier, this refers to a case of \textit{twin} design
+instances, i.e. two design instances with the same identifier. Both
+cases are prevented by a successful elaboration phase.
 
 % The \texttt{merge} function is correct if the three input design
 % states assume the same domains in their signal store and design
@@ -1503,7 +1537,7 @@ devised specifically for \hvhdl{} designs. Our algorithm is much
 simpler than the one expressed in the \vhdl{} LRM\cite{VHDL2000} and
 in other formalization of the \vhdl{} language
 semantics\cite{Borger1995}, mostly due to the fact that we are
-targetting a very precise subset of the language, free of time
+targeting a very precise subset of the language, free of time
 constructs and with explicit synchronous blocks, aimed at the
 expression of designs both synthesizable and synchronous. Our
 simulation algorithm is fit for all such designs. Our aim is to
@@ -1564,16 +1598,16 @@ the design state at the end of the stabilization phase.
 \end{table}
 
 As expressed in Table~\ref{tab:stabilization}, if after the execution
-of $cs$, the starting state and the resulting state are equal
-(i.e. the evaluation of the behavior does no longer affect the value
-of signals or design instance states) regarding the
-$\stackrel{\Sigma}{=}$ relation, then a stable state has been reached
+of $cs$ the starting state and the resulting state are equal (i.e. the
+evaluation of the behavior does no longer affect the value of signals
+or design instance states) regarding the state equality relation
+written $\stackrel{\Sigma}{=}$, then a stable state has been reached
 and the stabilization phase ends.  Otherwise, the behavior is executed
-with the resulting state as input until a stable state is reached. Note
-that in the presence of combinational loops (i.e. when a signal that
-is the target of an assignment operation refers to its own value in
-the right part of the assignment), the execution of a design's
-behavior possibly leads to an infinite stabilization loop.
+with the resulting state as input until a stable state is
+reached. Note that in the presence of combinational loops (i.e. when a
+signal that is the target of an assignment operation refers to its own
+value in the right part of the assignment), the execution of a
+design's behavior possibly leads to an infinite loop.
 
 The state equality relation is inductively defined as follows: two
 states $\sigma,\sigma'\in{}\Sigma$ are \textit{state}-equal if the
@@ -1582,7 +1616,9 @@ if the state of all design instances referenced in their design
 instance store are state-equal. Namely:
 $\sigma\stackrel{\Sigma}{=}\sigma'\equiv
 \big(\forall{}id_s,~\mathcal{S}(\sigma)(id_s)=\mathcal{S}(\sigma')(id_s)\big)
-\land\big(\forall{}id_c,~\mathcal{C}(\sigma)(id_c)\stackrel{\Sigma}{=}\mathcal{C}(\sigma')(id_c)\big)$
+\land\big(\forall{}id_c,~\mathcal{C}(\sigma)(id_c)\stackrel{\Sigma}{=}\mathcal{C}(\sigma')(id_c)\big)$\footnote{We
+  assume that both the domains of the signal stores and of the design
+  instance stores of $\sigma$ and $\sigma'$ are equal.}.
 
 % \begin{table}[!h]
 
@@ -1613,14 +1649,14 @@ $\sigma\stackrel{\Sigma}{=}\sigma'\equiv
 
 
 The rules of Table~\ref{tab:sim-loop} define the \hvhdl{} simulation
-relation which is a relational definition of the simulation algorithm
+relation which is a relational definition of our simulation algorithm
 given in a structural \textit{small-step} setting (i.e. all
 intermediary states are preserved in a simulation trace).  The
-relation written
-$\mathcal{D},E_p,\Delta,\tau,\sigma\vdash{}cs\rightarrow\theta$. The
-\hvhdl{} simulation relation associates the execution of a behavior
-$cs$ with a simulation trace $\theta\in\mathtt{list}(\Sigma)$ in a
-context $\mathcal{D},E_p,\Delta,\tau,\sigma$ where
+simulation relation is written
+$\mathcal{D},E_p,\Delta,\tau,\sigma\vdash{}cs\rightarrow\theta$. It
+associates the execution of a behavior $cs$ with a simulation trace
+$\theta\in\mathtt{list}(\Sigma)$ in a context
+$\mathcal{D},E_p,\Delta,\tau,\sigma$ where
 $\mathcal{D}\in{}id\nrightarrow{}design$ is a design store,
 $E_p\in\mathbb{N}\rightarrow(id\nrightarrow{}v)$ is a simulation
 environment that will be used to update the value of primary input
@@ -1681,18 +1717,18 @@ during $\tau$ clock cycles. Here, $cs$ represents the behavior of the
 \end{table}
 
 
-The \hvhdl{} simulation relation is defined through two rule
-instances.  In the case where $\tau$ is equal to zero, the simulation
-ends and the execution of $cs$ returns an empty trace. In the case
-where $\tau$ is greater than zero, one simulation cycle is performed
-with $\sigma$ as the starting state. At the beginning of the cycle,
-the value of the input ports of the design under simulation are
-updated with the values yielded by the simulation environment $E_p$ at
-clock count $\tau$. Given a simulation environment
-$E_p\in\mathbb{N}\rightarrow(id\nrightarrow{}v)$, the \texttt{inj}
-function that update of the value of signals at a given design state
-$\sigma\in\Sigma$ and clock cycle count $\tau\in{}\mathbb{N}$ is
-defined as follows:
+As shown in Table~\ref{tab:sim-loop}, the \hvhdl{} simulation relation
+is defined through two rule instances.  In the case where $\tau$ is
+equal to zero, the simulation ends and the execution of $cs$ returns
+an empty trace. In the case where $\tau$ is greater than zero, one
+simulation cycle is performed with $\sigma$ as the starting state. At
+the beginning of the cycle, the value of the input ports of the design
+under simulation are updated with the values yielded by the simulation
+environment $E_p$ at clock count $\tau$. Given a simulation
+environment $E_p\in\mathbb{N}\rightarrow(id\nrightarrow{}v)$, the
+\texttt{inj} function that update of the value of signals at a given
+design state $\sigma\in\Sigma$ and clock cycle count
+$\tau\in{}\mathbb{N}$ is defined as follows:
 $\mathtt{inj}(\sigma,E_p,\tau)=(\mathcal{S}_i,\mathcal{C})$ where
 $\sigma=(\mathcal{S},\mathcal{C}), $ and $\mathcal{S}_i(x)=
 \begin{cases}
@@ -1712,19 +1748,19 @@ The $\uparrow$ flag is appended to the evaluation relation for
 concurrent statements to execute rising blocks. Then, follows a
 stabilization phase that produces a stable state $\sigma'$. After
 that, the falling blocks are executed in response to the occurrence of
-the falling edge event of the clock signal. To the execution of the
-falling blocks also follows a stabilization phase that produces a
-stable state $\sigma''$.  Then, the \hvhdl{} simulation relation calls
-itself recursively with a decremented cycle count and state $\sigma''$
-as the starting state. The recursive call yields a trace $\theta$
-which is appended to the states $\sigma'$ and $\sigma''$ to form the
-final simulation trace. Note that we preserve in the simulation trace
-only stable states, i.e. states at half a clock cycle and states at
-the end of a clock cycle.
+the falling edge event of the clock signal. Another stabilization
+phase follows that produces a stable state $\sigma''$.  Then, the
+\hvhdl{} simulation relation calls itself recursively with a
+decremented cycle count and with state $\sigma''$ as the new starting
+state. The recursive call yields a trace $\theta$ which is appended to
+the states $\sigma'$ and $\sigma''$ to form the final simulation
+trace. Note that we preserve in the simulation trace only stable
+states, i.e. states at half a clock cycle and states at the end of a
+clock cycle both resulting from a stabilization phase.
 
 Table~\ref{tab:full-sim} presents the relation that formalizes our
 entire simulation algorithm by appealing to the elaboration relation
-(that do not present in this article, but which content is detailled
+(that we do not present in this article, but which content is detailed
 here\cite{Iampietro2021}), and to the simulation relation presented in
 Table~\ref{tab:sim-loop}. The full simulation relation states that the
 simulation of a design $d$ during $\tau$ clock cycles yields the trace
@@ -1733,24 +1769,25 @@ $\mathcal{D}\in{}id\nrightarrow{}design$, the dimensioning function
 $\mathcal{M}_g\in{}id\nrightarrow{}v$ (used for the elaboration of
 design $d$), and under the simulation environment
 $E_p\in\mathbb{N}\rightarrow(id\nrightarrow{}v)$. Here $\sigma_0$
-represents the initial state of the design. The initial is computed
-through an initialization phase consisting of the execution of the
-first part of reset blocks (the $i$ flag is on) followed by a
-stabilization phase. The execution of reset blocks corresponds to the
-virtual activation of a reset signal at the beginning of the
-simulation. This reset signal triggers the execution of certain part
-of the behavior responsible for the initialization of the value of
-chosen signals, which are all associated to an implicit default value
-otherwise\footnote{In the default state, i.e. the state yielded after
-  the elaboration of a design, all signals have are associated to the
-  implicit default value of their type in the signal store. }. Then,
-the simulation trace $\theta$ is the result of the simulation of
-design $d$ during $\tau$ clock cycles with $\sigma_0$ as starting
-state. As a side condition, we enforce the fact that, at every clock
-count of the simulation, the definition domain of the simulation
-environment is a subset of the input port identifiers. Otherwise, the
-update of signal values happening at the beginning of a clock cycle
-possibly the value of signals other than input ports.
+represents the \textit{initial state} of the design. The initial state
+is computed through an initialization phase consisting of the
+execution of the first part of reset blocks (the $i$ flag is on)
+followed by a stabilization phase. The execution of reset blocks
+corresponds to the virtual activation of a reset signal at the
+beginning of the simulation. This reset signal triggers the execution
+of certain part of the behavior responsible for the initialization of
+the value of chosen signals, which are all associated to an implicit
+default value otherwise\footnote{In the default state, i.e. the state
+  yielded after the elaboration of a design, all signals are
+  associated to the implicit default value of their type in the signal
+  store. }. Then, the simulation trace $\theta$ is the result of the
+simulation of design $d$ during $\tau$ clock cycles with $\sigma_0$ as
+starting state. As a side condition, we enforce the fact that, at
+every clock count of the simulation, the definition domain of the
+simulation environment is a subset of the input port
+identifiers. Otherwise, the update of signal values happening at the
+beginning of a clock cycle possibly overrides the value of signals
+other than input ports.
 
 
 \begin{table}[!h]
