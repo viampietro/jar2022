@@ -1,2 +1,307 @@
 \section{Model-to-text transformation}
 \label{sec:m2t}
+
+In the following section, we present the \hilecop{} model-to-text
+transformation (HM2T) through its formal specification.  The HM2T
+generates a \hvhdl{} design out of an SITPN model. It also generates a
+structure that relates the elements of the SITPN model to the elements
+of the \hvhdl{} design. This structure is called a SITPN-to-\hvhdl{}
+binder.  Its formal definition is as follows:
+
+\begin{definition}[SITPN-to-\hvhdl{} design binder]
+  \label{def:sitpn-to-hvhdl-binder}
+  Given a $sitpn\in{}SITPN$ and a \hvhdl{} design $d\in{}design$, a
+  SITPN-to-\hvhdl{} binder $\gamma\in{}WM(sitpn,d)$ is a tuple\\
+  ${<}PMap,TMap,CMap,AFMap{>}$ where:
+  \begin{itemize}
+  \item $PMap\in{}P\rightarrow{}\{id_p~|~\mathtt{comp}(id_p,\mathtt{place},g,i,o)\in{}d.beh\}$
+  \item $TMap\in{}T\rightarrow{}\{id_t~|~\mathtt{comp}(id_t,\mathtt{transition},g,i,o)\in{}d.beh\}$
+  \item $CMap\in\mathcal{C}\rightarrow\{id_c~|~(\mathtt{in}, id_c, \mathtt{bool})\in{}d.ports\}$
+  \item $AFMap\in\mathcal{A}\cup\mathcal{F}\rightarrow\{id_{af}~|~(\mathtt{out}, id_{af}, \mathtt{bool})\in{}d.ports\}$
+  \end{itemize}
+\end{definition}
+
+For a given binder $\gamma$ and an element of an SITPN structure
+$e\in{}P\cup{}T\cup\mathcal{C}\cup\mathcal{A}\cup\mathcal{F}$, we
+write $\gamma(e)$ where $e$ is looked up in the appropriate
+function. For instance, for a given $f\in\mathcal{F}$, $\gamma(f)$ is
+a shorthand notation for $AFMap(f)$ where $\gamma={<}\dots,AFMap{>}$.
+
+\bigskip
+
+The formal specification of the HM2T is expressed as a relation
+between the inputs of the transformation, namely a SITPN model and a
+bounding function, and its outputs, namely a \hvhdl{} design and a
+SITPN-to-\hvhdl{} binder. The relation is written
+$HM2T\subseteq{}SITPN\times(P\rightarrow\mathbb{N})\times{}design\times{}WM(sitpn,d)$.
+The bounding function, that is, the second parameter of the
+specification relation, associates each place of the SITPN model to a
+bound in terms of number of tokens. We assume that these bounds have
+been obtained through the formal analysis of the input SITPN model.
+The bounds represent the maximum number of tokens that a place will
+possibly hold at any point of the execution of the model. Of course,
+the existence of such a function implies that all the SITPN models
+that are passed as inputs to the HM2T are \textit{bounded}
+models\footnote{There exists no place that can accumulate an unlimited
+  number of tokens in the course of the execution of the model.}. As a
+matter of fact, we can prove that the HM2T is not semantic-preserving
+when an unbounded SITPN model is passed as an input. The execution of
+such a model will lead to an infinite incrementation of the number of
+tokens in a given place. This infinite incrementation, while valid in
+the mathematical world, can never be mirrored by a \vhdl{}
+implementation of the model where all values must be finite.
+
+Definition of the HM2T relation. Here only selected points of the
+definition are presented and ilustrated. The full definition of the
+HM2T formal specification can be found at \todo{Add ref. to formal
+  spec. ref. (Arxiv or equivalent).}. We have implemented the HM2T
+relation in \coq{}, and also have written a \coq{} function that
+implements the transformation but is yet to be proved sound and
+complete regarding its specification. % However, the
+% proof of semantic preservation implies that some properties must be
+% drawn regarding the implementation of the HM2T as a program.
+However, all the properties that must be proved to state that the HM2T
+is semantic preserving contribute to the proof of soundness of our
+program w.r.t. its specification.
+
+While expressing the HM2T relation, we refer to sets and functions
+that are defined below:
+
+\begin{itemize}
+\item
+  \texttt{input}$(p)=\{t~\vert~\exists\omega~s.t.~post(t,p)=\omega\}$,
+  the set of input transitions of a place $p$.
+\item
+  \texttt{output}$(p)=\{t~\vert~\exists{}\omega,a~s.t.~pre(p,t)=(\omega,a)\}$,
+  the set of output transitions of a place $p$.
+
+\item \texttt{acts}$(p)=\{a~\vert~\mathbb{A}(p,a)=\mathtt{true}\}$,
+  the set of actions associated with a place $p$.
+\item
+  \texttt{input}$(t)=\{p~\vert~\exists\omega,a~s.t.~pre(p,t)=(\omega,a)\}$,
+  the set of input places of a transition $t$.
+\item
+  \texttt{output}$(t)=\{p~\vert~\exists\omega~s.t.~post(t,p)=\omega\}$,
+  the set of output places of a transition $t$.
+\item
+  \texttt{conds}$(t)=\{c~\vert~\mathbb{C}(t,c)=1\lor\mathbb{C}(t,c)=-1\}$,
+  the set of conditions associated with a transition $t$.
+\item
+  \texttt{trs}$(c)=\{t~\vert~\mathbb{C}(t,c)=1\lor\mathbb{C}(t,c)=-1\}$,
+  the set of transitions to which a condition $c$ is associated.
+\item \texttt{pls}$(a)=\{p~\vert~\mathbb{A}(p,a)=\mathtt{true}\}$, the
+  set of places to which an action $a$ is associated.
+\item \texttt{trs}$(f)=\{t~\vert~\mathbb{F}(t,f)=\mathtt{true}\}$, the
+  set of transitions to which a function $f$ is associated.
+\end{itemize}
+
+\begin{itemize}
+\item \texttt{output}$_c\in{}P\rightarrow{}2^T$.  The
+  \texttt{output}$_c$ function takes a place $p$ as input and yields
+  an ordered set of transitions computed as follows:
+  \begin{enumerate}
+  \item If all conflicts between the output transitions of $p$ are
+    solved by mutual exclusion, or if the set of conflicting
+    transitions of $p$ is a singleton, then \texttt{output}$_c$
+    returns an empty set.
+  \item Otherwise, the function tries to establish a total ordering
+    over the set of conflicting transitions of $p$ w.r.t the firing
+    priority relation:
+    \begin{itemize}
+    \item If no such ordering can be established (in that case, the
+      firing priority relation is ill-formed, and the input SITPN is
+      not well-defined), \texttt{output}$_c$ raises an error.
+    \item Otherwise, the function returns the ordered set, with the
+      top-level priority transition at the head.
+    \end{itemize}
+  \end{enumerate}
+
+\item \texttt{output}$_{nc}\in{}P\rightarrow{}2^T$.  The
+  \texttt{output}$_{nc}$ function takes a place $p$ as input and
+  yields an unordered set of transitions computed as follows:
+  \begin{itemize}
+  \item If all conflicts between the output transitions of $p$ are
+    solved by mutual exclusion, or if the set of conflicting
+    transitions of $p$ is a singleton, then, the function returns the
+    set of output transitions of $p$, i.e. \texttt{output}$(p)$ as
+    defined above.
+  
+  \item Otherwise, the function returns the set of output transitions
+    of $p$ connected through a \texttt{test} or an \texttt{inhib} arc,
+    i.e.
+    $\{t~\vert~\exists\omega~s.t.~pre(p,t)=(\omega,\mathtt{test})\lor{}pre(p,t)=(\omega,\mathtt{inhib})\}$.
+  \end{itemize}
+\end{itemize}
+
+
+%%%%% Definition for the HM2T formal specification. %%%%%
+
+\def\pdiInBeh{\mathtt{comp}(\gamma(p),\mathtt{place},g_p,i_p,o_p)\in{}d.beh}
+\def\tdiInBeh{\mathtt{comp}(\gamma(t),\mathtt{transition},g_t,i_t,o_t)\in{}d.beh}
+
+\begin{definition}[\hilecop{} model-to-text transformation specification]
+  \label{def:hm2t-spec}
+  For all SITPN model $sitpn\in{}SITPN$, bounding function
+  $b\in{}P\rightarrow\mathbb{N}$, \hvhdl{} design $d\in{}design$, and
+  SITPN-to-\hvhdl{} binder $\gamma\in{}WM(sitpn,d)$, we have
+  $HM2T(sitpn,b,d,\gamma)$ if:
+  
+  \begin{enumerate}
+  \item Design $d$ has an empty generic clause: $d.gens=\emptyset$.
+    
+  \item Design $d$ is elaborable in the context of the \hilecop{} design store and given an empty dimensioning function:\\
+    $\exists{}\Delta\in{}ElDesign,\sigma_e\in\Sigma$ s.t.
+    $\mathcal{D_\mathcal{H}},\emptyset\vdash{}d\xrightarrow{elab}\Delta,\sigma_e$.
+    
+  \item All the fields of the SITPN-to-\hvhdl{} binder are bijective
+    functions: $PMap(\gamma)$ is bijective, $TMap(\gamma)$ is
+    bijective,\dots
+    
+  \item For all place of the input SITPN model, there exists a
+    corresponding place design instance (PDI) in the behavior of the
+    \hvhdl{} design such that the identifier of the PDI is the one
+    yielded
+    by the binder $\gamma$:\\
+    $\forall{}p\in{}P,\exists{}g_p,i_p,o_p$ s.t.  $\pdiInBeh$.
+    
+  \item For all place of the input SITPN model and its corresponding PDI, the generic map of the PDI holds the following associations:\\
+    $\forall{}p\in{}P,g_p,i_p,o_p,\pdiInBeh\Rightarrow$\\
+    $g_p=\{(\mathtt{mm}\Rightarrow{}b(p)), (\mathtt{ian}\Rightarrow
+    \begin{cases}
+      1~\mathrm{if}~\mathtt{input}(p)=\emptyset \\
+      \vert{}\mathtt{input}(p)\vert~\mathrm{otherwise} \\
+    \end{cases}),
+    (\mathtt{oan}\Rightarrow
+    \begin{cases}
+      1~\mathrm{if}~\mathtt{output}(p)=\emptyset \\
+      \vert{}\mathtt{output}(p)\vert~\mathrm{otherwise} \\
+    \end{cases})\}$.
+    
+  \item For all place of the input SITPN model and its corresponding PDI, there is an association between the \texttt{im} input port and the initial marking of the place in the input port map of the PDI:\\
+    $\forall{}p\in{}P,g_p,i_p,o_p,\pdiInBeh{}$
+    $\Rightarrow(\mathtt{im}\Rightarrow{}M_0(p))\in{}i_p$.
+    
+  \item For all place of the SITPN model with no input transition, the
+    input port map of the corresponding PDI includes the following associations:
+    \begin{equation*}
+      \begin{aligned}
+        \forall{}p&\in{}P,g_p,i_p,o_p, \\
+                  & \pdiInBeh\Rightarrow \\
+                  & \mathtt{input}(p)=\emptyset\Rightarrow \\
+                  & \{(\mathtt{iaw}(0)\Rightarrow{}0), (\mathtt{itf}(0)\Rightarrow{}\mathtt{false})\}\subseteq{}i_p.\\
+      \end{aligned}
+    \end{equation*}
+
+  \item For all place of the SITPN model with no output transition,
+    the input port map and output port map of the corresponding PDI
+    includes the following associations:
+    \begin{equation*}
+      \begin{aligned}
+        \forall{}p&\in{}P,g_p,i_p,o_p, \\
+                  & \pdiInBeh\Rightarrow \\
+                  & \mathtt{output}(p)=\emptyset\Rightarrow \\
+                  & \{(\mathtt{oaw}(0)\Rightarrow{}0), (\mathtt{oat}(0)\Rightarrow{}\mathtt{basic}),
+                    (\mathtt{otf}(0)\Rightarrow{}\mathtt{false})\}\subseteq{}i_p\\
+                  & \land\{(\mathtt{oav}\Rightarrow{}\mathtt{open}), (\mathtt{pauths}\Rightarrow{}\mathtt{open}),
+                    (\mathtt{rtt}\Rightarrow{}\mathtt{open})\}\subseteq{}o_p \\
+      \end{aligned}
+    \end{equation*}
+
+    
+  \item For all place of the SITPN model with no action, the
+    \texttt{marked} output port is left unconnected in the output port
+    map of the corresponding PDI:
+    \begin{equation*}
+      \begin{aligned}
+        \forall{}p&\in{}P,g_p,i_p,o_p, \\
+                  & \pdiInBeh\Rightarrow \\
+                  & \mathtt{acts}(p)=\emptyset\Rightarrow \\
+                  & (\mathtt{marked}\Rightarrow{}\mathtt{open})\in{}o_p \\
+      \end{aligned}
+    \end{equation*}
+
+  \item For all transition of the input SITPN model, there exists a
+    corresponding transition design instance (TDI) in the behavior of
+    the \hvhdl{} design such that the identifier of the TDI is the one
+    yielded
+    by the binder $\gamma$:\\
+    $\forall{}t\in{}T,\exists{}g_t,i_t,o_t$ s.t. $\tdiInBeh$.
+    
+  \item For all transition of the input SITPN model and its corresponding TDI, the generic map of the TDI holds the following associations:\\
+    \begin{equation*}
+      \begin{aligned}[t]
+        \forall{}t&\in{}T,g_t,i_t,o_t, \\
+                  & \tdiInBeh\Rightarrow \\
+                  & g_t=\{(\mathtt{tt}\Rightarrow{}
+                    \begin{cases}
+                      \mathtt{NOT\_TEMPORAL}~\mathrm{if}~t\notin{}\mathtt{dom}(I_s) \\
+                      \mathtt{TEMPORAL\_A\_A}~\mathrm{if}~I_s(t)=[a,a] \\
+                      \mathtt{TEMPORAL\_A\_B}~\mathrm{if}~I_s(t)=[a,b] \\
+                      \mathtt{TEMPORAL\_A\_INF}~\mathrm{if}~I_s(t)=[a,\infty] \\
+                    \end{cases}),
+        (\mathtt{mtc}\Rightarrow
+        \begin{cases}
+          1~\mathrm{if}~t\notin{}\mathtt{dom}(I_s) \\
+          b~\mathrm{if}~I_s(t)=[a,b] \\
+          a~\mathrm{if}~I_s(t)=[a,\infty] \\
+        \end{cases}), \\
+                  & (\mathtt{ian}\Rightarrow
+                    \begin{cases}
+                      1~\mathrm{if}~\mathtt{input}(t)=\emptyset \\
+                      \vert{}\mathtt{input}(t)\vert~\mathrm{otherwise} \\
+                    \end{cases}), 
+        (\mathtt{cn}\Rightarrow
+        \begin{cases}
+          1~\mathrm{if}~\mathtt{conds}(t)=\emptyset \\
+          \vert{}\mathtt{conds}(t)\vert~\mathrm{otherwise} \\
+        \end{cases})\}. \\
+      \end{aligned}
+    \end{equation*}
+    
+  \item For all transition of the input SITPN model and its corresponding TDI, the input port map of the TDI holds the following associations:\\
+    \begin{equation*}
+      \begin{aligned}[t]
+        \forall{}t&\in{}T,g_t,i_t,o_t, \\
+                  & \tdiInBeh\Rightarrow \\
+                  & \{(\mathtt{A}\Rightarrow\begin{cases}
+                                              0~\mathrm{if}~t\notin\mathtt{dom}(I_s) \\
+                                              l(I_s(t))~\mathrm{otherwise} \\
+                                            \end{cases}),
+        (\mathtt{B}\Rightarrow\begin{cases}
+                                0~\mathrm{if}~t\notin\mathtt{dom}(I_s)\lor{}u(I_s(t))=\infty \\
+                                u(I_s(t))~\mathrm{otherwise} \\
+                              \end{cases})\}\subseteq{}i_t. \\
+      \end{aligned}
+    \end{equation*}
+    
+  \item For all transition of the input SITPN model with no input place, the input port map and output port map of the corresponding TDI holds the following associations:\\
+    \begin{equation*}
+      \begin{aligned}[t]
+        \forall{}t&\in{}T,g_t,i_t,o_t, \\
+                  & \tdiInBeh\Rightarrow \\
+                  & \mathtt{input}(t)=\emptyset\Rightarrow \\
+                  & (\exists{}id_s~s.t.~(id_s,\mathtt{bool})\in{}d.sigs\land(\mathtt{rt}(0)\Rightarrow{}id_s)\in{}i_t
+                    \land(\mathtt{fired}\Rightarrow{}id_s)\in{}o_t)\\
+                  & \land\{(\mathtt{iav}(0)\Rightarrow\mathtt{true}),
+                    (\mathtt{pauths}(0)\Rightarrow\mathtt{true})\}\subseteq{}i_t. \\
+      \end{aligned}
+    \end{equation*}
+    
+  \item For all transition of the input SITPN model with no condition, the input port map of the corresponding TDI holds the following association:\\
+    \begin{equation*}
+      \begin{aligned}[t]
+        \forall{}t&\in{}T,g_t,i_t,o_t, \\
+                  & \tdiInBeh\Rightarrow \\
+                  & \mathtt{conds}(t)=\emptyset\Rightarrow \\
+                  & (\mathtt{ic}(0)\Rightarrow\mathtt{true})\in{}i_t. \\
+      \end{aligned}
+    \end{equation*}
+  \end{enumerate}
+
+\end{definition}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

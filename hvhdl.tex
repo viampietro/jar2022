@@ -28,14 +28,14 @@ instantiating, i.e. creating an instance of a design acting as a
 subcomponent in the behavior of an embedding design, two pre-defined
 designs that have been devised with the methodology: the place and
 transition designs. The \vhdl{} code of these two designs are given in
-concrete and abstract syntax in \todo{Either put it in appendix or
-  cite thesis}. The \hvhdl{} abstract syntax captures all the
+abstract syntax in Appendices~\ref{app:place-design} and
+\ref{app:trans-design}. The \hvhdl{} abstract syntax captures all the
 constructs of the \vhdl{} language used in the definition of the place
 and transition designs. The place and transition designs, and more
 broadely all \hilecop{}-generated designs, are \textit{synthesizable},
 i.e. they will be used as inputs of a compiler/synthesizer to obtain
 an implementation on a physical device. As a consequence, the \hvhdl{}
-abstract syntax only includes synthesizable constructs, i.e. all time
+abstract syntax only includes synthesizable constructs; all time
 constructs such as wait statements or unit-delay signal assignments
 are not part of the grammar. Moreover, the \hilecop{}-generated
 designs are \textit{synchronous}, i.e. their execution is synchronized
