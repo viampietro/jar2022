@@ -296,7 +296,8 @@
 %
 \usepackage{graphicx}%
 \usepackage{multirow}%
-\usepackage{amsmath,amssymb,amsfonts}%
+\usepackage{amsmath}
+\usepackage{amssymb,amsfonts}%
 \usepackage{amsthm}%
 \usepackage{mathrsfs}%
 \usepackage[figuresright]{rotating}%

@@ -1,0 +1,98 @@
+\section{Generic constant and signal names reference}
+\label{sec:cnsts-sigs-names}
+
+\begin{table}[h]
+  \resizebox{\textwidth}{!}{%
+  \begin{tabular}{|c|c|c|c|}
+    \hline
+    \multicolumn{4}{|c|}{\textbf{Generic constants and signals reference}} \\
+    \hline
+    \textit{Full name} & \textit{Alias} & \textit{Category} & \textit{Type} \\
+    \hline
+    \texttt{input\_arcs\_number} & \texttt{ian} & generic constant (T) & $\mathtt{nat}(0,\mathtt{NATMAX})$ \\
+    \hline
+    \texttt{transition\_type} & \texttt{tt} & generic constant (T) & $\{\mathtt{not\_temp},\mathtt{temp\_a\_b},$ \\
+                       & & & $\mathtt{temp\_a\_a},\mathtt{temp\_a\_inf}\}$ \\
+    \hline
+    \texttt{conditions\_number} & \texttt{cn} & generic constant (T) & $\mathtt{nat}(0,\mathtt{NATMAX})$ \\
+    \hline
+    \texttt{maximal\_time\_counter} & \texttt{mtc} & generic constant (T) & $\mathtt{nat}(0,\mathtt{NATMAX})$ \\
+    \hline
+    \texttt{time\_A\_value} & \texttt{A} & input port (T) & $\mathtt{nat}(0,\mathtt{mtc})$ \\
+    \hline
+    \texttt{time\_B\_value} & \texttt{B} & input port (T) & $\mathtt{nat}(0,\mathtt{mtc})$ \\
+    \hline
+    \texttt{input\_conditions} & \texttt{ic} & input port (T) & $\mathtt{array(\mathtt{bool},0,\mathtt{cn}-1)}$ \\
+    \hline
+    \texttt{reinit\_time} & \texttt{rt} & input port (T) & $\mathtt{array}(\mathtt{bool},0,\mathtt{ian}-1)$ \\
+    \hline
+    \texttt{input\_arcs\_valid} & \texttt{iav} & input port (T) & $\mathtt{array}(\mathtt{bool},0,\mathtt{ian}-1)$ \\
+    \hline
+    \texttt{priority\_authorizations} & \texttt{pauths} & input port (T) & $\mathtt{array}(\mathtt{bool},0,\mathtt{ian}-1)$ \\
+    \hline
+    \texttt{fired} & \texttt{f} & output port (T) & $\mathtt{bool}$ \\
+    \hline
+    \texttt{s\_condition\_combination} & \texttt{scc} & internal signal (T) & $\mathtt{bool}$ \\
+    \hline
+    \texttt{s\_reinit\_time\_counter} & \texttt{srtc} & internal signal (T) & $\mathtt{bool}$ \\
+    \hline
+    \texttt{s\_priority\_combination} & \texttt{spc} & internal signal (T) & $\mathtt{bool}$ \\
+    \hline
+    \texttt{s\_firable} & \texttt{sfa} & internal signal (T) & $\mathtt{bool}$ \\
+    \hline
+    \texttt{s\_enabled} & \texttt{se} & internal signal (T) & $\mathtt{bool}$ \\
+    \hline
+    \texttt{s\_time\_counter} & \texttt{stc} & internal signal (T) & $\mathtt{nat}(0,\mathtt{mtc})$ \\
+    \hline
+    \texttt{s\_firing\_condition} & \texttt{sfc} & internal signal (T) & $\mathtt{bool}$ \\
+    \hline
+    \hline
+    \texttt{input\_arcs\_number} & \texttt{ian} & generic constant (P) & $\mathtt{nat}(0,\mathtt{NATMAX})$ \\
+    \hline
+    \texttt{output\_arcs\_number} & \texttt{oan} & generic constant (P) & $\mathtt{nat}(0,\mathtt{NATMAX})$ \\
+    \hline
+    \texttt{maximal\_marking} & \texttt{mm} & generic constant (P) & $\mathtt{nat}(0,\mathtt{NATMAX})$ \\
+    \hline
+    \texttt{initial\_marking} & \texttt{im} & input port (P) & $\mathtt{nat}(0,\mathtt{mm})$ \\
+    \hline
+    \texttt{output\_arcs\_types} & \texttt{oat} & input port (P) & $\mathtt{array}(\{\mathtt{basic},\mathtt{test},\mathtt{inhib}\}, 0, \mathtt{oan}-1)$ \\
+    \hline
+    \texttt{output\_arcs\_weights} & \texttt{oaw} & input port (P) & $\mathtt{array}(\mathtt{nat}(0,255),0,\mathtt{oan}-1)$ \\
+    \hline
+    \texttt{output\_transitions\_fired} & \texttt{otf} & input port (P) & $\mathtt{array}(\mathtt{bool},0,\mathtt{oan}-1)$ \\
+    \hline
+    \texttt{input\_arcs\_weights} & \texttt{iaw} & input port (P) & $\mathtt{array}(\mathtt{nat}(0,255),0,\mathtt{ian}-1)$ \\
+    \hline
+    \texttt{input\_transitions\_fired} & \texttt{itf} & input port (P) & $\mathtt{array}(\mathtt{bool},0,\mathtt{ian}-1)$ \\
+    \hline
+    \texttt{output\_arcs\_valid} & \texttt{oav} & output port (P) & $\mathtt{array}(\mathtt{bool},0,\mathtt{oan}-1)$ \\
+    \hline
+    \texttt{reinit\_transitions\_time} & \texttt{rtt} & output port (P) & $\mathtt{array}(\mathtt{bool},0,\mathtt{oan}-1)$ \\
+    \hline
+    \texttt{priority\_authorizations} & \texttt{pauths} & output port (P) & $\mathtt{array}(\mathtt{bool},0,\mathtt{oan}-1)$ \\
+    \hline
+    \texttt{marked} & \texttt{m} & output port (P) & $\mathtt{bool}$ \\
+    \hline
+    \texttt{s\_marking} & \texttt{sm} & internal signal (P) & $\mathtt{nat}(0,\mathtt{mm})$ \\
+    \hline
+    \texttt{s\_output\_token\_sum} & \texttt{sots} & internal signal (P) & $\mathtt{nat}(0,\mathtt{mm})$ \\
+    \hline
+    \texttt{s\_input\_token\_sum} & \texttt{sits} & internal signal (P) & $\mathtt{nat}(0,\mathtt{mm})$ \\
+    \hline
+  \end{tabular}}
+  \caption[Constants and signals reference for the \hvhdl{}
+  \texttt{transition} and \texttt{place} designs.]{Constants and
+    signals reference for the \hvhdl{} transition and place
+    designs. In the \textit{Category} column, T (resp. P) indicates a
+    generic constant, input port, output port or internal signal
+    defined in the \texttt{transition} (resp. \texttt{place})
+    design. }
+  \label{tab:consts-and-sigs-ref}
+\end{table}
+
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:
