@@ -9,20 +9,21 @@ on the creation of instances of the place and transition
 designs\footnote{Remember that the \texttt{place} and
   \texttt{transition} designs are two pre-defined designs which
   definition in abstract syntax can be found in
-  Appendices~\ref{app:place-design} and \ref{app:trans-design}.}. To
+  Appendices~\ref{app:place-design} and \ref{app:trans-design}.} that
+will act as subcomponents in the behavior of the generated design. To
 each place of the input SITPN model will correspond one place design
 instance (PDI), and to each transition will correspond one transition
 design instance (TDI). These instances will then be connected together
 thus reflecting the arc connections of the input SITPN
 model. Moreover, the interpretation elements of the SITPN model,
 namely the conditions, actions and functions will be implemented by
-the input and output ports of the output design. Thus, there exists a
-mapping between the elements of the input SITPN model and their
-corresponding version in the generated \hvhdl{} design. This mapping
-is captured within a structure called a SITPN-to-\hvhdl{} binder.
-This structure is generated alongside the transformation of the input
-SITPN model into a \hvhdl{} design. Its formal definition is as
-follows:
+the input and output ports of the output design. Therefore, there
+exists a mapping between the elements of the input SITPN model and
+their corresponding version in the generated \hvhdl{} design. This
+mapping is captured within a structure called a SITPN-to-\hvhdl{}
+binder.  This structure is generated alongside the transformation of
+the input SITPN model into a \hvhdl{} design. Its formal definition is
+as follows:
 \begin{definition}[SITPN-to-\hvhdl{} design binder]
   \label{def:sitpn-to-hvhdl-binder}
   Given a $sitpn\in{}SITPN$ and a \hvhdl{} design $d\in{}design$, a
@@ -49,24 +50,24 @@ between the inputs of the transformation, namely a SITPN model and a
 bounding function, and its outputs, namely a \hvhdl{} design and a
 SITPN-to-\hvhdl{} binder. The relation is written
 $HM2T_{\mathtt{spec}}\subseteq{}SITPN\times(P\rightarrow\mathbb{N})\times{}design\times{}WM(sitpn,d)$.
-The bounding function, that is, the second parameter of the
-specification relation, associates each place of the SITPN model to a
-bound in terms of number of tokens.  The bounds represent the maximum
-number of tokens that a place will possibly hold at any point of the
-execution of the model. We assume that these bounds have been obtained
-through the formal analysis of the input SITPN model. Of course, the
-existence of such a function implies that all the SITPN models that
-are passed as inputs to the HM2T are \textit{bounded}
-models\footnote{There exists no place that can accumulate an unlimited
-  number of tokens in the course of the execution of the model.}. As a
-matter of fact, we can prove that the HM2T is not semantic-preserving
-when the input is an unbounded SITPN model. The execution of such a
-model will lead to an infinite incrementation of the number of tokens
-in a given place. This infinite incrementation, while valid in the
-mathematical world, can never be mirrored by a \vhdl{} implementation
-of the model where all values must be finite. Therefore, the behavior
-of the SITPN model and its \hvhdl{} implementation will diverge at a
-certain point of their execution.
+The bounding function, that is, the second parameter of the relation,
+associates each place of the SITPN model with a bound in terms of
+number of tokens.  A bound represents the maximum number of tokens
+that a place will possibly hold at some point of the execution of the
+model. We assume that these bounds have been computed through the
+formal analysis of the input SITPN model. Of course, the existence of
+such a function implies that all the SITPN models that are passed as
+inputs to the HM2T are \textit{bounded} models\footnote{There exists
+  no place that can accumulate an unlimited number of tokens in the
+  course of the execution of the model.}. As a matter of fact, we can
+prove that the HM2T is not semantic-preserving when the input is an
+unbounded SITPN model. The execution of such a model will lead to an
+infinite incrementation of the number of tokens in a given place. This
+infinite incrementation, while valid in the mathematical world, can
+never be mirrored by a \vhdl{} implementation of the model where all
+values must be finite. Therefore, the behavior of the SITPN model and
+its \hvhdl{} implementation will diverge at a certain point of their
+execution.
 
 \bigskip
 
@@ -76,16 +77,14 @@ and illustrated. The full definition of the HM2T's formal
 specification can be found at \todo{Add ref. to formal
   spec. ref. (Arxiv or equivalent).}. We have implemented the
 $HM2T_{\mathtt{spec}}$ relation in \coq{}, and have written a \coq{}
-function that implements the transformation but is yet to be proved
-sound and complete regarding its specification. % However, the
+function, named \texttt{sitpn2hvhdl}, that implements the
+transformation but is yet to be proved sound and complete regarding
+its specification. % However, the
 % proof of semantic preservation implies that some properties must be
 % drawn regarding the implementation of the HM2T as a program.
 % However, all the properties that must be proved to state that the
 % HM2T is semantic preserving contribute to the proof of soundness of
 % our program w.r.t. its specification.
-
-\bigskip
-
 While expressing the $HM2T_{\mathtt{spec}}$ relation, we refer to sets
 and functions that we define below:
 
@@ -140,11 +139,10 @@ and functions that we define below:
 \bigskip
 
 In Definition~\ref{def:hm2t-spec}, we also refer to the names of
-generic constants and signals declared in the \texttt{place} and
-\texttt{transition} designs. To achieve conciseness, we use aliases to
-refer to these constants and signals. The correspondence between the
-aliases and the full names is given in
-Appendix~\ref{sec:cnsts-sigs-names}.
+generic constants and signals declared in the place and transition
+designs. To achieve conciseness, we use aliases to refer to these
+constants and signals. The correspondence between the aliases and the
+full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
 
 %%%%% Definition for the HM2T formal specification. %%%%%
 
@@ -197,7 +195,7 @@ Appendix~\ref{sec:cnsts-sigs-names}.
   instances. Point~\ref{it:actions-functions-only} states that there
   are only two processes in the behavior of the output design, namely
   the $\mathtt{actions}$ process and the $\mathtt{functions}$
-  process. Their content are described in Points~\ref{it:actions} and
+  process. Their content are specified in Points~\ref{it:actions} and
   \ref{it:functions}. Point~\ref{it:d-is-elaborable} states that the
   output design is elaborable, i.e. syntactically well-formed,
   statically well-typed, with no multiply-driven signals, etc.
@@ -210,23 +208,35 @@ Appendix~\ref{sec:cnsts-sigs-names}.
   
   \begin{enumerate}[resume]
   \item\label{it:pdi-exists} For all place of the input SITPN model,
-    there exists a corresponding place design instance (PDI) in the
-    behavior of the output \hvhdl{} design which identifier is yielded
-    by the binder $\gamma$:\\
+    there exists a corresponding PDI identified through $\gamma$ in
+    the behavior of the output
+    design:\\
     $\forall{}p\in{}P,\exists{}g_p,i_p,o_p$ s.t.  $\pdiInBeh$.
     
-  \item\label{it:pdi-gmap} For all place of the input SITPN model and its corresponding PDI, the generic map of the PDI holds the following associations:\\
-    $\forall{}p\in{}P,g_p,i_p,o_p,\pdiInBeh\Rightarrow$\\
-    $g_p=\{(\mathtt{mm}\Rightarrow{}b(p)), (\mathtt{ian}\Rightarrow
-    \begin{cases}
-      1~\mathrm{if}~\mathtt{input}(p)=\emptyset \\
-      \vert{}\mathtt{input}(p)\vert~\mathrm{otherwise} \\
-    \end{cases}),
-    (\mathtt{oan}\Rightarrow
-    \begin{cases}
-      1~\mathrm{if}~\mathtt{output}(p)=\emptyset \\
-      \vert{}\mathtt{output}(p)\vert~\mathrm{otherwise} \\
-    \end{cases})\}$.
+  \item\label{it:pdi-gmap} For all place of the input SITPN model and
+    its corresponding PDI, the generic map of the PDI holds the
+    following associations:
+    
+    \begin{equation*}
+      \begin{aligned}
+        \forall{}p\in&{}P,g_p,i_p,o_p, \\
+        & \pdiInBeh\Rightarrow \\
+        &
+          \begin{aligned}
+            g_p=\{&(\mathtt{mm}\Rightarrow{}b(p)), (\mathtt{ian}\Rightarrow
+            \begin{cases}
+              1~\mathrm{if}~\mathtt{input}(p)=\emptyset \\
+              \vert{}\mathtt{input}(p)\vert~\mathrm{otherwise} \\
+            \end{cases}), \\
+            &(\mathtt{oan}\Rightarrow
+            \begin{cases}
+              1~\mathrm{if}~\mathtt{output}(p)=\emptyset \\
+              \vert{}\mathtt{output}(p)\vert~\mathrm{otherwise} \\
+            \end{cases})\} \\
+          \end{aligned}
+        \\
+      \end{aligned}
+    \end{equation*}
     
   \item\label{it:pdi-im} For all place of the input SITPN model and
     its corresponding PDI, there is an association between the
@@ -244,71 +254,31 @@ Appendix~\ref{sec:cnsts-sigs-names}.
   the generic map of a PDI is computed based on the properties of the
   corresponding place. Point~\ref{it:pdi-im} describes how the initial
   marking of place is reflected on the input port map of the
-  corresponding PDI through the \texttt{im} input port. Figure
-  illustrates the link between the number of input and output arcs of
-  a place and the generic map of the corresponding PDI, and how the
-  content of the generic map impacts the dimensioning of the PDI's
-  port interface.
+  corresponding PDI through the \texttt{im} input
+  port. Figure~\ref{fig:gen-pci-ex} illustrates the link between the
+  number of input and output arcs of a place and how this information
+  is passed through the generic map and impacts the dimensioning of
+  the corresponding PDI's port interface.
 
   \begin{figure}[h]
     \centering
     \includegraphics[keepaspectratio,width=.7\textwidth]{gen-pci-ex.eps}
     \caption{A graphical representation of the interface of the PDI
-      $\gamma(p_0)$ implementing place $p_0$. The generic map
-      associations appear underneath the PDI.}
+      $\gamma(p_0)$ (on the right) implementing place $p_0$ (on the
+      left). The generic map associations appear underneath the PDI.}
     \label{fig:gen-pci-ex}
   \end{figure}
   
-  \bigskip
-  
   \begin{enumerate}[resume]
-  % \item For all place of the SITPN model with no input transition, the
-  %   input port map of the corresponding PDI includes the following associations:
-  %   \begin{equation*}
-  %     \begin{aligned}
-  %       \forall{}p&\in{}P,g_p,i_p,o_p, \\
-  %                 & \mathtt{input}(p)=\emptyset\Rightarrow \\
-  %                 & \pdiInBeh\Rightarrow \\
-  %                 & \{(\mathtt{iaw}(0)\Rightarrow{}0), (\mathtt{itf}(0)\Rightarrow{}\mathtt{false})\}\subseteq{}i_p.\\
-  %     \end{aligned}
-  %   \end{equation*}
 
-  % \item For all place of the SITPN model with no output transition,
-  %   the input port map and output port map of the corresponding PDI
-  %   includes the following associations:
-  %   \begin{equation*}
-  %     \begin{aligned}
-  %       \forall{}p&\in{}P,g_p,i_p,o_p, \\
-  %                 & \mathtt{output}(p)=\emptyset\Rightarrow \\
-  %                 & \pdiInBeh\Rightarrow \\
-  %                 & \{(\mathtt{oaw}(0)\Rightarrow{}0), (\mathtt{oat}(0)\Rightarrow{}\mathtt{basic}),
-  %                   (\mathtt{otf}(0)\Rightarrow{}\mathtt{false})\}\subseteq{}i_p\\
-  %                 & \land\{(\mathtt{oav}\Rightarrow{}\mathtt{open}), (\mathtt{pauths}\Rightarrow{}\mathtt{open}),
-  %                   (\mathtt{rtt}\Rightarrow{}\mathtt{open})\}\subseteq{}o_p. \\
-  %     \end{aligned}
-  %   \end{equation*}
-
-    
-  % \item For all place of the SITPN model with no action, the
-  %   \texttt{marked} output port is left unconnected in the output port
-  %   map of the corresponding PDI:
-  %   \begin{equation*}
-  %     \begin{aligned}
-  %       \forall{}p&\in{}P,g_p,i_p,o_p, \\
-  %                 & \mathtt{acts}(p)=\emptyset\Rightarrow \\
-  %                 & \pdiInBeh\Rightarrow \\
-  %                 & (\mathtt{marked}\Rightarrow{}\mathtt{open})\in{}o_p. \\
-  %     \end{aligned}
-  %   \end{equation*}
-
-  \item For all transition of the input SITPN model, there exists a
-    corresponding transition design instance (TDI) in the behavior of
-    the \hvhdl{} design such that the identifier of the TDI is the one
-    yielded
-    by the binder $\gamma$:\\
+  \item\label{it:exists-tdi} For all transition of the input SITPN model, there exists a
+    corresponding TDI identified through $\gamma$ in the behavior of
+    the output design:\\
     $\forall{}t\in{}T,\exists{}g_t,i_t,o_t$ s.t. $\tdiInBeh$.
     
-  \item For all transition of the input SITPN model and its corresponding TDI, the generic map of the TDI holds the following associations:\\
+  \item\label{it:tdi-gen-map} For all transition of the input SITPN model and its
+    corresponding TDI, the generic map of the TDI holds the following
+    associations:
     \begin{equation*}
       \begin{aligned}[t]
         \forall{}t&\in{}T,g_t,i_t,o_t, \\
@@ -339,7 +309,9 @@ Appendix~\ref{sec:cnsts-sigs-names}.
       \end{aligned}
     \end{equation*}
     
-  \item For all transition of the input SITPN model and its corresponding TDI, the input port map of the TDI holds the following associations:\\
+  \item\label{it:tdi-time-itval} For all transition of the input SITPN
+    model and its corresponding TDI, the input port map of the TDI
+    holds the following associations:
     \begin{equation*}
       \begin{aligned}[t]
         \forall{}t&\in{}T,g_t,i_t,o_t, \\
@@ -354,33 +326,35 @@ Appendix~\ref{sec:cnsts-sigs-names}.
                               \end{cases})\}\subseteq{}i_t. \\
       \end{aligned}
     \end{equation*}
-    
-  % \item For all transition of the input SITPN model with no input place, the input port map and output port map of the corresponding TDI holds the following associations:\\
-  %   \begin{equation*}
-  %     \begin{aligned}[t]
-  %       \forall{}t&\in{}T,g_t,i_t,o_t, \\
-  %                 & \mathtt{input}(t)=\emptyset\Rightarrow \\
-  %                 & \tdiInBeh\Rightarrow \\
-  %                 & (\exists{}id_s~s.t.~(id_s,\mathtt{bool})\in{}d.sigs\land(\mathtt{rt}(0)\Rightarrow{}id_s)\in{}i_t
-  %                   \land(\mathtt{fired}\Rightarrow{}id_s)\in{}o_t)\\
-  %                 & \land\{(\mathtt{iav}(0)\Rightarrow\mathtt{true}),
-  %                   (\mathtt{pauths}(0)\Rightarrow\mathtt{true})\}\subseteq{}i_t. \\
-  %     \end{aligned}
-  %   \end{equation*}
-    
-  % \item For all transition of the input SITPN model with no condition, the input port map of the corresponding TDI holds the following association:\\
-  %   \begin{equation*}
-  %     \begin{aligned}[t]
-  %       \forall{}t&\in{}T,g_t,i_t,o_t, \\
-  %                 & \mathtt{conds}(t)=\emptyset\Rightarrow \\
-  %                 & \tdiInBeh\Rightarrow \\
-  %                 & (\mathtt{ic}(0)\Rightarrow\mathtt{true})\in{}i_t. \\
-  %     \end{aligned}
-  %   \end{equation*}
-    
-  \item For all post arc of the input SITPN model, the TDI and PDI
-    corresponding to the source transition and target place of the arc
-    are connected as follows:
+
+  \end{enumerate}
+
+  \bigskip
+
+  Similarly to the case of places, Points~\ref{it:exists-tdi} to
+  \ref{it:tdi-time-itval} state the existence of a corresponding TDI
+  for each transition of the input model, and how its generic map and
+  its input port map are built regarding the properties of the
+  transition, namely: the shape of the time interval, the number of
+  input arcs, the number of associated conditions,
+  etc. Figure~\ref{fig:gen-tdi-ex} illustrates the relation between
+  the properties of a transition and how they are implemented in the
+  interface of the corresponding TDI.
+
+  \begin{figure}[h]
+    \centering
+    \includegraphics[keepaspectratio,width=.8\textwidth]{gen-tdi-ex.eps}
+    \caption{A graphical representation of the interface of the TDI
+      $\gamma(t_0)$ (on the right) implementing transition $t_0$ (on
+      the left). The generic map associations appear underneath the
+      TDI.}
+    \label{fig:gen-tdi-ex}
+  \end{figure}
+  
+  \begin{enumerate}[resume]        
+  \item\label{it:post-arc} For all post arc of the input SITPN model,
+    the TDI and PDI corresponding to the source transition and target
+    place of the arc are connected as follows:
     \begin{equation*}
       \begin{aligned}[t]
         \forall{}t&\in{}T,p\in{}P,g_t,i_t,o_t,g_p,i_p,o_p,\omega\in\mathbb{N}^{*}, \\
@@ -393,9 +367,33 @@ Appendix~\ref{sec:cnsts-sigs-names}.
       \end{aligned}
     \end{equation*}
 
-  \item For all pre arc of the input SITPN model, the PDI and TDI
-    corresponding to the source place and target transition of the arc
-    are connected as follows:
+  \end{enumerate}
+  
+  \bigskip
+
+  Figure~\ref{fig:gen-post-arc} illustrates the translation of a post
+  arc of the input SITPN model as described in
+  Point~\ref{it:post-arc}. The weight of the arc is passed to the PDI
+  through the \texttt{iaw} input port. In the behavior of the output
+  design, all arc information is encoded through the input port
+  interface of PDIs. All computations that necessitate the arc
+  information, such as the marking update or the setting of time
+  counter reset signals, are performed in the behavior of the place
+  design. Therefore, only the PDIs need to hold the arc information.
+
+  \begin{figure}[h]
+    \centering
+    \includegraphics[keepaspectratio,width=.7\textwidth]{gen-post-arc.eps}
+    \caption{The translation of a post arc connecting a transition
+      $t_0$ to a place $p_0$ into an interconnection between the
+      interfaces of the corresponding TDI and PDI.}
+    \label{fig:gen-post-arc}
+  \end{figure}
+  
+  \begin{enumerate}[resume]
+  \item\label{it:pre-arc} For all pre arc of the input SITPN model,
+    the PDI and TDI corresponding to the source place and target
+    transition of the arc are connected as follows:
     \begin{equation*}
       \begin{aligned}[t]
         \forall{}t&\in{}T,p\in{}P,g_t,i_t,o_t,g_p,i_p,o_p,\omega\in\mathbb{N}^{*},a\in\{\mathtt{basic},\mathtt{test},\mathtt{inhib}\}, \\
@@ -403,20 +401,45 @@ Appendix~\ref{sec:cnsts-sigs-names}.
                   & \tdiInBeh\Rightarrow \\
                   & \pdiInBeh\Rightarrow\\
                   & \exists{}i\in[0,\vert\mathtt{output}(p)\vert-1]~s.t.~\{(\mathtt{oaw}(i)\Rightarrow\omega),(\mathtt{oat}(i)\Rightarrow{}a)\}\subseteq{}i_p \\
-                  & \land\exists{}j\in[0,\vert\mathtt{input}(t)\vert-1],id_{av},id_{rt},id_{frd},id_{pths}~s.t.~\{(id_{av},\mathtt{bool}),(id_{rt},\mathtt{bool}),(id_{frd},\mathtt{bool}),(id_{pths},\mathtt{bool})\}\subseteq{}d.sigs \\
-                  & \land(\mathtt{oav}(i)\Rightarrow{}id_{av})\in{}o_p\land(\mathtt{iav}(j)\Rightarrow{}id_{av})\in{}i_t \\
-                  & \land(\mathtt{rtt}(i)\Rightarrow{}id_{rt})\in{}o_p\land(\mathtt{rt}(j)\Rightarrow{}id_{rt})\in{}i_t \\
-                  & \land(\mathtt{otf}(i)\Rightarrow{}id_{frd})\in{}i_p\land(\mathtt{fired}\Rightarrow{}id_{frd})\in{}o_t \\
-                  & \land(\mathtt{pauths}(i)\Rightarrow{}id_{frd})\in{}o_p \\
-                  & \land(a=\mathtt{test}\lor{}a=\mathtt{inhib}\lor{}\mathtt{output}_c(p)=\emptyset\Rightarrow(\mathtt{pauths}(j)\Rightarrow\mathtt{true})\in{}i_t) \\
-                  & \land(a=\mathtt{basic}\land{}\mathtt{output}_c(p)\neq\emptyset\Rightarrow(\mathtt{pauths}(j)\Rightarrow{}id_{pths})\in{}i_t). \\
+                  & \begin{aligned}[t]
+                      \land\exists{}j &\in[0,\vert\mathtt{input}(t)\vert-1],id_{av},id_{rt},id_{frd},id_{pah}~s.t. \\
+                                      & \{(id_{av},\mathtt{bool}),(id_{rt},\mathtt{bool}),(id_{frd},\mathtt{bool}),(id_{pah},\mathtt{bool})\}\subseteq{}d.sigs \\
+                                      & \land(\mathtt{oav}(i)\Rightarrow{}id_{av})\in{}o_p\land(\mathtt{iav}(j)\Rightarrow{}id_{av})\in{}i_t \\
+                                      & \land(\mathtt{rtt}(i)\Rightarrow{}id_{rt})\in{}o_p\land(\mathtt{rt}(j)\Rightarrow{}id_{rt})\in{}i_t \\
+                                      & \land(\mathtt{otf}(i)\Rightarrow{}id_{frd})\in{}i_p\land(\mathtt{fired}\Rightarrow{}id_{frd})\in{}o_t \\
+                                      & \land(\mathtt{pah}(i)\Rightarrow{}id_{frd})\in{}o_p \\
+                                      & \land(a=\mathtt{test}\lor{}a=\mathtt{inhib}\lor{}\mathtt{output}_c(p)=\emptyset\Rightarrow(\mathtt{pah}(j)\Rightarrow\mathtt{true})\in{}i_t) \\
+                                      & \land(a=\mathtt{basic}\land{}\mathtt{output}_c(p)\neq\emptyset\Rightarrow(\mathtt{pah}(j)\Rightarrow{}id_{pah})\in{}i_t). \\
+                    \end{aligned} \\
       \end{aligned}
     \end{equation*}
+  \end{enumerate}
 
-  \item For all place of the input SITPN model with a non-empty set of
-    conflicting transitions, the port indices of the corresponding PDI
-    reflect the priority order established between the conflicting
-    transitions:
+  \bigskip
+  
+  Figure~\ref{fig:gen-pre-arc} illustrates the translation of a pre
+  arc of the input SITPN model as described in Point~\ref{it:pre-arc}.
+  Here, we assume that there remain some conflicts not solved by
+  mutual exclusion in the set of output transitions of place
+  $p_0$. Otherwise, according to Point~\ref{it:pre-arc}, the
+  interconnection between $\mathtt{pah(i)}$ and $\mathtt{pah(j)}$
+  would not be effective.
+  
+  \begin{figure}[h]
+    \centering
+    \includegraphics[keepaspectratio,width=.8\textwidth]{gen-pre-arc.eps}
+    \caption{The translation of a pre arc, connecting a place $p_0$ to
+      a transition $t_0$, into an interconnection between the
+      interfaces of the corresponding PDI and TDI. }
+    \label{fig:gen-pre-arc}
+  \end{figure}
+
+  \begin{enumerate}[resume]
+  \item\label{it:port-indices-ordering} For all place of the input
+    SITPN model for which conflicts in its output transitions are not
+    solved by mutual exclusion, the port indices of the corresponding
+    PDI reflect the priority order established between the conflicting
+    output transitions:
     \begin{equation*}
       \begin{aligned}[t]
         \forall{}p&\in{}P,t,t'\in{}\mathtt{output}_c(p),g_p,i_p,o_p,g_t,i_t,o_t,g_{t'},i_{t'},o_{t'}, \\
@@ -441,7 +464,25 @@ Appendix~\ref{sec:cnsts-sigs-names}.
                     \end{aligned} \\
       \end{aligned}
     \end{equation*}
-    
+  \end{enumerate}
+
+  \bigskip
+
+  Figure illustrates the ordering of the port indices in the interface
+  of PDIS as described in Point~\ref{it:port-indices-ordering}.
+
+  \begin{figure}[h]
+    \centering
+    \includegraphics[keepaspectratio,width=.8\textwidth]{gen-prio-order.eps}
+    \caption{Translation of the priority relation in terms of port
+      index ordering. Here, $name_{t_0}$ (resp. $name_{t_1}$) refers
+      to any input port of TDI $\gamma(t_0)$ (resp. $\gamma(t_1)$),
+      and $id_{out}$ refers to any composite output port of PDI
+      $\gamma(p_0)$.}
+    \label{fig:gen-prio-order}
+  \end{figure}
+
+  \begin{enumerate}[resume]
   \item\label{it:actions} There exists an \texttt{actions} process
     that assigns a value to the output port representing the
     activation status of the actions (referred to as \textit{action}
@@ -474,11 +515,11 @@ Appendix~\ref{sec:cnsts-sigs-names}.
           \forall{}a\in\mathcal{A},&~\mathtt{pls}(a)\neq\emptyset\Rightarrow \\
                                    &\exists{}e_{or}~s.t.~\gamma(a)\Leftarrow{}e_{or}\in{}ss_a\land\mathtt{is\_bsum}(e_{or},\vert{}\mathtt{pls}(a)\vert) \\
                                    &
-                                  \begin{aligned}[t]
-                                    \land\forall{}p\in{}& \mathtt{pls}(a),g_p,i_p,o_p,\\
-                                                        & \pdiInBeh\Rightarrow \\
-                                                        & \exists{}id_m~s.t.~(id_m,\mathtt{bool})\in{}d.sigs\land{}id_m\in{}e_{or}\land(\mathtt{marked}\Rightarrow{}id_m)\in{}o_p\\
-                                  \end{aligned} \\
+                                     \begin{aligned}[t]
+                                       \land\forall{}p\in{}& \mathtt{pls}(a),g_p,i_p,o_p,\\
+                                                           & \pdiInBeh\Rightarrow \\
+                                                           & \exists{}id_m~s.t.~(id_m,\mathtt{bool})\in{}d.sigs\land{}id_m\in{}e_{or}\land(\mathtt{marked}\Rightarrow{}id_m)\in{}o_p\\
+                                     \end{aligned} \\
         \end{aligned}
       \end{equation*}
       where $\mathtt{is\_bsum}$ is defined as follows:
@@ -500,48 +541,48 @@ Appendix~\ref{sec:cnsts-sigs-names}.
           \end{prooftree}} \\
       \end{tabular}
       
-      \end{enumerate}
-
-    \item\label{it:functions} There exists an \texttt{functions}
-      process that assigns a value to the output port representing the
-      execution status of the functions (referred to as
-      \textit{function} ports) of the input SITPN model:
-    
-      $\exists{}ss_{rf},ss_{f}~s.t.~\mathtt{ps}(\mathtt{functions},\emptyset,\mathtt{rst}\{ss_{rf}\}\mathtt{else}\{\mathtt{rising}\{ss_f\}\})\in{}d.beh$
-      and
-    \begin{enumerate}
-    \item The length of the $ss_{rf}$ and $ss_{f}$ sequences is equal
-      to the number of functions of the input SITPN model:\\
-      $\vert{}ss_{rf}\vert_{;}=\vert{}ss_f\vert_{;}=\vert\mathcal{F}\vert$
-      
-    \item During the initialization, all function ports are assigned
-      to
-      \texttt{false} by the \texttt{functions} process:\\
-      $\forall{}f\in\mathcal{F},~\gamma(f)\Leftarrow\mathtt{false}\in{}ss_{rf}$
-      
-    \item An function port corresponding to an function associated
-      with no transition is assigned to \texttt{false} during the
-      rising edge
-      phase:\\
-      $\forall{}f\in\mathcal{F}~s.t.~\mathtt{trs}(f)=\emptyset,\gamma(f)\Leftarrow\mathtt{false}\in{}ss_{f}$
-      
-    \item Otherwise, the value of the function port is the result of
-      the Boolean sum between the \texttt{fired} output port of all
-      TDIs representing the transitions associated with the considered
-      function:
-      \begin{equation*}
-        \begin{aligned}[t]
-          \forall{}f\in\mathcal{F},&~\mathtt{trs}(f)\neq\emptyset\Rightarrow \\
-                                   &\exists{}e_{or}~s.t.~\gamma(f)\Leftarrow{}e_{or}\in{}ss_f\land\mathtt{is\_bsum}(e_{or},\vert{}\mathtt{trs}(f)\vert) \\
-                                   &
-                                  \begin{aligned}[t]
-                                    \land\forall{}t\in{}& \mathtt{trs}(f),g_t,i_t,o_t,\\
-                                                        & \tdiInBeh\Rightarrow \\
-                                                        & \exists{}id_m~s.t.~(id_m,\mathtt{bool})\in{}d.sigs\land{}id_m\in{}e_{or}\land(\mathtt{fired}\Rightarrow{}id_m)\in{}o_t \\
-                                  \end{aligned} \\
-        \end{aligned}
-      \end{equation*}      
     \end{enumerate}
+
+    % \item\label{it:functions} There exists an \texttt{functions}
+    %   process that assigns a value to the output port representing the
+    %   execution status of the functions (referred to as
+    %   \textit{function} ports) of the input SITPN model:
+    
+    %   $\exists{}ss_{rf},ss_{f}~s.t.~\mathtt{ps}(\mathtt{functions},\emptyset,\mathtt{rst}\{ss_{rf}\}\mathtt{else}\{\mathtt{rising}\{ss_f\}\})\in{}d.beh$
+    %   and
+    % \begin{enumerate}
+    % \item The length of the $ss_{rf}$ and $ss_{f}$ sequences is equal
+    %   to the number of functions of the input SITPN model:\\
+    %   $\vert{}ss_{rf}\vert_{;}=\vert{}ss_f\vert_{;}=\vert\mathcal{F}\vert$
+      
+    % \item During the initialization, all function ports are assigned
+    %   to
+    %   \texttt{false} by the \texttt{functions} process:\\
+    %   $\forall{}f\in\mathcal{F},~\gamma(f)\Leftarrow\mathtt{false}\in{}ss_{rf}$
+      
+    % \item A function port that implements a function associated with
+    %   no transition is assigned to \texttt{false} during the rising
+    %   edge
+    %   phase:\\
+    %   $\forall{}f\in\mathcal{F}~s.t.~\mathtt{trs}(f)=\emptyset,\gamma(f)\Leftarrow\mathtt{false}\in{}ss_{f}$
+      
+    % \item Otherwise, the value of the function port is the result of
+    %   the Boolean sum between the \texttt{fired} output port of all
+    %   TDIs representing the transitions associated with the
+    %   corresponding function:
+    %   \begin{equation*}
+    %     \begin{aligned}[t]
+    %       \forall{}f\in\mathcal{F},&~\mathtt{trs}(f)\neq\emptyset\Rightarrow \\
+    %                                &\exists{}e_{or}~s.t.~\gamma(f)\Leftarrow{}e_{or}\in{}ss_f\land\mathtt{is\_bsum}(e_{or},\vert{}\mathtt{trs}(f)\vert) \\
+    %                                &
+    %                               \begin{aligned}[t]
+    %                                 \land\forall{}t\in{}& \mathtt{trs}(f),g_t,i_t,o_t,\\
+    %                                                     & \tdiInBeh\Rightarrow \\
+    %                                                     & \exists{}id_m~s.t.~(id_m,\mathtt{bool})\in{}d.sigs\land{}id_m\in{}e_{or}\land(\mathtt{fired}\Rightarrow{}id_m)\in{}o_t \\
+    %                               \end{aligned} \\
+    %     \end{aligned}
+    %   \end{equation*}      
+    % \end{enumerate}
     
   \item For all association between a transition and a condition, the
     input port reflecting the Boolean value of the given condition

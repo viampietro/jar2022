@@ -1,0 +1,133 @@
+\documentclass{standalone}
+
+\usepackage[english]{babel}
+
+% to define font size
+
+\usepackage{ulem}
+\usepackage{moresize}
+\usepackage{anyfontsize}
+
+% to use colors
+
+\usepackage[dvipsnames]{xcolor}
+\usepackage{MnSymbol}
+
+% to use tikz and its libraries
+
+\usepackage{tikz-timing}
+\usepackage{tikz}
+
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{positioning, calc, arrows, shapes, automata, petri, patterns,decorations.markings}
+\usetikzlibrary{decorations.pathreplacing}
+
+% to use tikzmark, to place and refer to marks outside the current figure
+
+\tikzset{every picture/.style={remember picture}}
+
+% styles for transitions
+
+\tikzset{transition/.append style={fill=black!20, thick}}
+\tikzset{transition/.append style={fill=black!20, thick}}
+
+% styles for test and inhib arcs.
+
+\tikzstyle{test}=[pre, *-]
+\tikzstyle{inhib}=[pre, o-]
+
+\usepackage{circuitikzgit}
+\ctikzset{
+  logic ports=ieee,
+}
+
+% Arrow positioning in a path
+
+\tikzset{->-/.style={decoration={
+  markings,
+  mark=at position #1 with {\arrow{>}}},postaction={decorate}}}
+
+\tikzset{-<-/.style={decoration={
+  markings,
+  mark=at position #1 with {\arrow{<}}},postaction={decorate}}}
+
+% shift values
+
+\newcommand{\outportshift}{0mm}
+\newcommand{\outportidpshift}{0mm}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                  BEGIN DOCUMENT                %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\begin{circuitikz}
+
+  \ctikzset{multipoles/dipchip/width=1}
+  \ctikzset{multipoles/dipchip/pin spacing=.18}
+
+  \node (pn) {
+    \begin{tikzpicture}
+
+      % PLACES AND TRANSITIONS
+      
+      \node[transition] (t0) {};
+      \node[place, anchor=north] (p0) at ($(t0.south)-(0,.5)$) {};
+
+      % LABELS
+
+      \node[anchor=east] (tzLabel) at ($(t0.west)$) {$t_0$};
+      \node[anchor=east] (pzLabel) at ($(p0.west)$) {$p_0$};
+      
+      % ARCS
+      \draw[->] ($(t0.south)$) -- ($(p0.north)$) node[midway,left] {\ssmall $2$};
+      
+    \end{tikzpicture}
+  };
+  
+  % TDI idt0
+  
+  \draw       
+  node [dipchip, num pins=8, hide numbers,
+  no topmark, external pins width=0]
+  (idt0) at ($(pn.east)+(2,0)$) {};
+
+  \node[anchor=south] at ($(idt0.north)$) {$\gamma(t_0)$};
+
+  \draw ($(idt0.east)$)
+  node [anchor=east, font=\ssmall]  {\tt f};
+
+    % PDI idp0
+  
+  \draw       
+  node [dipchip, num pins=8, hide numbers,
+  no topmark, external pins width=0]
+  (idp0) at ($(idt0.east)+(2,0)$) {};
+
+  \node[anchor=south] at ($(idp0.north)$) {$\gamma(p_0)$};
+
+  \draw ($(idp0.bpin 1)$)
+  node [anchor=west, font=\ssmall]  {\tt iaw(i)}
+  -- ++(-.3,0)
+  node[anchor=east,font=\ssmall] {\tt 2};
+  
+  \draw ($(idp0.west)$)
+  node [anchor=west, font=\ssmall]  {\tt itf(i)};
+
+  % INTERCONNECTIONS
+
+  \draw[red,->-=.5] ($(idt0.east)$) -- ($(idp0.west)$) node[red, midway, below] {\ssmall $id_s$};
+  
+  % TRANSLATION ARROW
+  
+  \node at ($(pn.east)!.3!(idt0.west)$) {\Huge$\rightarrow$};
+
+\end{circuitikz}
+
+
+\end{document}
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
