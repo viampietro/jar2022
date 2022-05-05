@@ -27,7 +27,7 @@ as follows:
 \begin{definition}[SITPN-to-\hvhdl{} design binder]
   \label{def:sitpn-to-hvhdl-binder}
   Given a $sitpn\in{}SITPN$ and a \hvhdl{} design $d\in{}design$, a
-  SITPN-to-\hvhdl{} binder $\gamma\in{}WM(sitpn,d)$ is a tuple\\
+  SITPN-to-\hvhdl{} binder $\gamma\in{}WM(sitpn,d)$ is a record
   ${<}PMap,TMap,CMap,AFMap{>}$ where:
   \begin{itemize}
   \item $PMap\in{}P\rightarrow{}\{id_p~|~\mathtt{comp}(id_p,\mathtt{place},g,i,o)\in{}d.beh\}$
@@ -49,25 +49,26 @@ The formal specification of the HM2T is expressed as a relation
 between the inputs of the transformation, namely a SITPN model and a
 bounding function, and its outputs, namely a \hvhdl{} design and a
 SITPN-to-\hvhdl{} binder. The relation is written
-$HM2T_{\mathtt{spec}}\subseteq{}SITPN\times(P\rightarrow\mathbb{N})\times{}design\times{}WM(sitpn,d)$.
-The bounding function, that is, the second parameter of the relation,
-associates each place of the SITPN model with a bound in terms of
-number of tokens.  A bound represents the maximum number of tokens
-that a place will possibly hold at some point of the execution of the
-model. We assume that these bounds have been computed through the
-formal analysis of the input SITPN model. Of course, the existence of
-such a function implies that all the SITPN models that are passed as
-inputs to the HM2T are \textit{bounded} models\footnote{There exists
-  no place that can accumulate an unlimited number of tokens in the
-  course of the execution of the model.}. As a matter of fact, we can
-prove that the HM2T is not semantic-preserving when the input is an
-unbounded SITPN model. The execution of such a model will lead to an
-infinite incrementation of the number of tokens in a given place. This
-infinite incrementation, while valid in the mathematical world, can
-never be mirrored by a \vhdl{} implementation of the model where all
-values must be finite. Therefore, the behavior of the SITPN model and
-its \hvhdl{} implementation will diverge at a certain point of their
-execution.
+$HM2T_{\mathtt{spec}}\subseteq{}SITPN\times(P\rightarrow\mathbb{N})\times{}design\times{}WM(sitpn,d)$
+where $sitpn$ and $d$ refer to the first and the third parameters of
+the relation.  The bounding function, that is, the second parameter of
+the relation, associates each place of the SITPN model with a bound in
+terms of number of tokens.  A bound represents the maximum number of
+tokens that a place will possibly hold at some point of the execution
+of the model. We assume that these bounds have been computed through
+the formal analysis of the input SITPN model. Of course, the existence
+of such a function implies that all the SITPN models that are passed
+as inputs to the HM2T are \textit{bounded} models\footnote{There
+  exists no place that can accumulate an unlimited number of tokens in
+  the course of the execution of the model.}. As a matter of fact, we
+can prove that the HM2T is not semantic-preserving when the input is
+an unbounded SITPN model. The execution of such a model will lead to
+an infinite incrementation of the number of tokens in a given
+place. This infinite incrementation, while valid in the mathematical
+world, can never be mirrored by a \vhdl{} implementation of the model
+where all values must be finite. Therefore, the behavior of the SITPN
+model and its \hvhdl{} implementation will diverge at a certain point
+of their execution.
 
 \bigskip
 
@@ -86,7 +87,7 @@ its specification. % However, the
 % HM2T is semantic preserving contribute to the proof of soundness of
 % our program w.r.t. its specification.
 While expressing the $HM2T_{\mathtt{spec}}$ relation, we refer to sets
-and functions that we define below:
+and functions that we define below:\\
 
 \begin{itemize}
 \item \texttt{input}$(p)=\{t~\vert~post(t,p)=\lfloor\omega\rfloor\}$,
@@ -195,9 +196,9 @@ full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
   instances. Point~\ref{it:actions-functions-only} states that there
   are only two processes in the behavior of the output design, namely
   the $\mathtt{actions}$ process and the $\mathtt{functions}$
-  process. Their content are specified in Points~\ref{it:actions} and
-  \ref{it:functions}. Point~\ref{it:d-is-elaborable} states that the
-  output design is elaborable, i.e. syntactically well-formed,
+  process. The content of the \texttt{actions} process is specified in
+  Point~\ref{it:actions}. Point~\ref{it:d-is-elaborable} states that
+  the output design is elaborable, i.e. syntactically well-formed,
   statically well-typed, with no multiply-driven signals, etc.
   Point~\ref{it:binder-bij} states that there is a one-to-one
   correspondence between the elements of the input SITPN model and the
@@ -253,7 +254,7 @@ full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
   SITPN model. Point~\ref{it:pdi-gmap} describes how the content of
   the generic map of a PDI is computed based on the properties of the
   corresponding place. Point~\ref{it:pdi-im} describes how the initial
-  marking of place is reflected on the input port map of the
+  marking of the place is reflected on the input port map of the
   corresponding PDI through the \texttt{im} input
   port. Figure~\ref{fig:gen-pci-ex} illustrates the link between the
   number of input and output arcs of a place and how this information
@@ -337,9 +338,9 @@ full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
   its input port map are built regarding the properties of the
   transition, namely: the shape of the time interval, the number of
   input arcs, the number of associated conditions,
-  etc. Figure~\ref{fig:gen-tdi-ex} illustrates the relation between
-  the properties of a transition and how they are implemented in the
-  interface of the corresponding TDI.
+  etc. Figure~\ref{fig:gen-tdi-ex} illustrates how the properties of a
+  transition are implemented in the interface of the corresponding
+  TDI.
 
   \begin{figure}[h]
     \centering
@@ -429,7 +430,7 @@ full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
     \centering
     \includegraphics[keepaspectratio,width=.8\textwidth]{gen-pre-arc.eps}
     \caption{The translation of a pre arc, connecting a place $p_0$ to
-      a transition $t_0$, into an interconnection between the
+      a transition $t_0$, into signal interconnections between the
       interfaces of the corresponding PDI and TDI. }
     \label{fig:gen-pre-arc}
   \end{figure}
@@ -456,10 +457,10 @@ full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
                                    & i<j) \\
                     \end{aligned} \\
                   & \begin{aligned}[t]
-                      \land(\forall{}i,j&\in\mathbb{N},id_{s},id_{s'},name_t,name_{t'},id_{pout}, \\
+                      \land(\forall{}i,j&\in\mathbb{N},id_{s},id_{s'},name_t,name_{t'},id_{out}, \\
                                         & (name_t\Rightarrow{}id_{s})\in{}i_t\Rightarrow \\
                                         & (name_{t'}\Rightarrow{}id_{s'})\in{}i_{t'}\Rightarrow \\
-                                        & \{(id_{pout}(i)\Rightarrow{}id_s),(id_{pout}(j)\Rightarrow{}id_{s'})\}\subseteq{}o_p\Rightarrow \\
+                                        & \{(id_{out}(i)\Rightarrow{}id_s),(id_{out}(j)\Rightarrow{}id_{s'})\}\subseteq{}o_p\Rightarrow \\
                                         & i<j). \\
                     \end{aligned} \\
       \end{aligned}
@@ -468,40 +469,46 @@ full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
 
   \bigskip
 
-  Figure illustrates the ordering of the port indices in the interface
-  of PDIS as described in Point~\ref{it:port-indices-ordering}.
+  Figure~\ref{fig:gen-prio-order} illustrates the ordering of the port
+  indices in the interface of a PDI as described in
+  Point~\ref{it:port-indices-ordering}.
 
   \begin{figure}[h]
     \centering
     \includegraphics[keepaspectratio,width=.8\textwidth]{gen-prio-order.eps}
     \caption{Translation of the priority relation in terms of port
-      index ordering. Here, $name_{t_0}$ (resp. $name_{t_1}$) refers
-      to any input port of TDI $\gamma(t_0)$ (resp. $\gamma(t_1)$),
-      and $id_{out}$ refers to any composite output port of PDI
-      $\gamma(p_0)$.}
+      index ordering. On the right, $name_{t_0}$ (resp. $name_{t_1}$)
+      refers to any input port of TDI $\gamma(t_0)$
+      (resp. $\gamma(t_1)$), and $id_{out}$ refers to any composite
+      output port of PDI $\gamma(p_0)$. On the left, the dotted arc
+      going from transition $t_0$ to $t_1$ indicates the $t_0$ has a
+      higher firing priority than $t_1$. }
     \label{fig:gen-prio-order}
   \end{figure}
 
   \begin{enumerate}[resume]
   \item\label{it:actions} There exists an \texttt{actions} process
-    that assigns a value to the output port representing the
-    activation status of the actions (referred to as \textit{action}
-    ports) of the input SITPN model:
+    that assigns a value to the output ports (referred to as
+    \textit{action} ports) representing the activation status of the
+    actions of the input SITPN model:
     
     $\exists{}ss_{ra},ss_{a}~s.t.~\mathtt{ps}(\mathtt{actions},\emptyset,\mathtt{rst}\{ss_{ra}\}\mathtt{else}\{\mathtt{falling}\{ss_a\}\})\in{}d.beh$
     and
     \begin{enumerate}
     \item The length of the $ss_{ra}$ and $ss_{a}$ sequences is equal
       to the number of actions of the input SITPN model:\\
-      $\vert{}ss_{ra}\vert_{;}=\vert{}ss_a\vert_{;}=\vert\mathcal{A}\vert$ where $\vert{}ss\vert{}_{;}=
+      $\vert{}ss_{ra}\vert_{;}=\vert{}ss_a\vert_{;}=\vert\mathcal{A}\vert$
+      where $\vert{}ss\vert{}_{;}=
       \begin{cases}
         \vert{}ss_1\vert_{;}+\vert{}ss_2\vert_{;}~\mathrm{if}~ss=ss_1;ss_2 \\
         1~\mathrm{otherwise}
       \end{cases}
       $
+      
     \item During the initialization, all action ports are assigned to
-      \texttt{false} by the \texttt{actions} process:\\
+      \texttt{false} by the \texttt{actions} process:
       $\forall{}a\in\mathcal{A},~\gamma(a)\Leftarrow\mathtt{false}\in{}ss_{ra}$
+      
     \item An action port corresponding to an action associated with no
       place is assigned to \texttt{false} during the falling edge
       phase:\\
@@ -509,17 +516,25 @@ full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
       
     \item Otherwise, the value of the action port is the result of the
       Boolean sum between the \texttt{marked} output port of all PDIs
-      representing the places associated with the considered action:
+      representing the places associated with the corresponding
+      action:
       \begin{equation*}
         \begin{aligned}[t]
-          \forall{}a\in\mathcal{A},&~\mathtt{pls}(a)\neq\emptyset\Rightarrow \\
-                                   &\exists{}e_{or}~s.t.~\gamma(a)\Leftarrow{}e_{or}\in{}ss_a\land\mathtt{is\_bsum}(e_{or},\vert{}\mathtt{pls}(a)\vert) \\
-                                   &
-                                     \begin{aligned}[t]
-                                       \land\forall{}p\in{}& \mathtt{pls}(a),g_p,i_p,o_p,\\
+          \forall{}a&\in\mathcal{A},~\mathtt{pls}(a)\neq\emptyset\Rightarrow \\
+                    &  \begin{aligned}[t]
+                         \exists{}e_{or}& ~s.t.~\gamma(a)\Leftarrow{}e_{or}\in{}ss_a\land\mathtt{is\_bsum}(e_{or},\vert{}\mathtt{pls}(a)\vert) \\
+                                        &
+                                          \begin{aligned}
+                                            \land\forall{}p& \in\mathtt{pls}(a),g_p,i_p,o_p, \\
                                                            & \pdiInBeh\Rightarrow \\
-                                                           & \exists{}id_m~s.t.~(id_m,\mathtt{bool})\in{}d.sigs\land{}id_m\in{}e_{or}\land(\mathtt{marked}\Rightarrow{}id_m)\in{}o_p\\
-                                     \end{aligned} \\
+                                                           &
+                                                             \begin{aligned}
+                                                               \exists{}id_m& ~s.t.~(id_m,\mathtt{bool})\in{}d.sigs \\
+                                                                            &\land{}id_m\in{}e_{or} \\
+                                                                            & \land(\mathtt{marked}\Rightarrow{}id_m)\in{}o_p \\
+                                                             \end{aligned} \\
+                                          \end{aligned} \\
+                       \end{aligned} \\
         \end{aligned}
       \end{equation*}
       where $\mathtt{is\_bsum}$ is defined as follows:
@@ -540,53 +555,35 @@ full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
             {\mathtt{is\_bsum}(\mathtt{or}(e_1,e_2),n+m)}
           \end{prooftree}} \\
       \end{tabular}
-      
     \end{enumerate}
+  \end{enumerate}
 
-    % \item\label{it:functions} There exists an \texttt{functions}
-    %   process that assigns a value to the output port representing the
-    %   execution status of the functions (referred to as
-    %   \textit{function} ports) of the input SITPN model:
-    
-    %   $\exists{}ss_{rf},ss_{f}~s.t.~\mathtt{ps}(\mathtt{functions},\emptyset,\mathtt{rst}\{ss_{rf}\}\mathtt{else}\{\mathtt{rising}\{ss_f\}\})\in{}d.beh$
-    %   and
-    % \begin{enumerate}
-    % \item The length of the $ss_{rf}$ and $ss_{f}$ sequences is equal
-    %   to the number of functions of the input SITPN model:\\
-    %   $\vert{}ss_{rf}\vert_{;}=\vert{}ss_f\vert_{;}=\vert\mathcal{F}\vert$
-      
-    % \item During the initialization, all function ports are assigned
-    %   to
-    %   \texttt{false} by the \texttt{functions} process:\\
-    %   $\forall{}f\in\mathcal{F},~\gamma(f)\Leftarrow\mathtt{false}\in{}ss_{rf}$
-      
-    % \item A function port that implements a function associated with
-    %   no transition is assigned to \texttt{false} during the rising
-    %   edge
-    %   phase:\\
-    %   $\forall{}f\in\mathcal{F}~s.t.~\mathtt{trs}(f)=\emptyset,\gamma(f)\Leftarrow\mathtt{false}\in{}ss_{f}$
-      
-    % \item Otherwise, the value of the function port is the result of
-    %   the Boolean sum between the \texttt{fired} output port of all
-    %   TDIs representing the transitions associated with the
-    %   corresponding function:
-    %   \begin{equation*}
-    %     \begin{aligned}[t]
-    %       \forall{}f\in\mathcal{F},&~\mathtt{trs}(f)\neq\emptyset\Rightarrow \\
-    %                                &\exists{}e_{or}~s.t.~\gamma(f)\Leftarrow{}e_{or}\in{}ss_f\land\mathtt{is\_bsum}(e_{or},\vert{}\mathtt{trs}(f)\vert) \\
-    %                                &
-    %                               \begin{aligned}[t]
-    %                                 \land\forall{}t\in{}& \mathtt{trs}(f),g_t,i_t,o_t,\\
-    %                                                     & \tdiInBeh\Rightarrow \\
-    %                                                     & \exists{}id_m~s.t.~(id_m,\mathtt{bool})\in{}d.sigs\land{}id_m\in{}e_{or}\land(\mathtt{fired}\Rightarrow{}id_m)\in{}o_t \\
-    %                               \end{aligned} \\
-    %     \end{aligned}
-    %   \end{equation*}      
-    % \end{enumerate}
-    
-  \item For all association between a transition and a condition, the
-    input port reflecting the Boolean value of the given condition
-    (referred to as a \textit{condition} port) is connected as follows
+  \bigskip
+
+  Figure~\ref{fig:gen-actions} describes the content of the
+  \texttt{actions} process obtained through the transformation of a
+  given input SITPN model, as specified in
+  Point~\ref{it:actions}. Here, we do not give the specification of
+  the \texttt{functions} process as it is very close to the definition
+  of the \texttt{actions} process. The reader can find the
+  specification of the \texttt{functions} process in \todo{Ref to
+    formal spec ref.}.
+  
+  \begin{figure}[h]
+    \centering
+    \includegraphics[keepaspectratio,width=\textwidth]{gen-actions.eps}
+    \caption{Generation of the \texttt{actions} process (on the right)
+      based on the place-action associations of the input SITPN model
+      (on the left). }
+    \label{fig:gen-actions}
+  \end{figure}
+
+  \bigskip
+  
+  \begin{enumerate}[resume]
+  \item\label{it:cond-ports} For all association between a transition and a condition, the
+    input port (referred to as a \textit{condition} port) reflecting
+    the Boolean value of the given condition is connected as follows
     to the input port map of the TDI corresponding to the associated
     transition:
     \begin{equation*}
@@ -597,10 +594,21 @@ full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
                   & (\mathbb{C}(t,c)=-1\Rightarrow\exists{}i\in[0,\vert\mathtt{conds}(t)\vert-1]~s.t.~(\mathtt{ic}(i)\Rightarrow{}\mathtt{not}(\gamma(c)))\in{}i_t). \\
       \end{aligned}
     \end{equation*}
-    
 
   \end{enumerate}
 
+  Figure illustrates the connection between a condition port and its
+  associated TDIs as specified in Point~\ref{it:cond-ports}.
+  
+  \begin{figure}[h]
+    \centering
+    \includegraphics[keepaspectratio,width=.65\textwidth]{gen-conds.eps}
+    \caption{Translation of the condition-transition associations (on
+      the left) into interconnections between condition ports and
+      TDIs' interfaces (on the right). }
+    \label{fig:gen-conds}
+  \end{figure}
+  
 \end{definition}
 
 %%% Local Variables:

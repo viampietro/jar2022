@@ -1,85 +1,111 @@
 \section{The place design in abstract \hvhdl{} syntax}
 \label{app:place-design}
 
-\begin{lstlisting}[language=VHDL,label={lst:place-design-abss},caption={The \texttt{place} design in \hvhdl{} abstract syntax.},framexleftmargin=1.5em,xleftmargin=2em,numbers=left, numberstyle=\tiny\ttfamily]
+\begin{lstlisting}[language=VHDL,
+  label={lst:place-design-abss},
+  caption={The \texttt{place} design in \hvhdl{} abstract syntax.},
+  basicstyle=\fontsize{8}{10}\selectfont,
+  framexleftmargin=1.5em,
+  xleftmargin=2em,
+  numbers=left,
+  numberstyle=\tiny\ttfamily]
 {
--- Generic clause
-$gens$={(input_arcs_number, nat(0,NATMAX), 1), 
-        (output_arcs_number, nat(0,NATMAX), 1),
-        (maximal_marking, nat(0,NATMAX), 1)},
+    
+-- Generic constant declarations
+$gens$={
+  (input_arcs_number, nat(0,NATMAX), 1), 
+  (output_arcs_number, nat(0,NATMAX), 1),
+  (maximal_marking, nat(0,NATMAX), 1)},
 
--- Port clause
-$ports=${(in, initial_marking, nat(0, maximal_marking)),
-         (in, input_arcs_weights, array (nat(0, 255), 0, input_arcs_number$-$1)),
-         (in, output_arcs_types, array (nat(0, 2), 0, output_arcs_number$-$1)),
-         (in, output_arcs_weights, array (nat(0, 2), 0, output_arcs_number$-$1)),
-         (in, input_transitions_fired, array (bool, 0, input_arcs_number$-$1)),          
-         (in, output_transitions_fired, array (bool, 0, output_arcs_number$-$1)),
-         (out, output_arcs_valid, array (bool, 0, output_arcs_number$-$1)),
-         (out, priority_authorizations, array (bool, 0, output_arcs_number$-$1)),
-         (out, reinit_transitions_time, array (bool, 0, output_arcs_number$-$1)),
-         (out, marked, bool)},
-   
--- Architecture declarative part
-$sigs$={(s_input_token_sum, nat(0, maximal_marking)),
+-- Port declarations
+$ports=${
+  (in, initial_marking, nat(0, maximal_marking)),
+  (in, input_arcs_weights, array (nat(0, 255), 0, sub(input_arcs_number, 1))),
+  (in, output_arcs_types, array (nat(0, 2), 0, sub(output_arcs_number, 1))),
+  (in, output_arcs_weights, array (nat(0, 2), 0, sub(output_arcs_number, 1))),
+  (in, input_transitions_fired, array (bool, 0, sub(input_arcs_number, 1))),          
+  (in, output_transitions_fired, array (bool, 0, sub(output_arcs_number, 1))),
+  (out, output_arcs_valid, array (bool, 0, sub(output_arcs_number, 1))),
+  (out, priority_authorizations, array (bool, 0, sub(output_arcs_number, 1))),
+  (out, reinit_transitions_time, array (bool, 0, sub(output_arcs_number, 1))),
+  (out, marked, bool)},
+  
+-- Internal signal declarations
+$sigs$={(s_input_tokens_sum, nat(0, maximal_marking)),
         (s_marking, nat(0, maximal_marking)),
-        (s_output_token_sum, nat(0, maximal_marking))}
+        (s_output_tokens_sum, nat(0, maximal_marking))},
        
 -- Behavior  
-$beh$=ps(input_tokens_sum, 
-         {(v_internal_input_token_sum, nat(0, maximal_marking))},
-         v_internal_input_token_sum := 0;
-         for (i, 0, input_arcs_number $-$ 1){
-            if (input_transitions_fired(i)) { 
-               v_internal_input_token_sum := v_internal_input_token_sum + input_arcs_weights(i) 
-            } else { null }
-         };
-         s_input_token_sum <= v_internal_input_token_sum)
-      $\vert\vert$
-process (output_tokens_sum, 
-        (output_arcs_types, output_arcs_weights, output_transitions_fired),
-        ((v_internal_output_token_sum,nat(0, maximal_marking))),
-(v_internal_output_token_sum := 0;
- (for (i, 0, output_arcs_number$-$1)
-      (if (output_transitions_fired(i) = true and output_arcs_types(i) = 0)
-          (v_internal_output_token_sum := v_internal_output_token_sum + output_arcs_weights(i))));
- s_output_token_sum <= v_internal_output_token_sum))
-    
-process (marking, (clk, initial_marking), $\emptyset$
-(rst (s_marking <= initial_marking)
-     (rising (s_marking <= s_marking + (s_input_token_sum $-$ s_output_token_sum))))
-
-process (determine_marked, (s_marking), $\emptyset$, (marked <= s_marking > 0))
-  
-process (marking_validation_evaluation, 
-         (output_arcs_types, output_arcs_weights, s_marking), $\emptyset$,
-(for (i, 0, output_arcs_number $-$ 1)
-     (output_arcs_valid(i) <= 
-      ((((output_arcs_types(i) = 0) or (output_arcs_types(i) = 1)) 
-        and (s_marking >= output_arcs_weights(i))) 
-       or ((output_arcs_types(i) = 2) and (s_marking < output_arcs_weights(i)))))))
-
-process(priority_evaluation, 
-        (output_arcs_types, output_arcs_weights, output_transitions_fired, s_marking),
-        ((v_saved_output_token_sum, nat(0, maximal_marking))),
-(v_saved_output_token_sum := 0;
- (for (i, 0, output_arcs_number $-$ 1)
-      (priority_authorizations(i) <= 
-       (s_marking >= v_saved_output_token_sum + output_arcs_weights(i))));
- (if ((output_transitions_fired(i) = true) and (output_arcs_types(i) = 0))
-     (v_saved_output_token_sum := v_saved_output_token_sum + output_arcs_weights(i)))))
-      
-procees(reinit_transitions_time_evaluation, (clk), $\emptyset$,
-(rst 
- (for (i, 0, output_arcs_number$-$1) (reinit_transitions_time(i) <= false))
- (rising 
-  (for (i, 0, output_arcs_number$-$1)
-       (reinit_transitions_time(i) <= 
-        (((output_arcs_types(i) = 0) or (output_arcs_types(i) = 1))
-         and (s_marking $-$ s_output_token_sum < output_arcs_weights(i))
-         and (s_output_token_sum > 0))
-        or (output_transitions_fired(i) = true)))))
-     
+$beh$=
+ps (input_tokens_sum, 
+  {(v_tokens_sum, nat(0, maximal_marking))},
+  v_tokens_sum := 0;
+  for (i, 0, sub(input_arcs_number, 1)){
+     if (input_transitions_fired(i)) { 
+        v_tokens_sum := add(v_tokens_sum, input_arcs_weights(i))
+     } else { null }
+  };
+  s_input_tokens_sum <= v_tokens_sum)
+$\vert\vert$
+ps (output_tokens_sum, 
+  {(v_tokens_sum, nat(0, maximal_marking))},
+  v_tokens_sum := 0;
+  for (i, 0, sub(output_arcs_number, 1)) {
+    if (and(output_transitions_fired(i), eq(output_arcs_types(i), 0))) {
+      v_tokens_sum := add(v_tokens_sum, output_arcs_weights(i))
+    } else { null }
+  };
+  s_output_tokens_sum <= v_tokens_sum)
+$\vert\vert$    
+ps (marking, $\emptyset$,
+  rst { s_marking <= initial_marking }
+  else {
+    rising {
+      s_marking <= add(s_marking, sub(s_input_tokens_sum, s_output_tokens_sum))
+    }
+  })
+$\vert\vert$
+ps (determine_marked, $\emptyset$, marked <= gt(s_marking, 0))
+$\vert\vert$  
+ps (marking_validation_evaluation, $\emptyset$,
+  for (i, 0, sub(output_arcs_number, 1)) {
+    output_arcs_valid(i) <= 
+    or(and(or(eq(output_arcs_types(i), 0),
+              eq(output_arcs_types(i), 1)),
+           ge(s_marking, output_arcs_weights(i))),
+       and(eq(output_arcs_types(i), 2),
+           lt(s_marking, output_arcs_weights(i))))
+  })
+$\vert\vert$
+ps (priority_evaluation, 
+  {(v_saved_output_tokens_sum, nat(0, maximal_marking))},
+  v_saved_output_tokens_sum := 0;
+  for (i, 0, sub(output_arcs_number, 1)) {
+    priority_authorizations(i) <= ge(s_marking, add(v_saved_output_tokens_sum, output_arcs_weights(i));
+    if (and(output_transitions_fired(i), eq(output_arcs_types(i), 0))) {
+      v_saved_output_tokens_sum := add(v_saved_output_tokens_sum, output_arcs_weights(i))
+    } else { null }
+  })
+$\vert\vert$      
+ps (reinit_transitions_time_evaluation, $\emptyset$,
+  rst { 
+    for (i, 0, sub(output_arcs_number, 1)) {
+      reinit_transitions_time(i) <= false
+    }
+  } else {
+    rising {
+      for (i, 0, sub(output_arcs_number, 1)) {
+        reinit_transitions_time(i) <=
+        or(and(and(or(eq(output_arcs_types(i), 0),
+                      eq(output_arcs_types(i), 1)),
+                   lt(sub(s_marking, s_output_tokens_sum),
+                      output_arcs_weights(i)))
+               gt(s_output_tokens_sum, 0)),
+               output_transitions_fired(i))
+      }
+    }
+  })
+}
 \end{lstlisting}
 
 %%% Local Variables:
