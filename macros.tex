@@ -34,22 +34,6 @@
 
 % MAth symbols
 
-\newcommand\srarrow[2]{%
-  \mathrel{%
-    \begin{tikzpicture}[%
-      baseline={(current bounding box.south)}
-      ]
-      \node[%
-      ,inner sep=1ex
-      ,align=center
-      ] (tmp) {#2 $#1$};
-      \path[%
-      ,draw,<-,] 
-      ($(tmp.south east)+(0,2pt)$) -- ($(tmp.south west)+(3pt,2pt)$);
-    \end{tikzpicture}
-  }
-}
-
 % Defining simple hyphen for math mode.
 
 \mathchardef\mhyphen="2D

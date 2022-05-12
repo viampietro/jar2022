@@ -61,7 +61,7 @@ ps (marking, $\emptyset$,
   rst { s_marking <= initial_marking }
   else {
     rising {
-      s_marking <= add(s_marking, sub(s_input_tokens_sum, s_output_tokens_sum))
+      s_marking <= add(sub(s_marking, s_output_tokens_sum), s_input_tokens_sum)
     }
   })
 $\vert\vert$

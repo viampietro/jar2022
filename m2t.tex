@@ -98,18 +98,17 @@ certain point of their execution.
 
 Definition~\ref{def:hm2t-spec} presents the formal specification of
 the HM2T through a selected set of points. The full definition of the
-HM2T's formal specification can be found at \todo{Add ref. to formal
-  spec. ref. (Arxiv or equivalent).}. Each point of the definition
-will be commented and illustrated as and when they arise. We have
-implemented the $HM2T_{\mathtt{spec}}$ relation in \coq{}, and have
-written a \coq{} function, named \texttt{sitpn2hvhdl}, that implements
-the transformation but is yet to be proved sound and complete
-regarding its specification. In Definition~\ref{def:hm2t-spec}, we
-also refer to the names of generic constants and signals declared in
-the place and transition designs. To achieve conciseness, we use
-aliases to refer to these constants and signals. The correspondence
-between the aliases and the full names is given in
-Appendix~\ref{sec:cnsts-sigs-names}.
+HM2T's formal specification can be found in
+\cite{Iampietro2022hfspec}. Each point of the definition will be
+commented and illustrated as and when they arise. We have implemented
+the $HM2T_{\mathtt{spec}}$ relation in \coq{}, and have written a
+\coq{} function, named \texttt{sitpn2hvhdl}, that implements the
+transformation but is yet to be proved sound and complete regarding
+its specification. In Definition~\ref{def:hm2t-spec}, we also refer to
+the names of generic constants and signals declared in the place and
+transition designs. To achieve conciseness, we use aliases to refer to
+these constants and signals. The correspondence between the aliases
+and the full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
 
 %%%%% Definition for the HM2T formal specification. %%%%%
 
@@ -581,7 +580,7 @@ Appendix~\ref{sec:cnsts-sigs-names}.
   transformation of a given input SITPN model, as specified in
   Point~\ref{it:actions}. The specification of the \texttt{functions}
   process is very close to the definition of the \texttt{actions}
-  process. The reader can find it in \todo{Ref to formal spec ref.}.
+  process. The reader can find it in \cite{Iampietro2022hfspec}.
   
   \begin{figure}[!ht]
     \centering
