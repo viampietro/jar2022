@@ -428,26 +428,27 @@ similarity of the initial states, and the different lock-step
 simulation lemmas (i.e. Lemmas~\ref{lem:fst-re-lock-step},
 \ref{lem:re-lock-step} and \ref{lem:fe-lock-step}). Preparing for the
 mechanization of the proof of Theorem~\ref{thm:full-trace-sim} with
-the \coq{} proof assistant, we have written very detailed proof (a
+the \coq{} proof assistant, we have written a very detailed proof (a
 hundred-page long) for Lemmas~\ref{lem:sim-init-states},
 \ref{lem:fst-re-lock-step}, \ref{lem:re-lock-step} and
 \ref{lem:fe-lock-step}. The full proof is available in
 \cite{Iampietro2021}. Even though obviously a tedious task, writing
 the fully detailed proof before the mechanization has been a
 successful process. It has revealed a bug in the \vhdl{} code defining
-the behavior of the place design, which has been corrected in the
-version given in Appendix~\ref{app:place-design}.  Due to the
-important amount of work demanded by the mechanization task, if we had
-tackled down the mechanization of the proof without a previously
+the behavior of the place design. This bug has been corrected in the
+version of the place design given in Appendix~\ref{app:place-design}.
+Due to the important amount of work demanded by the mechanization
+task, if we had tackled down the mechanization of the proof without a
+previously
 detailed proof plan, this bug would not have yet been detected. \\
 
-To illustrate the level of details reached in our proof, let us
-present an extract of the proof of
+To illustrate the level of details of our proof, let us present an
+extract of the proof of
 Lemma~\ref{lem:re-lock-step}. Lemma~\ref{lem:re-lock-step} states that
 the rising edge step verifies the lock-step simulation property. To
 prove that the states of the input SITPN model and the output design
 are similar after a rising edge step, we must prove, among other
-points, that the marking of each place is equal to the value the
+points, that the marking of a given place is equal to the value the
 \texttt{s\_marking} internal signal in its corresponding PDI. This is
 expressed by Lemma~\ref{lem:re-eq-marking}.
 
@@ -477,7 +478,7 @@ expressed by Lemma~\ref{lem:re-eq-marking}.
   Lemma~\ref{lem:re-eq-marking}, then, given a place $p\in{}P$, let us
   show that:
   \begin{equation*}
-    \boxed{s'.M(p)=\sigma'(\gamma(p))(\texttt{s\_marking}).}
+    \boxed{s'.M(p)=\sigma'(\gamma(p))(\texttt{s\_marking})}
   \end{equation*}
 
   By definition of the SITPN state transition relation on rising edge
@@ -632,7 +633,7 @@ expressed by Lemma~\ref{lem:re-eq-marking}.
     $(\mathtt{ian}\Rightarrow{}\vert{}input(p)\vert)\in{}g_p$, and by
     property of the elaboration relation, we can deduce:
     \begin{equation}
-      \Delta(\gamma(p))(\texttt{ian})=\vert{}input(p)\vert.\label{eq:ian-eq-input-card}
+      \Delta(\gamma(p))(\texttt{ian})=\vert{}input(p)\vert\label{eq:ian-eq-input-card}
     \end{equation}
 
     To ease the reading, let us define functions
@@ -660,9 +661,10 @@ expressed by Lemma~\ref{lem:re-eq-marking}.
 
     Now, we must prove the above equality between two sums. We had to
     prove a lot of such equalities during the entire proof. Thus, we
-    came up with Theorem that presents a set of
+    came up with Theorem~\ref{thm:sums-equal} that presents a set of
     sufficient conditions to prove that two sums are equal.
-
+    \todo[inline]{Mettre la preuve du theoreme en annexe?}
+    
     \begin{theorem}[Equality between two sums]
       \label{thm:sums-equal}
       For all sets $X,Y,A,B$ such that $A\subseteq{}X$ and
@@ -799,11 +801,18 @@ expressed by Lemma~\ref{lem:re-eq-marking}.
        }
      \end{equation*}
    
-     Now, let us conclude the proof by appealing to a lemma (which proof
-     is detailed and illustrated in \cite{Iampietro2021}) stating that
-     from $t\in{}Fired(s)$, we can deduce
-     $\sigma(\gamma(t))(\texttt{fired})=\mathtt{true}$. Then, this
-     latter property leads to a tautology.
+     Now, to conclude the proof, let us assume that
+     $\sigma(\gamma(t))(\texttt{fired})=\mathtt{true}$ iff
+     $t\in{}Fired(s)$. This assumption comes from Lemma ``Falling edge
+     equal fired'', which proof is detailed and illustrated in
+     \cite[p.220]{Iampietro2021}. This lemma states that, at the end
+     of a falling edge step, there is an equivalence between the set
+     of fired transitions and the value of the \texttt{fired} output
+     port of each TDI. Then, knowing that $t\in{}Fired(s)$ and that
+     state $s$ results from the execution of a previous falling edge
+     step, we can deduce
+     $\sigma(\gamma(t))(\texttt{fired})=\mathtt{true}$ and then
+     conclude the goal.
      
    \item Given an $i\in[0,\vert\mathtt{input}(p)\vert-1]$, and
      assuming that $\beta^{-1}(i)\notin{}Fired(s)$, let us show
@@ -816,10 +825,424 @@ expressed by Lemma~\ref{lem:re-eq-marking}.
          \end{cases}=0
        }
      \end{equation*}
-     
+
+     Let us define $t_i=\beta^{-1}(i)$. To conclude the goal, it is sufficient to show that:
+     \begin{equation*}
+       \boxed{\sigma(\gamma(p))(\mathtt{itf})[i]=\mathtt{false}}
+     \end{equation*}
+
+     By definition of the HM2T, there exist
+     $g_{t_i}, i_{t_i}, o_{t_i}$ such that
+     $\mathtt{comp}(\gamma(t_i), \mathtt{transition}, g_{t_i},
+     i_{t_i}, o_{t_i})\in{}d.beh$.
+
+     From $t_i\in\mathtt{input}(p)$, we can deduce that there exists
+     $\omega''\in\mathbb{N}^{*}$ such that
+     $post(t_i, p)=\lfloor\omega''\rfloor$.
+
+     From \eqref{eq:bij-input}, we can deduce that there exists an
+     $id_{s_i}$ such that:
+     \begin{itemize}
+     \item $(id_{s_i},\mathtt{bool})\in{}d.sigs$
+     \item $(\mathtt{fired}\Rightarrow{}id_{s_i})\in{}o_{t_i}$
+     \item $(\mathtt{itf}(i)\Rightarrow{}id_{s_i})\in{}i_p$
+     \end{itemize}
+
+     Let us take such an $id_{s_i}$. By property of the stabilization
+     relation, and knowing that
+     $(\mathtt{fired}\Rightarrow{}id_{s_i})\in{}o_{t_i}$ and
+     $(\mathtt{itf}(i)\Rightarrow{}id_{s_i})\in{}i_p$, we can deduce
+     $\sigma(\gamma(p))(\texttt{itf})[i]=\sigma(id_{s_i})=\sigma(\gamma(t_i))(\texttt{fired})$.
+     Thus, the goal can be rewritten as follows:
+     \begin{equation*}
+       \boxed{\sigma(\gamma(t_i))(\mathtt{fired})=\mathtt{false}}
+     \end{equation*}
+
+     From Lemma ``Falling edge not equal fired''
+     \cite[p.351]{Iampietro2021} and knowing that
+     $t_i\notin{}Fired(s)$, we can conclude the proof. Lemma ``Falling
+     edge not equal fired'' states that, at the end of a falling edge
+     step, for all transition that is not fired, then the value of the
+     \texttt{fired} output port of the corresponding TDI is
+     \texttt{false}.
    \end{enumerate}
  \end{itemize}
+ 
 \end{pf}
+
+
+\subsection{Mechanization with the \coq{} proof assistant}
+\label{sec:mech-of-the-proof}
+
+  % In this section, we give
+% metrics to measure this gap. We point out some of the reasons that may
+% explain the gap, and comment on some employed techniques to reduce the
+% size of proof scripts. As a remainder, the full code including
+% specifications and proof scripts is available at
+% \url{https://github.com/viampietro/ver-hilecop}.
+
+Listing~\ref{lst:coq-full-trace-sim-thm} presents the \coq{}
+implementation of Theorem~\ref{thm:full-trace-sim} along with the
+sequence of tactics constituting its proof.
+
+\begin{lstlisting}[language=Coq,caption={\coq{} implementation of
+Theorem~\ref{thm:full-trace-sim} and the mechanized version of its
+proof.},label={lst:coq-full-trace-sim-thm},
+framexleftmargin=1.5em,
+xleftmargin=2em,
+numbers=left,
+numberstyle=\tiny\ttfamily,
+basicstyle=\fontsize{9}{11}\selectfont,
+frame=tb]
+Theorem sitpn2hvhdl_full_trace_sim :
+  forall $\tau$ sitpn $E_c$ $\theta_s$ d $E_p$ b $\theta_\sigma$ $\gamma$,
+
+    (* sitpn is well-defined. *)
+    IsWellDefined sitpn ->
+    
+    (* The HM2T takes sitpn and b as inputs and 
+       yields the couple (d, $\gamma$) . *)
+    sitpn2hvhdl sitpn b = (inl (d, $\gamma$)) ->
+
+    (* Environments are similar. *)
+    SimEnv sitpn $\gamma$ $E_c$ $E_p$ ->
+    
+    (* $\theta_s$ is the execution trace of sitpn after $\tau$ clock cycles. *)
+    SitpnFullExec $E_c$ $\tau$ sitpn $\theta_s$ ->    
+    
+    (* $\theta_\sigma$ is the simulation trace of d after $\tau$ clock cycles. *)
+    hfullsim $E_p$ $\tau$ d $\theta_\sigma$ ->
+    
+    (* ** Conclusion: traces are similar. ** *)
+    SimTrace $\gamma$ $\theta_s$ $\theta_\sigma$.
+Proof.
+  (* Case analysis on $\tau$ *)
+  destruct $\tau$; intros;
+  match goal with
+  | [ H0: SitpnFullExec _ _ _, H1: hfullsim _ _ _ _ |- _ ] =>
+    inversion_clear H0; inversion_clear H1
+  end;
+  match goal with
+  | [ H2: simloop _ _ _ _ _ _ _ |- _ ] =>
+      inversion_clear H2
+  end.
+
+  (* CASE $\tau=0$, GOAL $\gamma\vdash{}s_0\approx\sigma_0$. 
+     Solved with [sim_init_states] lemma. *)
+  - constructor; eauto with hilecop.
+
+  (* CASE $\tau>0$, GOAL $\gamma\vdash[s_0 :: s_0 :: s_1 :: \theta_s]\sim[\sigma_0 :: \sigma'_0 :: \sigma_1 :: \theta_\sigma]$.   
+     Solved with [first_rising_edge], [falling_edge] 
+     and [trace_sim] lemmas. *)
+  - match goal with
+    | [ H: simcycle _ _ _ _ _ _ _ _ |- _ ] =>
+        inversion_clear H; repeat (constructor; eauto with hilecop)
+    end.
+Qed.
+\end{lstlisting}
+
+The proof script laid out in Listing~\ref{lst:coq-full-trace-sim-thm}
+follows the structure of the paper proof of
+Theorem~\ref{thm:full-trace-sim}. However, most part of the proof has
+been abstracted away thanks to the use of the hint database mechanism
+in conjunction with the \texttt{auto} and \texttt{eauto}
+tactics\footnote{See
+  \url{https://coq.inria.fr/refman/proofs/automatic-tactics/auto.html}
+  for more information on programmable proof search using hint
+  databases and the \texttt{auto} tactic.}.  This is representative of
+our strategy to keep our mechanized proofs robust to change. To
+achieve this, we follow the advices laid out in \cite{Chlipala2010}.
+
+In the proof script of Listing~\ref{lst:coq-full-trace-sim-thm}, we
+first perform case analysis on the clock cycle count $\tau$ by
+appealing to the \texttt{destruct} tactic. This leads to the creation
+of two proof sub-goals, one for $\tau=0$ and another for
+$\tau>0$. Before solving each sub-goal individually, we prepare the
+proof context by appealing to the \texttt{intros} tactic and then by
+performing pattern matching and unfolding of definitions. The
+\texttt{intros} tactic introduces all universally-bound variables and
+hypotheses in the proof context. Then, the pattern matching of
+Lines~25 to 32 in conjunction with the \texttt{inversion\_clear}
+tactic unfolds the definition of the SITPN full execution relation
+(resp. the \hvhdl{} full simulation relation and the \hvhdl{}
+simulation loop relation) which is an implementation of Definition
+(resp. Table~\ref{tab:full-sim} and Table~\ref{tab:sim-loop})\todo{Add
+  ref to the SITPN full execution relation}.  Then, the
+\texttt{constructor} tactic builds sub-goals to be proved based on the
+definition of the full trace similarity relation,
+i.e. \texttt{SimTrace}, which is an implementation of
+Definition~\ref{def:full-exec-trace-sim}. We let the \texttt{eauto}
+tactic decide which lemma apply to solve the sub-goals generated by
+the \texttt{constructor} tactics. We give a hint to the \texttt{eauto}
+tactic so that it looks in the user-defined \texttt{hilecop} database
+of theorems and lemmas to solve the sub-goals. The \texttt{hilecop}
+database contains the \coq{} implementation of all the theorems and
+lemmas used to prove Theorem~\ref{thm:full-trace-sim}, namely: the
+\texttt{sim\_init\_states} lemma which implements
+Lemma~\ref{lem:sim-init-states}, the \texttt{first\_rising\_edge}
+lemma which implements Lemma~\ref{lem:fst-re-lock-step}, the
+\texttt{rising\_edge} lemma which implements
+Lemma~\ref{lem:re-lock-step}, and the \texttt{falling\_edge} lemma
+which implements Lemma~\ref{lem:fe-lock-step}.  The second part of the
+proof, corresponding to the induction on $\tau$, is abstracted away in
+an intermediary lemma called \texttt{sim\_trace}. The
+\texttt{sim\_trace} lemma is automatically called by the
+\texttt{eauto} tactic to complete the goal.
+
+% \paragraph{Robustness to change}
+% \label{sec:robustness}
+
+% The proof laid out in Listing~\ref{lst:coq-full-trace-sim-thm} is
+% representative of our strategy to keep our mechanized proofs robust to
+% change. The robustness criterion is important for multiple reasons.
+% First, in the proceeding of the proof, we can always realize that some
+% case is missing in the expression of the transformation function or
+% discover that the semantics of the SITPNs or the \hvhdl{} language is
+% incomplete or incorrect. Therefore, we want to structure our proofs in
+% a way that will lower the impact of correcting the transformation
+% function or completing the semantics. Second, we know that the SITPN
+% structure and the \hvhdl{} code of the place and transition designs
+% will be evolving in the future. Therefore, we want to be able to adapt
+% our proofs with a minimum effort. To reach robustness to change, we
+% follow the indications laid out in \cite{Chlipala2010}. Mainly, we
+% make an important use of the pattern matching constructs, such as
+% \texttt{lazymatch} or \texttt{match}, to seek hypotheses in the
+% current proof context. Also, we build hint databases and rely as much
+% as possible on the use of the \texttt{auto} and \texttt{eauto} to
+% solve the conclusions.
+
+% \paragraph{Automation}
+
+% To shorten the size of proofs, we develop user-defined tactics using
+% the \coq{} \texttt{Ltac} language. The tactic that most contributed to
+% the reduction of the size of the proof scripts is the \texttt{minv}
+% tactic (see \texttt{StateAndErrorMonadTactics.v} under the
+% \texttt{common} folder). The \texttt{minv} tactic automates the proof
+% of certain lemmas regarding the properties of the \hilecop{}
+% transformation function in the context of the state-and-error monad.
+% Our \coq{} implementation of the \hilecop{} transformation function
+% implements the state-and-error monad. This monad simulates imperative
+% language traits into functional languages. All functions involved in
+% the \hilecop{} transformation function carry a compile-time state,
+% defined as the \coq{} type \texttt{CompileTimeState}. Each function
+% either returns a value, modifies the compile-time state or does
+% both. To give an example of the use of the \texttt{minv} tactic,
+% Listing~\ref{lst:gen-p-comp-inst} shows the implementation of the
+% \texttt{generate\_place\_comp\_inst} function involved in \hilecop{}
+% transformation function. The \texttt{generate\_place\_comp\_inst}
+% function generates a \hvhdl{} PCI statement from a place $p$ passed as
+% a parameter. As a side effect, the
+% \texttt{generate\_place\_comp\_inst} function adds the PCI statement
+% to the behavior of the top-level design currently built in the
+% compile-time state.
+
+% \begin{lstlisting}[language=coq,caption={\coq{} implementation of the \texttt{generate\_place\_comp\_inst} function; the function takes an SITPN place $p$ as a parameter, and modifies the compile-time state without returning a value (i.e. the function return type is \texttt{unit})},label={lst:gen-p-comp-inst}]
+% Definition generate_place_comp_inst (p : P sitpn) : CompileTimeState unit :=
+
+%    do id         <- get_nextid;
+%    do _          <- bind_place p id;
+%    do pcomp      <- get_pcomp p;
+%    do pcomp_inst <- HComponent_to_comp_inst id place_entid pcomp;
+%    add_cs pcomp_inst.
+% \end{lstlisting}
+
+% In its definition body, function \texttt{generate\_place\_comp\_inst}
+% sequentially calls to functions that sometimes modify the compile-time
+% state (e.g. the \texttt{bind\_place} function adds a binding between
+% $p$ and $id$ in the generated $\gamma$ binder, i.e. $\gamma(p)=id$
+% after the call to \texttt{bind\_place}), or sometimes simply return a
+% value without modifying the state (e.g. \texttt{get\_pcomp} returns an
+% intermediate structure representing the place component instance
+% associated to place $p$ in the compile-time state). During the
+% mechanization of the proof, we often need to prove that some
+% properties hold between the input compile-time state and the output
+% compile-time after the call to a certain function. For example, after
+% calling the \texttt{generate\_place\_comp\_inst} function on a given
+% place $p$ and for a given input state $s$, let us say that a new
+% compile-time state $s'$ is returned. We want to show that the part of
+% the $\gamma$ binder pertaining to the binding of transitions to TCI
+% identifiers has not changed between state $s$ and state
+% $s'$\footnote{Remember that the $\gamma$ binder is part of the
+%   compile-time state record type.}. To perform the proof, we need to
+% show that each function call composing the sequence of the
+% \texttt{generate\_place\_comp\_inst} function returns a compile-time
+% state verifying the wanted property. Proving simple property like
+% verifying that part of the compile-time states are equal through the
+% multiple invocation of functions is highly automatable. We adapt the
+% tactic \texttt{monadInv} defined in the \ccert{} project
+% \cite{Leroy2009} to automate proof for such properties. The result is
+% the tactic \texttt{minv} massively used in the proofs pertaining to
+% state invariants\footnote{State invariance lemmas are to be found in
+%   the \texttt{GenerateInfosInvs.v},
+%   \texttt{GenerateArchitectureIns.v}, \texttt{GeneratePortsInvs.v} and
+%   \texttt{GenerateHVhdlInvs.v} under the \texttt{sitpn2hvhdl} folder
+%   of the Git repository.}.
+
+\paragraph{On the difficulty of mechanizing the proof}
+
+The work of mechanizing the proof of Theorem~\ref{thm:full-trace-sim}
+is an ongoing task. To complete it, we have to mechanize the proofs of
+Lemma~\ref{lem:sim-init-states}, \ref{lem:fst-re-lock-step},
+\ref{lem:re-lock-step} and \ref{lem:fe-lock-step}. At the time of the
+writing, we have only mechanized two points over the six that
+constitute the proof of Lemma~\ref{lem:sim-init-states}. However, the
+effort to achieve this little part of the overall verification amounts
+to three months of work, and no more than lines of proof
+script\todo{Add count of proof script lines.}.
+
+\bigskip
+
+First, we explain the difficulty of the mechanization, in comparison
+with the verification works conducted for compiler for programming
+languages, by the structure of our source
+formalism.  % At the beginning
+% of the project aiming at verifying that the HM2T is semantic
+% preserving, we were inspired by the successful works conducted in
+% the field of compiler verification. However, the main difference
+% between the HM2T and compilers for programming languages (PLs) lies
+% in the source formalism.
+The structure of SITPNs greatly impacts the reasoning method,
+especially for the proof of the lock-step lemmas. In the works
+pertaining to the verification of compilers for PLs, the proof of a
+lock-step lemma is tackled down by performing inductive reasoning over
+the relation that computes one execution step for the source
+program. This opens a proof sub-goal for each form of the source
+program, thus following the structure of the abstract syntax of the
+source langugae. Each simple form leads to the production of a simple
+output, and this mechanism increases the straightforwardness of the
+proof. In our case, performing inductive reasoning over the SITPN
+state transition relation, that is the execution step relation, does
+not lead to the decomposition of the source model into simpler
+structures that would be transformed into simple output in terms of
+\vhdl{} code. To summarize, we can not rely on the inductive structure
+of the source formalism to cut down the difficulty of our proofs.
+
+\bigskip
+
+Second, even though our paper proof is very detailed
+(cf. Section~\ref{sec:mecha-ready-pf}), there is still a huge gap
+between the paper version and the computer-checked version written in
+\coq{}.  Right now, the \coq{} proof wins the size competition. The
+most significant distance between the size of the paper proof and the
+machine-checked proof comes from the two following points:
+\begin{enumerate}
+  
+\item Describing the content of the output design based on the
+  input SITPN model and the \texttt{sitpn2hvhdl} function.
+\item Describing the value of signals of the output design in the
+  course of its execution.
+\end{enumerate}
+
+Regarding the first point, the \texttt{sitpn2hvhdl} is an \coq{}
+implementation of the HM2T. Each time we are using the definition of
+the HM2T to describe the content of the output design in our paper
+proof, we must prove that the \texttt{sitpn2hvhdl} verifies this
+property in \coq{}. For instance, Point~\ref{it:pdi-exists} of the
+specification of the HM2T specifies that for each place of the input
+SITPN model there must exists an PDI in the output design. This is
+invoked as a one-line sentence in the
+paper proof (cf. Section~\ref{sec:mecha-ready-pf}), namely:\\
+
+\textit{By definition of the HM2T (cf. Definition~\ref{def:hm2t-spec},
+  Point~\ref{it:pdi-exists}), there exists $g_p,i_p,o_p$ such that
+  $\mathtt{comp}(\gamma(p),\mathtt{place},g_p,i_p,o_p)\in{}d.beh$.}
+
+\bigskip
+
+However, proving that the \texttt{sitpn2hvhdl} function verifies this
+property in the mechanized version of the proof amounts to
+approximately a thousand lines of proof script. As the
+\texttt{sitpn2hvhdl} function is rather complex, finding the point in
+the function where the property will appear and then propagating the
+property through the remainder of the function calls is not an easy
+task.  The \texttt{sitpn2hvhdl} function follows the state-and-error
+monad, and we have done much to automatize the propagation of
+properties through the numerous monadic calls\footnote{See the
+  definition of the \texttt{solve\_sinv} tactic in the
+  \texttt{transformation/proofs/SInvTactics.v} file, under our
+  \textsf{Git} repository.}.
+
+Now, let us look at the second point that explains the distance
+between paper proof and machine-checked proof. Once we have done
+describing the content of the output design, for instance, the
+existence of a PDI in the output, there is always a need to establish
+the value of signals at the current execution state. This is done by
+reasoning over the relations defined in the simulation semantics of
+the \hvhdl{} language, that is knowing the content of the output
+design. For instance, at the beginning of the extract of proof laid
+out in Section~\ref{sec:mecha-ready-pf}, we describe the value of the
+\texttt{sm} internal signal of PDI $\gamma(p)$ at state
+$\sigma'$, namely: \\
+
+
+\textit{By property of the \hvhdl{} concurrent statement execution
+  relation (cf. Table~\ref{tab:cs-eval}), the stabilization relation
+  (cf. Table~\ref{tab:stabilization}),
+  $\mathtt{comp}(\gamma(p),\mathtt{place},g_p,i_p,o_p)\in{}d.beh$, and
+  through the examination of the \texttt{marking} process defined in
+  the behavior of the place design (Appendix~\ref{app:place-design},
+  Line~49), we can deduce that the following equation holds:}
+\begin{equation*}
+  \begin{split}
+    \sigma'(\gamma(p))(\texttt{sm})=\sigma(\gamma(p))(\texttt{sm})-\sigma(\gamma(p))(\texttt{s\_output\_token\_sum})\\
+    +\sigma(\gamma(p))(\texttt{s\_input\_token\_sum})
+  \end{split}
+\end{equation*}
+
+
+
+% To give an example, we begin the proof of
+% Lemma~\ref{lem:init-states-eq-marking} by taking a place $p$ and a PCI
+% identifier $id_p$ linked through the $\gamma$ binder returned by the
+% transformation function. Then, we state the existence of a PCI
+% statement, identified by $id_p$ and with an associated generic map,
+% input port map and output port map, in the behavior of the top-level
+% design returned by the transformation function. To do so, we use the
+% following the sentence:
+
+% \begin{center}
+%   ``Let us take a $p\in{}P$ and an $id_p\in{}Comps(\Delta)$ such that
+%   $\gamma(p)=id_p$. By construction, there exist $g_p,i_p,o_p$
+%   s.t. $\mathtt{comp}(id_p,\texttt{place},g_p,i_p,o_p)\in{}d.cs$.''
+% \end{center}
+
+% The expression ``by construction'' is a shorthand expression for
+% ``knowing how the target \hvhdl{} design is constructed by the
+% transformation function'', ``based on the definition of the
+% transformation function'', or again ``by property of the
+% transformation function''. In \coq{}, proving the lemma that states
+% the existence of a PCI for a given place $p$ amounts to $1500$ lines
+% of proof script. The lemmas regarding properties of PCI and TCI
+% statements deduced from the transformation function tend to have
+% complicated proofs. 
+
+% We believe that the implementation of the \hilecop{} transformation
+% function could be more straightforward in order to simplify this
+% kind of proof. By straightforward, we mean that the number of steps
+% separating a given place or a given transition from the generation
+% of their corresponding PCI or TCI could be diminished, maybe at the
+% cost of time performance. Right now, ease of proof is more important
+% than time performance, considering that our goal is to prove the
+% semantic preservation theorem in a reasonable amount of time.
+% Still, the major complexity of the transformation function, i.e.
+% what makes the proofs so hard, lies in the generation of the
+% interconnections between PCIs and TCIs. Some engineering effort
+% could be spent to simplify this particular part of the
+% transformation.
+
+% Also, we spent a lot of time proving some uninteresting, however
+% necessary, properties about the \hvhdl{} design states and the
+% \hvhdl{} simulation relations. For instance, we proved a lot of lemmas
+% pertaining the preservation of identifiers through the simulation
+% phases (e.g. if a signal identifier is present in a design state at
+% the beginning of a stabilization phase, then it is still present at
+% the end of the phase). We also proved a lot of uninteresting
+% properties about the \hvhdl{} elaborated designs and the \hvhdl{}
+% elaboration relation. For instance, properties on the uniqueness of
+% identifiers in design states, in elaborated designs\dots We believe
+% that a more systematic use of dependent types, especially to implement
+% the \hvhdl{} design state and the elaborated design structure, could
+% prevent us from proving this kind of lemmas.
 
 %%% Local Variables:
 %%% mode: latex
