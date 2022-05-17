@@ -1168,12 +1168,10 @@ describing the content of the output design, for instance, the
 existence of a PDI in the output, there is always a need to establish
 the value of signals at the current execution state. This is done by
 reasoning over the relations defined in the simulation semantics of
-the \hvhdl{} language, that is knowing the content of the output
-design. For instance, at the beginning of the extract of proof laid
-out in Section~\ref{sec:mecha-ready-pf}, we describe the value of the
-\texttt{sm} internal signal of PDI $\gamma(p)$ at state
-$\sigma'$, namely: \\
-
+the \hvhdl{} language. For instance, at the beginning of the extract
+of proof laid out in Section~\ref{sec:mecha-ready-pf}, we describe the
+value of the \texttt{sm} internal signal of PDI $\gamma(p)$ at state
+$\sigma'$. We use the following sentence: \\
 
 \textit{By property of the \hvhdl{} concurrent statement execution
   relation (cf. Table~\ref{tab:cs-eval}), the stabilization relation
@@ -1189,7 +1187,19 @@ $\sigma'$, namely: \\
   \end{split}
 \end{equation*}
 
-
+Mechanizing the proof to obtain the above equation (or any such
+equation) has a substantial cost in terms of lines of proof
+script. First, we have to extract the value of the \texttt{sm} signal
+by reasoning over the execution relation for sequential statement
+applied to the body of \texttt{marking} process. Then, we have to
+prove that, as the \texttt{sm} signal is a synchronous signal, the
+stabilization phase does not modify its value; This among other
+accessory but yet necessary lemmas to prove, such that the fact that
+there is unique PDI $\gamma(p)$ in the behavior of the output design,
+or the fact that the \texttt{marking} signal is the only one to assign
+the \texttt{sm} signal, etc. In its machine-checked version, this
+sentence amounts to approximately \todo{Determine number of lines}
+lines of proof script.
 
 % To give an example, we begin the proof of
 % Lemma~\ref{lem:init-states-eq-marking} by taking a place $p$ and a PCI
