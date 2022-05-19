@@ -186,8 +186,8 @@ Step~3 and Step~4 appears as a black box in the whole \hilecop{}
 methodology. Therefore, we will not consider this transformation
 phase, which will not be verified.
 
-\subsection{Verifying the \hilecop{} methodology}
-\label{sec:verif-hilecop}
+% \subsection{Verifying the \hilecop{} methodology}
+% \label{sec:verif-hilecop}
 
 The use of Petri nets as a base model is one of the major advantage of
 the \hilecop{} methodology. All the analysis tools that accompany the
@@ -196,107 +196,653 @@ required properties, qualify the \hilecop{} methodology as a formal
 method for the design and implementation of safety-critical digital
 systems. However, the advantages provided by the use Petri nets would
 be lost if one of the transformations performed during the process
-changes the input model in a way that would alter its behavior. Thus,
-the engineers would have specified a perfectly correct digital system
-but would never obtain the expected circuit on a physical device. In
-order to reinforce the confidence in the \hilecop{} methodology, the
-goal of our work is to verify, by establishing a formal proof, that
-the model-to-text transformation from Step~2 to Step~3 (i.e. the
+changes the input model in a way that would alter its behavior. % Thus,
+% the engineers would have specified a perfectly correct digital
+% system but would never obtain the expected circuit on a physical
+% device.
+In order to reinforce the confidence in the \hilecop{} methodology,
+the goal of our work is to verify, by establishing a formal proof,
+that the model-to-text transformation from Step~2 to Step~3 (i.e. the
 framed part with red dotted lines in Figure~\ref{fig:hilecop-wf})
 preserves the behavior of the input models into the generated \vhdl{}
 designs. We choose to carry out this task as a deductive verification
 task.  We aim at proving a theorem stating that the \hilecop{}
 model-to-text transformation is \textit{semantic-preserving}. This
 theorem will be of the following form: for all PN model, input to the
-\hilecop{} transformation, the generated output \vhdl{} design behaves
-similarly at execution time. Section~\ref{sec:proof} formally presents
-our behavior preservation theorem, and thus, what we mean about the
-similarity of execution between a PN model and a \vhdl{} design.
-
-One could argue that to qualify the entire \hilecop{} methodology, one
-has to verify all the transformations used in the methodology,
-i.e. consider also the transformation from Step~1 to Step~2, and the
-transformation from Step~3 to Step~4. However, we shall say that:
-
-\begin{itemize}
-\item The transformation from Step~1 to Step~2 changes the structure
-  of the component-based input model. Even if the removal of the
-  component structures induces some structural rearrangements, the
-  behavior of the flattened model is almost similar to the one of the
-  component-based model. Therefore, we argue that verifying that this
-  transformation is semantic-preser\-ving is an easy enough task.
-
-\item The transformation from Step~3 to Step~4 is performed by
-  industrial tools. We rely on these tools because they are widely
-  used in the industry for the development of safety-critical systems
-  (e.g. cadence tools in aerospace and defense domains). Moreover, the
-  compiler/synthesizer used at this stage of the methodology is a
-  proprietary product. Thus, we don't have any access to the code of
-  this program. % Moreover, the compiler/synthesizer performs a lot of
-  % optimizations over the input \vhdl{} code. Even with a provided
-  % access to the code, verifying such an optimizing compiler would not
-  % possible within the time-span of this thesis.
-\end{itemize}
-
-% Now that we have clarified the nature of the verification task we want
-% to achieve, we can state our research question as follows:
-
-% \begin{center}
-%   \textsc{Can we prove that the model-to-text transformation described
-%     in the \hilecop{} methodology is semantic preserving?}
-% \end{center}
+transformation, the generated output \vhdl{} design behaves similarly
+at execution time. The proof will be mechanized with the \coq{} proof
+assistant.
 
 \subsection{Related work}
 \label{sec:related-work}
 
-The verification task we want to achieve is really close to the formal
-verification of compilers for programming languages. Compiler
-verification has been widely explored, and many works are accessible
-in the literature \cite{Dave2003}. The major source of inspiration of
-this work has been the work done on the \ccert{} certified C compiler
-\cite{Leroy2009}. Thus, we argue here that the scientific interest of
-our research comes from the comparison between the methods used to
-perform our verification task and the methods used to perform similar
-verification task in other domains such as compiler verification. The
-following research questions arises:
+The task of formally verifying the \hilecop{} model-to-text
+transformation can appear as yet another proof of semantic
+preservation for yet another transformation function. Proving a
+semantic preservation theorem for a transformation program, and
+implementing the proof within a proof assistant, is now a well-known
+task and many successful works can be found in the literature.
+Therefore, the scientific interest of our research comes from the
+specificities of the HM2T compared to the other transformations that
+have been formally verified. Mostly, in the literature, the
+transformation programs that are formally verified are compilers for
+programming languages. From this fact naturally arises the will to
+compare the HM2T to a compiler program, and to determine which
+elements could introduce additional technical difficulties regarding
+the formal verification process.  To begin with, the input formalism
+of the HM2T depends on Petri nets, which are quite abstract
+mathematical models, and thus is not a common programming language.
+Moreover, the output language, \vhdl{}, is also not a common
+programming language as its purpose is both the structural and
+behavioral description of hardware circuits.
 
-\begin{itemize}
-\item What are the similarities and the differences between the
-  \hilecop{} transformation and other transformation situations
-  (compilers, model transformations\dots)?
-\item Is there a strategy to perform the verification of the
-  \hilecop{} transformation?
-\item How far the correspondence holds between this strategy and the
-  strategy used in other transformation situations such as compiler
-  verification?
-\end{itemize}
+%% SCOPE OF THE REVIEW
 
-To achieve the formal verification of \hilecop{}, our approach is
-similar to what has been done for the \ccert{} compiler. The idea is
-to formalize the semantics of the source and target languages, and
-verify that the transformation preserves the semantics of any input
-model. In the thesis, we propose both to perform the formalization
-work on ``paper'' and mechanize it within the \coq{} proof assistant
-\cite{Bertot2004}.
+Now, let us look at the works of the literature pertaining to proofs
+of semantic preservation for transformations, with an extra interest
+when the proofs have been mechanized. We will present the works
+through three categories of transformation, namely: compilers for
+Generic Programming Languages (GPLs), compilers for Hardware
+Description Languages (HDLs), model-to-model and model-to-text
+transformations. The second category is of interest to us as the
+target language of the HM2T is itself an HDL. In the third category,
+we look for transformation cases where the input model has an
+execution semantics and some kind of graphical representation.
 
-In the case of \hilecop{}, some specificities of the source and target
-languages introduce additional technical difficulties in the process
-of formal verification. A first difference pertains to \hilecop{}'s
-high-level formalism (the input language), which is quite
-abstract. This formalism depends on PNs, and thus is not a common
-programming language.
+% GOAL OF THE REVIEW
 
-A second difference is about the \vhdl{} language (the output
-language).  Similarly to the PN models used in \hilecop{}, the \vhdl{}
-language is not a common programming language as its purpose is both
-the structural and behavioral description of hardware
-circuits. % Although previous work has been conducted toward the
-% formalization of the \vhdl{} semantics \cite{Kloos2012}, a semantics
-% that is able to both handle all the constructs in the generated
-% programs, and facilitate the proof of behavior preservation, still
-% needs to be designed.
+The goal of the review is to determine if there is a standard way to
+tackle down a proof of semantic preservation, or if each
+transformation must come with a self-adjusted strategy. The aspects
+that most interest us are the expression of the execution semantics,
+the transformation and the semantic preservation theorem, and also
+which proof strategies are adopted. The design choices over these
+aspects will greatly impact the mechanization of the proof. The
+feasibility of the mechanization within an acceptable time-span is
+particularly important to us. Therefore, when data is accessible, we
+will systematically report on the cost in terms of time and human
+resources taken by the mechanization.
 
-\todo[inline]{ Here put the literature review.}
+\paragraph{Compilers for Generic Programming Languages (GPLs)}
+
+% FROM CHAPTER TRANSFORMATION
+
+In the context of formally verified compilers for generic programming
+languages, the translation from a source program to a target program
+is straight forward. While descending recursively through the AST of
+the input program, each construct of the source language is mapped to
+one or many constructs of the target language.  In the works
+pertaining to the well-known \ccert{} project \cite{Leroy2009,
+  Blazy2006}, the many steps that compose the compiler from C programs
+to assembly programs clearly map each construct of source program to
+target program constructs.  Moreover, the pattern matching
+possibilities offered by languages like \coq{}, \isa{}, \hol{} and
+other interactive theorem provers enable a clear and concise
+implementation of compilers.
+
+The cases of optimizing compilers like \cite{Leroy2009} and \cite{Tan}
+show that, to avoid writing too complex functions when passing from a
+source to a target program, the compilation is decomposed into many
+passes. No more than 12 passes for the CakeML compiler, and up to 20
+passes for \ccert{}. This is a way to keep the translation functions
+simple enough in order to ease reasoning afterwards. Indeed, the more
+the gap is important between the source representation and the target
+one, the more the translation function will be complex.
+
+Another point that is noticeable while expressing a translation
+function is the necessity to keep a binding between the source and the
+target representations. For instance, in \ccert, when passing from
+transformed C programs to an RTL representation (based on registers
+and control flow graphs), a binding function $\gamma$ links the
+variables of a C program to the registers generated in the RTL
+representation of the program. The binding is necessary for both the
+translation and the proof of semantic preservation. During the
+translation, it permits to replace the variables by their
+corresponding registers in the RTL code. During the proof of semantic
+preservation, the link that exists between a variable and a register
+indicates which elements must be compared to prove that the execution
+state of the source representation is similar to the execution state
+of the target representation. The generation of this binding function
+must be integrated to the design of the translation function.
+
+In \cite{Leroy2009}, and \cite{Chlipala2010}, compilers are written
+within the \coq{} proof assistant. Compilers are expressed using the
+state-and-error monad, thus mimicking the traits of imperative
+languages into a functional programming language setting.
+
+% FROM CHAPTER PROOF
+
+Taking the \ccert{} compiler as an example, the compilation pass from
+Clight programs to Cminor programs is described in \cite{Blazy2006,
+  Leroy2009}. Clight is a subset of the C language, and Cminor is a
+low-level imperative language. The two languages are endowed with both
+a big-step and small-step operational semantics. Here, the execution
+state of the source and target languages are memory models for the
+most part, but are also completed with representations of global
+variable storage, registers, etc. The memory model consists of block
+references; each block has a lower and an upper bound. To access data,
+one has to specify the block reference along with the size of the
+accessed data (i.e, the data type) and the offset from the start of
+the block reference (i.e, where to begin the data reading). Regarding
+the proof of semantic preservation, the most difficult point is to
+relate the memory state of the source program to the memory state of
+the target program. To do so, the authors define a \emph{memory
+  injection} relation, which binds the values of source and target
+together. They also establish a relation to compare execution
+environments, i.e, the environments holding the declaration of
+functions, global variables\dots The proof of semantic preservation is
+built incrementally. First, the authors prove a correctness lemma for
+the Clight expressions: if a Clight expression $a$ evaluates to value
+$v$, then the translated Cminor expression $\lfloor{}a\rfloor$
+evaluates to value $v$ (the Clight and Cminor languages have the same
+set of values). Then, they prove a similar lemma for Clight
+statements, and finally for the entire Clight program. The proof
+strategy is to reason by induction over the evaluation relation of the
+Clight programs and perform case analysis on the translation function.
+
+The pattern to compiler verification for GPLs is more or less the same
+as presented above. In the case of compilers for imperative languages
+\cite{Leroy2009,Strecker2002}, or compilers for functional languages
+\cite{Chlipala2010,Tan}, compiler verification proceeds as follows:
+\begin{enumerate}
+\item Establish a relationship between the memory models of the source and
+  target languages, and between the global execution environments.
+\item Prove correctness lemmas starting from simple constructs, and
+  building up incrementally to consider entire programs.
+\item Reason by induction over the evaluation relation of the source
+  language, and the translation function.
+\end{enumerate}
+
+Relating memory models is more difficult when the gap between the
+source and target languages is important (for instance, the
+translation of Cminor programs into RTL (Register Transfer Language,
+which is close to assembly languages) programs in
+\cite{Leroy2009}). As a consequence, the complexity of the memory
+model comparison relation increases.
+
+\paragraph{Compilers for Hardware Description Languages (HDLs)}
+
+% FROM CHAPTER TRANSFORMATION
+The other category of compilers that we are interested in are
+compilers for hardware description languages (HDL). The \hilecop{}
+methodology's goal is the design of hardware circuits. For that
+reason, we are interested in studying the case of compilers for
+HDLs. However, one can notice that compiling an HDL program into a
+lower level representation is one level of abstraction down compared
+to the transformation we propose to verify. Indeed, it corresponds to
+Step~3 in the \hilecop{} methodology
+(cf. Figure~\ref{fig:hilecop-wf}), i.e. the transformation of VHDL
+source code into an RTL representation.
+
+In the context of formal verification applied to HDLs compilers, only
+a few works describe the specificities of their translation function.
+
+In \cite{Braibant2013}, the authors define the FeSi language (a
+refinement of the BlueSpec language, a specification language for
+hardware circuit behaviors), and its implementation within the \coq{}
+proof assistant.  The authors present the syntax and semantics of the
+FeSi language and of the RTL language which is the target language of
+the compiler.  FeSi programs are composed of simple expressions, and
+actions permitting to read or write from different types of memory
+(registers). Therefore, the abstract syntax is divided into the
+definition of expressions and the definition of actions, i.e: control
+flow instructions and operations on memory. The RTL language is
+composed of expressions and write operations to registers. The authors
+are more interested in proving that a FeSi specification is
+well-implemented by a given \coq{} program, than giving the details of
+the translation from FeSi to RTL. However, the translation seems
+straight-forward, and proceeds as usual by descending through the AST
+of FeSi programs.
+
+In \cite{Bourgeat2020}, the authors present a compiler for the
+language Koîka, which is also a simpler version of the BlueSpec
+language. A Koîka program is composed of a list of rules; each rule
+describes actions that must be performed atomically. Actions are read
+and write operations on registers. A Koîka program is accompanied by a
+scheduler that specifies an execution order for the rules. The
+described compiler transforms Koîka programs into RTL descriptions of
+hardware circuits. The translation function builds an RTL circuit by
+descending recursively down the AST of rules. Each action is
+translated into a specific RTL representation which are afterwards
+composed together to get complex circuits. The translation becomes
+trickier when it comes to decide the composition of RTL circuits to
+respect the execution order prescribed by the scheduler.
+
+In \cite{Bourke}, the authors present the verification of a compiler
+toolchain from \textsf{Lustre} programs to an imperative language
+(Obc), and from Obc to Clight.  The Clight target is the one defined
+in \ccert{} \cite{Leroy2009}.  \textsf{Lustre} permits the definition
+of programs composed of nodes that are executed synchronously.  Nodes
+treat input streams and yield output streams of values.  A node body
+is composed of sequence of equations that determine the values of
+output streams based on the input.  Obc programs are composed of class
+declarations. A class declaration has a vector of memory variables, a
+vector of instances of other classes, and method declarations.  The
+translation turns each node of a \textsf{Lustre} program into a class
+of Obc accompanied by two methods: the reset method, for the
+initialization of the streams, and the step method, for the update of
+values resulting of a synchronous step.
+
+In \cite{Loow2021}, the authors describe a compiler that transforms
+Verilog programs into netlists targeting given FPGA models. Verilog
+programs are a lot like VHDL programs; they describe a hardware
+circuit behavior in terms of processes. A netlist is composed of
+registers, variables and a list of cells corresponding to
+combinational components. During the translation process, the
+expressions of the Verilog programs are turned into netlist cells, and
+the composition of statements leads to the creation of complex
+circuits by means of cell composition.
+
+In \cite{Herklotz2021}, the authors describe a High-Level Synthesis
+(HLS) tool that transforms C programs into Verilog
+descriptions. Moreover, they have formally proved the correctness of
+the whole process, and mechanized the proof with \coq{}. In HLS, the
+purpose of the transformation is to obtain a hardware implementation,
+described with an HDL, of a computer program. The verified
+transformation from C to Verilog described in the paper is decomposed
+into several transformations: from C to a CFG-representation language
+called 3AC, from 3AC to the intermediate language HTL, and from HTL to
+Verilog. The transformation from C to 3AC relies on the \ccert{}
+compiler. In the second transformation pass, i.e. from 3AC to HTL, the
+HTL language permits the FSM-based representation of a hardware
+design. Thus, going from 3AC to HTL implies transforming C statements
+into a complex FSM ecosystem split into a data-path part and a control
+logic part. The data-path part involves a RAM representation of the
+hardware memory. Therefore, in the generated HTL program the RAM
+memory is a part of the code, whereas it does not appear in the input
+program.
+
+% FROM CHAPTER PROOF
+In the case of HDL (Hardware Description Language) compilers, proving
+semantic preservation is very similar to the case of GPL compilers. Of
+course, the difference lies in the semantics of HDL languages and the
+description of execution states. The semantics of HDLs is
+intrinsically related to the notion of execution over time, or over
+multiple clock cycles; we are dealing with reactive
+systems. Therefore, the semantic preservation theorems are formulated
+w.r.t. the synchronous or the time-related semantics of the considered
+languages.
+
+In \cite{Bourgeat2020,Braibant2013}, the source language is a subset
+of the BlueSpec specification language for hardware synthesis, and the
+target language is an RTL representation of the circuit. The runtime
+state of the source and target programs are basically a mapping
+between registers to values. In \cite{Bourgeat2020}, the execution
+state also holds a log of the read and write operations of the input
+program, and this log is compared to the log of the RTL
+representation. The semantic preservation theorem takes the general
+form of Definition~\ref{def:gen-beh-pres-thm}, however, the final
+states refer to the states of source and target programs at the end of
+a clock cycle. Thus, the semantic preservation theorem states that
+starting from equal register stores after the execution of a source
+program and its RTL (Register Transfer Level\footnote{The acronymn RTL
+  is used both in the world of microelectronic and computer
+  science. In computer science, it means Register Transfer Language
+  and refers to a language which level is close to assembly
+  languages. In microelectronic, it means Register Transfer Level and
+  is a method to give a high-level representation of a circuit.})
+circuit after one clock cycle leads to equal register stores.
+
+In \cite{Bourke}, the source language is a subset of \lustre{} and the
+target language is an imperative language called Obc. A \lustre{}
+program is composed of nodes; each node treats a set of input streams
+and publishes output streams after the computation of its statement
+body. In its statement body, a \lustre{} node possibly refers to
+instances of other nodes. In the compilation process, each \lustre{}
+node is translated into an Obc class. An Obc class holds a vector of
+variables composing its internal memory and a vector of other Obc
+class instances. The authors define a data flow semantics for the
+\lustre{} language; the rule instances of the semantics describe how
+output streams are computed based on input streams.  On the side of
+the Obc language, the semantics define a function $step$ that computes
+the execution of the Obc classes over one clock cycle. To prove the
+semantic preservation theorem, the state comparison relation binds the
+values of input and output streams on one side to the values of
+variables and Obc class instances on the other side. The semantic
+preservation theorem is as follows: if a \lustre{} node yields the
+output stream $o$ from an input stream $i$, then the iterative
+execution of the $step$ function for the corresponding Obc class
+incrementally builds the output stream $o$ given the values of the
+input stream $i$. The proof is done by induction over the clock step
+count, and by induction over the evaluation relation for the \lustre{}
+statements composing the body of nodes.
+
+In \cite{Loow2021}, the HDL compiler translates Verilog modules into
+netlists. The execution state of Verilog module holds the value of the
+variables declared in the module. The execution state of a netlist
+circuit holds the value of the registers declared in the
+circuit. Therefore, the state comparison relation, used to state the
+semantic preservation theorem, binds the values of variables on one
+side to the values of registers on the other side. The semantics of
+Verilog is quite similar to the one of \vhdl{}; a set of processes
+composing a module are executed w.r.t. the simulation semantics of the
+language, i.e, composed of synchronous and combinational execution
+steps. The authors give a big-step operational semantics to netlists
+by defining an interpreter that runs a netlist over n clock cycles.
+The semantic preservation theorem is as follows: Assuming that a
+module is transformed into a circuit, and that some well-formation
+hypotheses hold on the module, if the module executes without error,
+and yields a final state $venv$, then there exists a final state
+$cenv$ yielded by the execution of the circuit over n clock cycles
+s.t. $venv$ and $cenv$ are similar according to the relation
+$verilog\_netlist\_rel$. Here, the $verilog\_netlist\_rel$ is the
+state comparison relation, which relates variables to registers.
+
+In \cite{Yang2016}, the compiler transforms programs of the
+synchronous language SIGNAL into Synchronous Clock Guarded Actions
+programs (S-CGA programs). A SIGNAL program describes a set of
+processes; each process holds a set of equations describing the
+relation between signals. The equations can be synchronous equations
+(referring to a clock) or combinational ones. An S-CGA program defines
+a set of actions to be applied to some variables when some conditions
+(the guards) are met. The SIGNAL (resp. the S-CGA) language has been
+endowed with a trace semantics describing the computation of signal
+values (resp. variable values) over time. The authors describe a
+function to translate the traces of SIGNAL and S-CGA programs into a
+common trace model. Thus, the semantic preservation theorem is stated
+by comparing two traces of execution defined through the same
+model. The proof of the semantic preservation theorem is built
+incrementally. For each statement of a SIGNAL process, the authors
+exhibit a lemma proving that the trace resulting from the execution of
+the statement is equivalent to the trace resulting of the execution of
+the corresponding guarded actions (obtained through the
+compilation). The proof is fully mechanized within the \coq{} proof
+assistant.
+
+In \cite{Habibi2006}, the authors verify a methodology to design
+hardware models with SystemC models. SystemC models describe hardware
+systems with modules; a module is a C++ class with ports, data members
+and methods. The methodology describes a transformation from SystemC
+models to Abstract State Machine (ASM) thus enabling to model-check
+the hardware models. ASMs are described in the language AsmL; in AsmL,
+an ASM is implemented by a class with data members and methods. A
+denotational (fixpoint) semantics for SystemC models is defined along
+with a denotational semantics for AsmL. The semantics is another
+variant of simulation cycle, similar to all other synchronous
+languages. There are two phases: evaluate and update and the gap
+between the two is called a delta-delay. The execution state of a
+SystemC model is divided into a signal store, mapping signal to value,
+and a variable store, mapping variable to value. The execution state
+of an AsmL class is only composed of a variable store. The theorem of
+semantic preservation states that, after translation, a SystemC model
+has the same \textit{observational} behavior than its corresponding
+AsmL class. What is compared between a SystemC model and its
+corresponding AsmL class through their observational behavior is the
+activity of the processes of the first one and the activity of the
+methods of the second one. Processes and methods must be active at the
+same delta cycles. Therefore, what is compared here are not the values
+that the execution states hold, but rather the activity of the source
+and target programs.
+
+\paragraph{Model transformations}
+
+% FROM CHAPTER TRANSFORMATION
+
+We will now present the works pertaining to model-to-model and
+model-to-text transformations in the context of formal
+verification. Because of the nature of the transformation we propose
+to verify, i.e a model-to-text transformation, the following works are
+of particular interest to us. We will focus here on the manner to
+express transformations in the case of model-to-model and
+model-to-text transformations. Also, we tried to find articles related
+to model transformations involving Petri nets.
+
+In \cite{Berramla2015}, the authors observe that Model-Driven
+Engineering (MDE) is all about model transformation operations. They
+propose to set a formal context within the \coq{} proof assistant to
+verify that model transformations preserve the structure of the source
+models into the target models. To illustrate their methodology, they
+choose to transform UML state machine diagrams into Petri net
+models. The translation rules from source to target models are
+expressed within the setting of the OMG standard QVT language
+(Query/View/Transform). The QVT language offers a formal way to
+express model transformations, partly based on the Object Constraint
+Language (OCL). The translation rules map the different kinds of
+structures that can be found in UML state diagrams to specific
+structures of Petri nets. Even though the two models used as source
+and target of transformations are executable, the authors leverage the
+formal context provided by \coq{} to prove that the expressed
+transformations preserve certain structural properties.
+
+In \cite{Calegari2011}, the authors describe a process for model
+transformation where transformation rules are expressed with the Atlas
+Transformation Language (ATL). Transformation rules in ATL involve
+both declarative (OCL) and imperative (match rules) instructions. The
+authors show how the ATL rules can easily be translated into \coq{}
+relations. An example is given on the kind of model-to-model
+transformations that can be implemented that way. The example is a UML
+class diagram to relational database model transformation.
+
+In \cite{Combemale2009}, the authors explore the different ways to
+give a formal semantics to a Domain-Specific Language (DSL) in the
+context of MDE. Here, the syntax of a given DSL is expressed with a
+meta-model.  An instantiation of this meta-model (a model) yields a
+DSL program. The authors specify a transformation from a DSL model to
+another executable model, thus providing an \textit{translational}
+semantics to the DSL model.  The authors illustrate their approach
+with a source DSL named xSPEM, which is a process description
+language. The target models are timed PNs. The transformation is
+expressed through a structural mapping; i.e, each element of an xSPEM
+model is mapped to a particular PN: an activity is mapped to a subnet,
+a resource to a single place, connection from activity to resource
+through parameter is mapped to a connection of transitions and places
+in the resulting PN\dots 
+
+In \cite{Dyck2019}, the authors address the problem of expressing
+model transformations by using transformation graphs. Precisely, the
+kind of transformation graphs that are used are called Triple Graph
+Grammar (TGG). A TGG is a triplet ${<}s,c,t{>}$ where the
+``correspondence model $c$ explicitly stores correspondence
+relationships between source model $s$ and target model $t$''.
+
+The work described is \cite{Fronc2011} is really close to our own
+verification task. The article describes how Coloured Petri Nets
+(CPNs, specifically LLVM-labelled Petri nets) are transformed into
+LLVM (Low Level Virtual Machine) programs representing the state space
+(the graph of reachable markings) of these PNs. LLVM is a low-level
+assembly language. The aim is to enable an efficient model-checking of
+the CPNs.  LLVM-labelled PNs are CPNs whose places, transitions and
+arcs have LLVM constructs for color domains. Places are labelled with
+data types.  Transitions are labelled with boolean expressions that
+correspond to the guard of the transition. Arcs are labelled by
+multisets of expressions. A marking is a function that maps each place
+to a multiset of values belonging to the place's type.  The authors
+define data structures (multisets, sets, markings\dots) with
+interfaces, i.e. sets of operations over structures, to represent the
+Petri nets in LLVM.  They define interpretation functions that draw
+equivalences between Petri nets objects and LLVM data structures.  The
+authors define two algorithms: $\mathtt{fire\_t}$ and
+$\mathtt{succ\_t}$ to compute the graph of reachable states.  These
+are the functions that transform CPNs into concrete LLVM programs.
+
+In \cite{Meghzili2017}, the authors describe a transformation from UML
+state machine diagrams to Coloured Petri Nets (CPNs). The aim is to
+leverage the means of analysis provided by Petri nets to certify
+certain properties over UML state machine diagrams. The authors want
+to verify that the transformation preserve structural properties
+between source and target models. The transformation function does not
+use a standard setting as QVT or ATL, or transformation graphs. It is
+expressed as a specific function written in \isahol.
+
+In \cite{Yang2014}, the authors present a transformation from
+Architecture Analysis and Design Language (AADL) models to Timed
+Abstract State Machines (TASMs). AADL is a language widely used in
+avionics to describe both hardware and software systems. AADL doesn't
+have a lot of tools to analyze and simulate the designed systems;
+therefore transforming AADL models into TASM enables the use of an
+important toolbox for analysis, and simulation. The transformation
+from AADL to TASMs are described with ATL rules.
+
+% FROM CHAPTER PROOF
+Regarding model transformations, a lot of articles consider semantic
+preservation as the preservation of structural properties in the
+transformed model \cite{Berramla2015,Calegari2011,Meghzili2017}.
+
+Still, there are many cases where the source model and the target one
+have both an execution semantics. In these cases, the authors are
+interested in proving that the transformation is semantic preserving
+by showing that the computation of the source model and the target
+model follow a commuting diagram (see Figure~\ref{fig:sim-diagrams}).
+
+In \cite{Combemale2009} and \cite{Yang2014}, the authors are
+interested in giving a translational semantics to a given model having
+itself a reference execution semantics. In \cite{Combemale2009}, the
+source models are called xSpem models; they describe a set of
+\emph{activities} that exchange resources and hold an internal
+state. The target models are PNs. Both xSpem models and PNs have a
+state transition semantics. The state comparison is performed by
+checking the correspondence between each current status of the
+activities describe in an xSpem model and the marking of the PN. Then,
+the authors prove a bisimulation theorem, illustrated in
+Figure~\ref{fig:bisim-ref-transl}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[keepaspectratio,width=.3\linewidth]{Figures/Proof/bisim-ref-sem-to-transl-sem}
+  \caption[An example of bisimulation diagram]{Bisimulation diagram relating an xSpem model execution and a Petri net execution}
+  \label{fig:bisim-ref-transl}
+\end{figure}
+
+In Figure~\ref{fig:bisim-ref-transl}, on the right side of the
+diagram, i.e, the Petri net side, one can see that a Petri net
+possibly performs many internal actions (represented the arrow
+$\stackrel{\tau}{\rightarrow}^{*}$) before and after executing the
+computation step that is of interest for the proof (i.e, action
+$\lambda$). The proof is performed by reasoning by induction on the
+structure of the xSpem models, and then by reasoning of the state
+transition semantics of xSpem models and PNs.
+
+In \cite{Yang2014}, the authors describe a transformation from a model
+of the AADL formalism (Architecture Analysis and Design Language) to a
+particular kind of Abstract State Machine (ASM) called Timed Abstract
+State Machines (TASM). To verify that the transformation is semantic
+preserving, the authors define the semantics of AADL models and TASMs
+through Timed Transition Systems (TTSs). Thus, the execution state of
+an AADL model is the execution state of the corresponding TTS, and the
+same holds for a TASM. Comparing the state of two TTSs is easier than
+comparing the state of two different models, thus having two different
+definitions. Then, the authors prove a strong bisimulation theorem to
+verify that the transformation is semantic preserving. The whole proof
+is mechanized within the \coq{} proof assistant.
+
+In \cite{Fronc2011}, the authors describe a transformation from
+LLVM-labelled Petri nets to LLVM programs, where LLVM is low-level
+assembly language. Precisely, the generated LLVM program implements
+the state space of the source Petri net (i.e, the graph of reachable
+markings). The authors want to verify if an LLVM program truly
+implements the PN state space, i.e. if each marking present in the PN
+state space can be reached by running a specific $fire_t$ function on
+the generated LLVM program. The state of an LLVM program is defined by
+a memory model composed of a heap and a stack. The marking of an
+LLVM-labelled PN is defined in such a manner that the correspondence
+with the LLVM program memory model is straightforward. The PN model
+has classical firing semantics, and LLVM programs follow a small-step
+operational semantics. The semantic preservation theorem states that
+for all transition $t$ being fired, leading from marking $M$ to
+marking $M'$, then applying running the $fire_t$ function over the
+generated LLVM program at state $LM$ (such that $LM$ implements
+marking $M$) leads to a new state $LM'$, such that $LM'$ implements
+marking $M'$. To prove this theorem, the authors proceed by induction
+on the number of places of the input Petri net.
+
+% GLOBAL DISCUSSIONS
+
+Transformation functions are mappings from a source representation to
+a target representation. The more the mapping from source to target is
+straight-forward the easier the comparison will be when proving that
+the transformation is semantic preserving. Thus, in
+\cite{Leroy2009,Tan,Chlipala2010} where complex cases of optimizing
+compilers are presented, the compilation is split into many simple
+passes to ease the verification effort coming afterwards. In the case
+of the \hilecop{} transformation, we are not yet concerned with the
+optimization of the generated \vhdl{} code. Thus, our transformation
+algorithm performs the generation of the target \hvhdl{} design in a
+single pass. We do not need to use intermediary representations
+between the input SITPN model and the generated \hvhdl{} design.
+
+Also, while transforming source programs, the compiler must often
+generate fresh constructs belonging to the target language (for
+instance, generating a fresh RTL register for each variable referenced
+in a source C program in \cite{Leroy2009}). The compiler must keep a
+binding, that is, a memory of the mapping between the elements of the
+source program and their mirror in the target program. This
+consideration is of interest in our case of transformation where the
+elements of SITPNs are also mirrored by elements in the generated
+\hvhdl{} design.
+
+It remains hard to establish a standard way to express a
+transformation function as it really depends on the form of the input
+and the output representations. Compilers for programming languages
+tend to be a lot more compositional than model transformations. Here,
+the word \textit{compositional} means that the translation rules can
+be split into simple and independent cases of translation, e.g.
+translation of expressions, then translation of statements, then
+translation of function bodies,\dots This is a huge advantage to
+perform the proof of semantic preservation. Indeed, this decomposition
+of a translation function permits to reason on simple translation
+cases; yet, each of these translations cases yields a piece of target
+code that can be executed or interpreted in an independent manner. In
+the case of the \hilecop{}, we tried as much as possible to express
+the transformation in a compositional way. First, we tried to devise
+the transformation by building up transformation functions for each
+element of the SITPN structure, i.e.: a transformation function for
+the places, another for the transitions\dots However, due to the
+interconnections that exist between the component instances of the
+generated \hvhdl{} design, it is impossible to define transformation
+functions that would yield stand-alone executable code.
+
+In the world of models, there exist some standard formalisms to
+express transformation rules (QVT, ATL, transformation graphs\dots).
+However, the complexity of the transformation rules depends on the
+richness of the elements composing the source model, and the distance
+to the concepts of the target model. In our case, we were not able to
+grab the perks of using such formalisms as QVT or ATL to devise our
+transformation.
+
+In this thesis, we are interested in the verification of a semantic
+preservation property for a given transformation function. To achieve
+this kind of proof task, the way to proceed is quite similar, at least
+in the three cases of transformation presented above (i.e, GPL
+compilation, HDL compilation, and model transformations). Even though
+the source and target languages or models are different from one case
+of transformation to the other, however, semantic preservation
+theorems carry the same structure, i.e. the one presented in
+Definition~\ref{def:gen-beh-pres-thm}. The state comparison relation
+and the choice of the commuting diagram (i.e. how much computational
+steps of the target representation correspond to one computational
+step of the source representation) are the two angular stones of the
+process.
+
+One can notice that when verifying the transformation of HDL programs,
+the semantic preservation theorems are expressed in terms of a
+time-related computational step. It can either be a clock cycle or
+another kind of time step. The state equivalence checking is made at
+the end of this time-related computational step. This differs from the
+expression of behavior preservation theorems for GPLs, where a
+computational step is not related to time, but rather expresses the
+one-time computation of programs.
+
+Concerning proof strategies, in the case of programming languages,
+proving the semantic preservation theorems is systematically done by
+induction over the semantics relations of the source and target
+languages, and by reasoning on the translation function. The semantics
+relations are themselves defined by following the inductive structure
+of the language ASTs. In the case of model transformations, when the
+source model makes it possible, the proofs are performed similarly by
+applying inductive reasoning over the structure of the input model.
+This enables compositional reasoning, i.e: to split the difficulty of
+proving the semantic preservation theorem into simpler lemmas about
+the execution of simpler programs or simple model structures.  % Then,
+% with a lemma proving that the execution of a simple program or model
+% construct is correct, we can deduce the correctness of the execution
+% of more complex program or model constructs composed of these simple
+% constructs. 
+Based on these observations, we will now present the relation that
+allows us to compare the runtime state of a given SITPN model with the
+runtime state of an \hvhdl{} design. This state similarity relation
+will then permit us to express our semantic preservation theorem.
+
+% END OF RELATED WORK
 
 To further motivate the necessity of the verification task, the
 development of neuroprostheses by the INRIA CAMIN team is at the base
@@ -326,13 +872,13 @@ to use the verified version of the transformation.\\
 
 This article is structured as
 follows. Section~\ref{sec:hilecop-models} presents the specific kind
-of Petri net models which are the input models of \hilecop{}'s
-model-to-text transformation.  Section~\ref{sec:hvhdl} gives a formal
-definition of the syntax and semantics of a subset of the \vhdl{}
-language that we call \hvhdl{}. \hvhdl{} is the target language of the
-programs generated by \hilecop{}'s model-to-text transformation.
-Section~\ref{sec:m2t} presents the algorithm of the transformation and
-its implementation with the \coq{} proof assistant.
+of Petri net models that are the input of \hilecop{}'s model-to-text
+transformation along with their formal semantics.
+Section~\ref{sec:hvhdl} gives a formal definition of the syntax and
+semantics of a subset of the \vhdl{} language that we call
+\hvhdl{}. \hvhdl{} is the target language of the programs generated by
+\hilecop{}'s model-to-text transformation.  Section~\ref{sec:m2t}
+presents the transformation through its formal specification.
 Section~\ref{sec:proof} details the semantic preservation theorem
 expressing that the \hilecop{} transformation is semantic-preserving.
 It also gives the high-level theorems and lemmas involved in the proof
@@ -2863,7 +3409,7 @@ and their corresponding version in the generated \hvhdl{} design. This
 mapping is captured within a structure called a SITPN-to-\hvhdl{}
 binder.  This structure is generated alongside the transformation of
 the input SITPN model into a \hvhdl{} design. It is both useful to
-express the HM2T and its formal
+implement the HM2T as a program and to express its formal
 specification. Definition~\ref{def:sitpn-to-hvhdl-binder} formally
 describes the SITPN-to-\hvhdl{} binder structure:
 \begin{definition}[SITPN-to-\hvhdl{} design binder]
@@ -2972,7 +3518,7 @@ and the full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
   Points~\ref{it:pdi-tdi-only} to \ref{it:binder-bij} specify the
   global shape of the output design $d$ and the binder structure
   $\gamma$.  Point~\ref{it:pdi-tdi-only} states that the behavior of
-  design d is only composed of place or transition design
+  design $d$ is only composed of place or transition design
   instances. Point~\ref{it:actions-functions-only} states that there
   are only two processes in the behavior of the output design, namely
   the $\mathtt{actions}$ process and the $\mathtt{functions}$
@@ -4265,9 +4811,9 @@ expressed by Lemma~\ref{lem:re-eq-marking}.
      \cite[p.220]{Iampietro2021}. This lemma states that, at the end
      of a falling edge step, there is an equivalence between the set
      of fired transitions and the value of the \texttt{fired} output
-     port of each TDI. Then, knowing that $t\in{}Fired(s)$ and that
-     state $s$ results from the execution of a previous falling edge
-     step, we can deduce
+     port of each corresponding TDI. Then, knowing that
+     $t\in{}Fired(s)$ and that state $s$ results from the execution of
+     a previous falling edge step, we can deduce
      $\sigma(\gamma(t))(\texttt{fired})=\mathtt{true}$ and then
      conclude the goal.
      
@@ -4648,31 +5194,31 @@ Mechanizing the proof to obtain the above equation (or any such
 equation) has a substantial cost in terms of lines of proof
 script. First, we have to extract the value of the \texttt{sm} signal
 by reasoning over the execution relation for sequential statement
-applied to the body of \texttt{marking} process. Then, we have to
+applied to the body of the \texttt{marking} process. Then, we have to
 prove that, as the \texttt{sm} signal is a synchronous signal, the
-stabilization phase does not modify its value; This among other
+stabilization phase does not modify its value. This among other
 accessory but yet necessary lemmas to prove, such that the fact that
 there is unique PDI $\gamma(p)$ in the behavior of the output design,
-or the fact that the \texttt{marking} signal is the only one to assign
-the \texttt{sm} signal, etc. In its machine-checked version, this
-sentence amounts to approximately \todo{Determine number of lines}
-lines of proof script.
+or the fact that the \texttt{marking} process is the only one to
+assign the \texttt{sm} signal, etc. In its machine-checked version,
+this sentence amounts to approximately \todo{Determine number of
+  lines} lines of proof script.
 
 \section{Conclusion}
 \label{sec:concl}
 
-In this article, we have presented our work pertaining to the formal
-verification of the \hilecop{} methodology, more specifically
-pertaining to the proof that one transformation pass of the
-methodology is semantic preserving.  The considered transformation
-pass is a \textit{model-to-text} transformation that takes a specific
-kind of Petri net model as input, i.e. a SITPN that represents the
-behavior of a safety-critical digital system, and generates an output
-\vhdl{} design. The formal verification of the \hilecop{}
-model-to-text transformation (HM2T) has been conducted with the help
-of the \coq{} proof assistant.  To formally verify that the HM2T is
-semantic preserving, we followed the usual proceeding applied in the
-domain of deductive verification, which is:
+In this article, we have reported on the formal verification of the
+\hilecop{} methodology, more specifically pertaining to the proof that
+one transformation pass of the methodology is semantic preserving.
+The considered transformation pass is a \textit{model-to-text}
+transformation that takes a specific kind of Petri net model as input,
+i.e. a SITPN that represents the behavior of a safety-critical digital
+system, and generates an output \vhdl{} design. The formal
+verification of the \hilecop{} model-to-text transformation (HM2T) has
+been conducted with the help of the \coq{} proof assistant.  To
+formally verify that the HM2T is semantic preserving, we followed the
+usual proceeding applied in the domain of deductive verification,
+which is:
 \begin{enumerate}
 \item Formalize the execution semantics of the source representation
   (Section~\ref{sec:hilecop-models}) and the target representation
@@ -4689,8 +5235,8 @@ domain of deductive verification, which is:
 
 %%%%%%%% ANSWERS TO RESEARCH QUESTIONS AND CONTRIBUTIONS %%%%%%%%%
 
-Following these steps, we brought the proof, in a very detailed
-manner, that the HM2T is semantic preserving. Even though the
+Following these steps, we brought the proof on paper and in a very
+detailed manner that the HM2T is semantic preserving. Even though the
 mechanization of the proof is not completed, each step of the approach
 brought its own part of contributions.  During the formalization of
 the SITPN semantics, i.e. the source representation of the
@@ -4705,29 +5251,27 @@ Through the formalization of a well-defined SITPN, we precisely
 characterized the way to handle a conflict between the transitions of
 an SITPN. This aspect of the SITPN semantics is complex and has been
 one particularly subtle point of the proof of semantic preservation.
-About the target language of the transformation, we were able, by
+About the output language of the transformation, we were able, by
 targeting a very precise subset of the \vhdl{} language, to devise a
 very simple simulation semantics compared to the one express the
 language reference manual. We defined the abstract syntax of a subset
 of \vhdl{}, called \hvhdl{}, that suited our needs regarding the
-\vhdl{} programs generated by the transformation and the ones that
-were previously defined by the methodology (i.e. the place and
-transition designs). The \hvhdl{} syntax and semantics is well-suited
-to express any kind of synchronous and synthesizable digital
-systems. Moreover, the implementation of the \hvhdl{} syntax and
-semantics in \coq{} provides a framework to reason about \hvhdl{}
-designs. To the best of our knowledge, it is the only example of
-implementation of the \vhdl{} language using the \coq{} proof
-assistant. About the transformation itself, we described its formal
-specification and also gave one possible implementation in the form of
-an imperative pseudo-code algorithm in \cite{Iampietro2021}. About the
-implementation of the HM2T in \coq{}, we tried as much as possible to
-draw our inspirations from the techniques found in the
-literature. Especially, we tried to produce clear, maintainable code,
-through the use of functional design patterns, while anticipating the
-additions of new elements in the input models. We also tried as much
-as possible to implement the transformation in order to ease the
-mechanization of the proof of semantic preservation.
+\vhdl{} programs generated by the HM2T. The \hvhdl{} syntax and
+semantics is well-suited to express any kind of synchronous and
+synthesizable digital systems. Moreover, the implementation of the
+\hvhdl{} syntax and semantics in \coq{} provides a framework to reason
+about \hvhdl{} designs. To the best of our knowledge, it is the only
+example of implementation of the \vhdl{} language using the \coq{}
+proof assistant. About the transformation itself, we described its
+formal specification and also gave one possible implementation in the
+form of an imperative pseudo-code algorithm in
+\cite{Iampietro2021}. About the implementation of the HM2T in \coq{},
+we tried as much as possible to draw our inspirations from the
+techniques found in the literature. Especially, we tried to produce
+clear, maintainable code, through the use of monads, while
+anticipating the addition of new elements in the input models.  To
+ease the proof mechanization, we have fostered the straightforwardness
+of the implementation rather than the optimising aspects of it.
 
 % The last part of the work was related to the expression and the proof
 % of the semantic preservation theorem. While expressing the theorem of
@@ -4747,76 +5291,7 @@ mechanization of the proof of semantic preservation.
 
 % Answers to additional research questions
 
-The relation between our formalization choices and the engineering
-difficulties that they brought was one topic of interest.  Especially
-in the world of formal verification, and more truly in the domain of
-deductive verification and interactive proving, the mechanization of
-proofs with the help of a proof assistant may be very time
-consuming. We believe that it is a part of the research task to
-evaluate the feasibility of the mechanization of proofs within a
-reasonable time-span, and also, to try to bring an understanding
-regarding the
-formalization choices and their impacts on the mechanization.\\
-
-
-We stated above that from our very pragmatic research question arose a
-lot of additional questions. These questions pertain to the position
-of the \hilecop{} model-to-text transformation with respect to the
-other examples of transformation for which a work of formal
-verification has been realized. In other words, what makes this
-transformation specific? What aspects of this transformation and of
-its formal verification motivate a research interest? The very context
-of the design and production of critical digital systems, in which the
-\hilecop{} transformation is involved, brings out interesting research
-challenges. In terms of semantics, it means that we are dealing with
-\textit{reactive} systems, i.e. systems which are characterized by a
-time-related execution and their interactions with an outside
-environment. Considering the work done on the formal verification of
-compilers for GPLs, where programs are \textit{transformational}
-systems (i.e. there is a one-time end-to-end execution of the
-program), this already constitutes an originality. The reactivity of
-systems must be taken into account in the expression of the theorem of
-semantic preservation. However, some works
-\cite{Bourke,Habibi2006,Braibant2013,Yang2014,Loow2021,Hansen2007a,Bourgeat2020,Yang2016}
-have already been conducted on the formal verification of hardware
-description language (HDL) compilers. In that case, the source
-language and its semantics permit us to describe reactive systems. As
-there exist a lot of works pertaining to the formal verification of
-transformations relating a source programming \textit{language} to a
-target one, the first originality of the \hilecop{} transformation is
-that the source representation is a \textit{graphical formalism}. This
-graphical formalism is a particular brand of Petri nets with a
-synchronous semantics, which is also an original point as most of the
-Petri net classes have an asynchronous semantics. These SITPNs have
-been designed to give as much power of expression as possible to the
-engineers that are designing safety-critical digital systems. Blending
-these considerations with the context of formal methods, and the
-necessity to produce \textit{safe} models of critical digital systems,
-the result is that the semantics of SITPNs is rather complex;
-especially the handling of conflicts between transitions.
-
-Another point of originality of the \hilecop{} transformation comes
-from the distance between the SITPN models, which are yet abstract
-mathematical objects, and their target representation as \vhdl{}
-designs, which already deeply tied to the functioning of hardware
-systems. Moreover, two designs are at the base of the representation
-of SITPN models into \vhdl{} programs: the place and transition
-designs. These two designs represent more or less of a hundred lines
-of \vhdl{} code each. The \vhdl{} code describing the behavior of the
-place and transition designs comes with a lot of
-implementation-related particularities that are sometimes difficult to
-relate to the semantics of SITPNs (and sometimes impossible to relate
-at all, hence the bug detection).
-
-Finally, the \hilecop{} transformation function is itself rather
-complex. It cannot be expressed by rules following the inductive
-structure of the abstract syntax of a source programming language, as
-it is usually done in compilers for programming
-languages. Specifically because of the nature of the SITPN structure,
-the \hilecop{} transformation has to cover a lot of particular cases
-related to the form of the input models. The specificities of the HM2T
-partly explain the difficulties that we encountered to mechanize the
-proof of semantic preservation.
+\bigskip
 
 %%%%%% LIMITS OF THE RESEARCH %%%%%%
 
@@ -4828,7 +5303,38 @@ surrounding the difficulties of the mechanization, and also about the
 solutions that would allow us to go over these
 difficulties. Specifically, we were wondering if the mechanization
 could not be brought out entirely because of a lack of engineering
-skills or because of other considerations. At the beginning of the
+skills or because of other considerations. In our experience, the two
+parameters that most impact the mechanization are the design of the
+execution semantics and the implementation of the transformation
+function.
+
+Regarding the design of the execution semantics, not surprisingly,
+simplicity is the way to ease the proof. We have made a lot of
+refactoring in the semantics of the \hvhdl{} language in order to get
+rid of a lot of elements that were only hindering the
+straightforwardness of proofs. Elements such as the event system of
+the \vhdl{} simulation algorithm, the sensitivity lists, the
+persistence of variable values, etc. However, the withdrawal of the
+elements that are of no interest to the proof makes the semantics more
+and more specific. Thus, it will hardly be adopted by a larger
+community, i.e. one that is not only interested in the proof of
+semantic preservation but rather to use the semantics as a general
+reasoning framework. Moreover, designing a simple yet specific
+semantics makes it also hardly adaptable when new aspects of the
+language must be taken into account.
+
+The intricacies of the HM2T make its \coq{} implementation rather
+complex.  As stated before, the transformation cannot be expressed by
+rules following the inductive structure of the abstract syntax of a
+source programming language, as it is usually done in compilers for
+programming languages. Specifically because of the nature of the SITPN
+structure, the \hilecop{} transformation has to cover a lot of
+particular cases related to the form of the input models. The
+specificities of the HM2T partly explain the difficulties that we
+encountered to mechanize the proof of semantic preservation.
+
+Finally, there is always a \textit{bootstrap cost} to every task, and
+even more so regarding machine-checked proofs. At the beginning of the
 mechanization, a lot of intermediary lemmas must be proved that will
 later be extensively used in other proofs. The consequence is that the
 overall completion of the mechanization advances very slowly at the
@@ -4890,11 +5396,9 @@ proof, it will require one person (already acquainted with the overall
 system) doing the job at full time during one year.  However, we are
 confident in the fact that we cleared the way enough for the proof of
 semantic preservation to be fully mechanized; now, it is only a
-question of human and time resources to complete it.
-
-Once the mechanization of the proof will be completed, we will have
-the formal proof that the \hilecop{} model-to-text transformation is
-semantic preserving. Then, this formal proof can help to certify the
+question of human and time resources to complete it.  Once the
+mechanization completed, we will have the formal proof that the HM2T
+is semantic preserving. This formal proof can help to certify the
 \hilecop{} methodology as an eligible methodology for the design and
 production of safety-critical digital systems.  The Neurinnov company
 exploits the \hilecop{} methodology for the production of
@@ -4915,10 +5419,10 @@ devices will soon evolve in this way.
 \label{sec:future}
 
 In the immediate future, the first work to complete is of course the
-mechanization of the proof of Theorem~\ref{thm:full-bisim}.  Finally,
-we must take into account all the aspects of the \hilecop{} high-level
-models, which actually have a richer structure than the one presented
-in Chapter~\ref{chap:hilecop-models}.
+mechanization of the proof of Theorem~\ref{thm:full-trace-sim}.
+Finally, we must take into account all the aspects of the \hilecop{}
+high-level models, which actually have a richer structure than the one
+presented in Section~\ref{sec:hilecop-models}.
 
 The first aspect to reconsider in the definition of the SITPN
 structure is \textit{interpretation}. The interpretation aspect has
@@ -4955,8 +5459,8 @@ formal semantics have been described in \cite{Leroux2014}. Adding
 macroplaces to the actual SITPN structure will impact the
 transformation function, and all the surrounding proofs. It will also
 bring a new \hvhdl{} design (i.e. the one defining macroplace
-components) in the loop, and will modify the code of the
-\texttt{place} and \texttt{transition} designs.
+components) in the loop, and will modify the code of the place and
+transition designs.
 
 In the actual semantics of SITPNs, we considered that only one clock
 signal regulated the evolution of the system. However, the formalism
@@ -4973,21 +5477,29 @@ multi-clock domains has not been formalized yet. The multi-clock
 domain aspect also implies modifying the \hvhdl{} semantics to
 integrate multiple clock signals in the simulation loop.
 
-The \coq{} proof assistant provides a way to extract \ocaml{} or
-\textsf{Haskell} code from a \coq{} function. Thus, proving that our
-\coq{} implementation of the \hilecop{} model-to-text transformation
-is semantic preserving would allow us to extract a sound \ocaml{} or
-\textsf{Haskell} program out of it. This program could then replace
-the existing \textsf{Java} implementation of the \hilecop{}
-methodology. At least, the engineers in charge of maintaining the
-current \hilecop{} implementation are open to the idea. However, in
-the certification standards of safety-critical software programs, the
-executed code may not be the one over which the formal verification
-has been conducted (e.g. EAL 7 in the Common Criterion standard).
+% The \coq{} proof assistant provides a way to extract \ocaml{} or
+% \textsf{Haskell} code from a \coq{} function. Thus, proving that our
+% \coq{} implementation of the \hilecop{} model-to-text transformation
+% is semantic preserving would allow us to extract a sound \ocaml{} or
+% \textsf{Haskell} program out of it. This program could then replace
+% the existing \textsf{Java} implementation of the \hilecop{}
+% methodology. At least, the engineers in charge of maintaining the
+% current \hilecop{} implementation are open to the idea. However, in
+% the certification standards of safety-critical software programs, the
+% executed code may not be the one over which the formal verification
+% has been conducted (e.g. EAL 7 in the Common Criterion standard).
 
-All the programming tasks of this thesis have been performed within
-the framework of the \coq{} proof assistant. The produced code is
-fully accessible under the following \textsf{Git} repository:
+The question of how much our actual execution semantics and proofs
+will adapt to the addition of these new elements is still
+open. Moreover, the question of how to parameterize our execution
+semantics and transformation function in order to anticipate these
+changes is also an interesting question regarding the field of proof
+engineering.
+
+All the programming tasks described in this article have been
+performed within the framework of the \coq{} proof assistant. The
+produced code is fully accessible under the following \textsf{Git}
+repository:
 
 \begin{center}
   \url{https://github.com/viampietro/ver-hilecop}
@@ -5000,6 +5512,7 @@ fully accessible under the following \textsf{Git} repository:
 % \include{proof}
 % \include{concl}
 
+\clearpage
 \begin{appendices}
 
 \section{The place design in abstract \hvhdl{} syntax}
