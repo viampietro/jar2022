@@ -207,11 +207,16 @@ framed part with red dotted lines in Figure~\ref{fig:hilecop-wf})
 preserves the behavior of the input models into the generated \vhdl{}
 designs. We choose to carry out this task as a deductive verification
 task.  We aim at proving a theorem stating that the \hilecop{}
-model-to-text transformation is \textit{semantic-preserving}. This
-theorem will be of the following form: for all PN model, input to the
-transformation, the generated output \vhdl{} design behaves similarly
-at execution time. The proof will be mechanized with the \coq{} proof
-assistant.
+model-to-text transformation is
+\textit{semantic-preserving}. According to the literature
+\cite{Patrignani2019,Leroy2009}, such a theorem takes the following
+form: a given transformation function is semantic-preserving if for
+any source instance (i.e. a program, a model, etc.) passed as input
+the resulting output instance has the same behavior as the source at
+runtime.  In the case of the HM2T, the theorem is of the following
+form: for all PN model, input to the transformation, the generated
+output \vhdl{} design behaves similarly at runtime. The proof will be
+mechanized with the \coq{} proof assistant.
 
 \subsection{Related work}
 \label{sec:related-work}
@@ -239,11 +244,12 @@ behavioral description of hardware circuits.
 %% SCOPE OF THE REVIEW
 
 Now, let us look at the works of the literature pertaining to proofs
-of semantic preservation for transformations, with an extra interest
-when the proofs have been mechanized. We will present the works
-through three categories of transformation, namely: compilers for
-Generic Programming Languages (GPLs), compilers for Hardware
-Description Languages (HDLs), model-to-model and model-to-text
+of semantic preservation for transformations, also known as
+transformation \textit{correctness}, with an extra interest when the
+proofs have been mechanized. We will present the works through three
+categories of transformation, namely: compilers for Generic
+Programming Languages (GPLs), compilers for Hardware Description
+Languages (HDLs), model-to-model and model-to-text
 transformations. The second category is of interest to us as the
 target language of the HM2T is itself an HDL. In the third category,
 we look for transformation cases where the input model has an
@@ -255,8 +261,8 @@ The goal of the review is to determine if there is a standard way to
 tackle down a proof of semantic preservation, or if each
 transformation must come with a self-adjusted strategy. The aspects
 that most interest us are the expression of the execution semantics,
-the transformation and the semantic preservation theorem, and also
-which proof strategies are adopted. The design choices over these
+of the transformation and of the semantic preservation theorem, and
+also which proof strategies are adopted. The design choices over these
 aspects will greatly impact the mechanization of the proof. The
 feasibility of the mechanization within an acceptable time-span is
 particularly important to us. Therefore, when data is accessible, we
@@ -265,100 +271,79 @@ resources taken by the mechanization.
 
 \paragraph{Compilers for Generic Programming Languages (GPLs)}
 
-% FROM CHAPTER TRANSFORMATION
+In \cite{Leroy2009}, X. Leroy presents the verification of the
+\ccert{} compiler for a significant subset of the C language down to
+multiple assembler code families (PowerPC, ARM, x86, etc.). Each one
+of the 20 compilation passes is proved correct and the proofs are
+mechanized with the \coq{} proof assistant. The author describes a
+framework to express the proof of correctness for each pass. In this
+framework, the semantics of the source and target languages must fit a
+small-step transition semantics. The proof of correctness comes down
+to the proof of a simulation lemma of the following form: if one
+execution step in the source program leads from state $s$ to state
+$s'$, and the target program's state $t$ is similar to state $s$, then
+there exists a state $t'$ such that none, one or multiple execution
+step in the target program leads from state $t$ to $t'$ and $s'$ and
+$t'$ are similar. This is referred to as a \textit{forward} simulation
+as the execution step is assumed for the source program. When the
+inverse is assumed, it is referred to as \textit{backward}
+simulation. The similarity relation between the state of the source
+and target programs is a parameter of the framework. Its definition
+varies from the simple equality between two equivalent memory models,
+to much complex comparison schemes when the distance between the
+source and target languages is important (e.g. the compilation pass
+from \textsf{CminorSel} to RTL). The proof of the simulation lemma is
+performed by induction on the transition relation of the source
+language. In 2009, the development of the \ccert{} compiler
+represented an overall of 37000 lines of \coq{} code produced on a
+base of 2 person-years.
 
-In the context of formally verified compilers for generic programming
-languages, the translation from a source program to a target program
-is straight forward. While descending recursively through the AST of
-the input program, each construct of the source language is mapped to
-one or many constructs of the target language.  In the works
-pertaining to the well-known \ccert{} project \cite{Leroy2009,
-  Blazy2006}, the many steps that compose the compiler from C programs
-to assembly programs clearly map each construct of source program to
-target program constructs.  Moreover, the pattern matching
-possibilities offered by languages like \coq{}, \isa{}, \hol{} and
-other interactive theorem provers enable a clear and concise
-implementation of compilers.
+A few works exist on the correctness of compilers for object-oriented
+languages. In \cite{Strecker2002}, M. Strecker describes a verified
+compiler for a subset of the Java, called $\mu{}Java$;
+\cite{Klein2006}, Klein et al. also present a correctness proof, among
+other properties, for a compiler of a Java-like language called Jinja.
+In both cases, the source language is endowed with a big-step
+operational semantics written in a relational style. Klein et
+al. define also a small-step semantics used only for a type-safety
+proof. Both correctness theorems are expressed as forward simulation
+theorems, and the proofs are performed by induction on the execution
+relation of the source program. The work of M.Strecker on the compiler
+for $\mu{}Java$ represents an overall of 5 months of programming for a
+total of 3200 lines of \isahol{} code, while the work of Klein et
+al. represents a total of 20000 lines of \isahol{} code-- containing
+also the formalization and proof of type-safety, and equivalence
+between big-step and small-step semantics. In \cite{Lochbihler2010},
+A. Lochbihler extends the proof of correctness of \cite{Klein2006} by
+adding concurrency to the Java-like language Jinja. The addition of
+concurrency brings the number of lines of \isahol{} code for the
+formalization and proofs to 47000. However, A. Lochbihler proves a
+bisimulation theorem (i.e. both backward and forward simulation are
+proved) to state the correctness of its compiler, explaining partly
+that the size of the code doubles compared to \cite{Klein2006}. In
+\cite{Batty2012}, Batty et al. describe the correctness of an
+\textit{idealized} compiler (or \textit{compilation scheme} as the
+authors say) from concurrent C++11 to PowerPC. The proof of
+correctness focuses on the concurrency aspects of the execution, and
+thus does not take the entire syntax and execution semantics of C++11
+programs into account. The proof is formalized with the \textsf{Lem}
+language that permits the generation of \isahol{}, \coq{} or \ocaml{}
+code.
 
-The cases of optimizing compilers like \cite{Leroy2009} and \cite{Tan}
-show that, to avoid writing too complex functions when passing from a
-source to a target program, the compilation is decomposed into many
-passes. No more than 12 passes for the CakeML compiler, and up to 20
-passes for \ccert{}. This is a way to keep the translation functions
-simple enough in order to ease reasoning afterwards. Indeed, the more
-the gap is important between the source representation and the target
-one, the more the translation function will be complex.
-
-Another point that is noticeable while expressing a translation
-function is the necessity to keep a binding between the source and the
-target representations. For instance, in \ccert, when passing from
-transformed C programs to an RTL representation (based on registers
-and control flow graphs), a binding function $\gamma$ links the
-variables of a C program to the registers generated in the RTL
-representation of the program. The binding is necessary for both the
-translation and the proof of semantic preservation. During the
-translation, it permits to replace the variables by their
-corresponding registers in the RTL code. During the proof of semantic
-preservation, the link that exists between a variable and a register
-indicates which elements must be compared to prove that the execution
-state of the source representation is similar to the execution state
-of the target representation. The generation of this binding function
-must be integrated to the design of the translation function.
-
-In \cite{Leroy2009}, and \cite{Chlipala2010}, compilers are written
-within the \coq{} proof assistant. Compilers are expressed using the
-state-and-error monad, thus mimicking the traits of imperative
-languages into a functional programming language setting.
-
-% FROM CHAPTER PROOF
-
-Taking the \ccert{} compiler as an example, the compilation pass from
-Clight programs to Cminor programs is described in \cite{Blazy2006,
-  Leroy2009}. Clight is a subset of the C language, and Cminor is a
-low-level imperative language. The two languages are endowed with both
-a big-step and small-step operational semantics. Here, the execution
-state of the source and target languages are memory models for the
-most part, but are also completed with representations of global
-variable storage, registers, etc. The memory model consists of block
-references; each block has a lower and an upper bound. To access data,
-one has to specify the block reference along with the size of the
-accessed data (i.e, the data type) and the offset from the start of
-the block reference (i.e, where to begin the data reading). Regarding
-the proof of semantic preservation, the most difficult point is to
-relate the memory state of the source program to the memory state of
-the target program. To do so, the authors define a \emph{memory
-  injection} relation, which binds the values of source and target
-together. They also establish a relation to compare execution
-environments, i.e, the environments holding the declaration of
-functions, global variables\dots The proof of semantic preservation is
-built incrementally. First, the authors prove a correctness lemma for
-the Clight expressions: if a Clight expression $a$ evaluates to value
-$v$, then the translated Cminor expression $\lfloor{}a\rfloor$
-evaluates to value $v$ (the Clight and Cminor languages have the same
-set of values). Then, they prove a similar lemma for Clight
-statements, and finally for the entire Clight program. The proof
-strategy is to reason by induction over the evaluation relation of the
-Clight programs and perform case analysis on the translation function.
-
-The pattern to compiler verification for GPLs is more or less the same
-as presented above. In the case of compilers for imperative languages
-\cite{Leroy2009,Strecker2002}, or compilers for functional languages
-\cite{Chlipala2010,Tan}, compiler verification proceeds as follows:
-\begin{enumerate}
-\item Establish a relationship between the memory models of the source and
-  target languages, and between the global execution environments.
-\item Prove correctness lemmas starting from simple constructs, and
-  building up incrementally to consider entire programs.
-\item Reason by induction over the evaluation relation of the source
-  language, and the translation function.
-\end{enumerate}
-
-Relating memory models is more difficult when the gap between the
-source and target languages is important (for instance, the
-translation of Cminor programs into RTL (Register Transfer Language,
-which is close to assembly languages) programs in
-\cite{Leroy2009}). As a consequence, the complexity of the memory
-model comparison relation increases.
+Verified compilers for functional programming languages
+\cite{Benton2009, Chlipala2010, Tan2016} follow the same patterns as
+the ones for imperative languages in terms of the expression of
+program states and execution semantics. Of course, they have to
+tackled down specific problems related to functional programming
+languages while performing the proof of semantic
+preservation. \cite{Chlipala2010}, the author treats the problem of
+binder renaming in lambda functions, and of the fact that it induces a
+lot of efforts during the proof of semantic preservation, by embedding
+the syntax of the source language into \textit{parametric higher-order
+  abstract syntax} \cite{Chlipala2008}. The author also puts much
+thought on the way to build mechanized proofs with a proof assistant
+is a reusable way, i.e. robust to the addition of new constructs in
+the source language. 
 
 \paragraph{Compilers for Hardware Description Languages (HDLs)}
 
@@ -376,6 +361,16 @@ source code into an RTL representation.
 
 In the context of formal verification applied to HDLs compilers, only
 a few works describe the specificities of their translation function.
+
+In the case of HDL (Hardware Description Language) compilers, proving
+semantic preservation is very similar to the case of GPL compilers. Of
+course, the difference lies in the semantics of HDL languages and the
+description of execution states. The semantics of HDLs is
+intrinsically related to the notion of execution over time, or over
+multiple clock cycles; we are dealing with reactive
+systems. Therefore, the semantic preservation theorems are formulated
+w.r.t. the synchronous or the time-related semantics of the considered
+languages.
 
 In \cite{Braibant2013}, the authors define the FeSi language (a
 refinement of the BlueSpec language, a specification language for
@@ -408,6 +403,26 @@ composed together to get complex circuits. The translation becomes
 trickier when it comes to decide the composition of RTL circuits to
 respect the execution order prescribed by the scheduler.
 
+In \cite{Bourgeat2020,Braibant2013}, the source language is a subset
+of the BlueSpec specification language for hardware synthesis, and the
+target language is an RTL representation of the circuit. The runtime
+state of the source and target programs are basically a mapping
+between registers to values. In \cite{Bourgeat2020}, the execution
+state also holds a log of the read and write operations of the input
+program, and this log is compared to the log of the RTL
+representation. The semantic preservation theorem takes the general
+form of Definition~\ref{def:gen-beh-pres-thm}, however, the final
+states refer to the states of source and target programs at the end of
+a clock cycle. Thus, the semantic preservation theorem states that
+starting from equal register stores after the execution of a source
+program and its RTL (Register Transfer Level\footnote{The acronymn RTL
+  is used both in the world of microelectronic and computer
+  science. In computer science, it means Register Transfer Language
+  and refers to a language which level is close to assembly
+  languages. In microelectronic, it means Register Transfer Level and
+  is a method to give a high-level representation of a circuit.})
+circuit after one clock cycle leads to equal register stores.
+
 In \cite{Bourke}, the authors present the verification of a compiler
 toolchain from \textsf{Lustre} programs to an imperative language
 (Obc), and from Obc to Clight.  The Clight target is the one defined
@@ -422,6 +437,30 @@ translation turns each node of a \textsf{Lustre} program into a class
 of Obc accompanied by two methods: the reset method, for the
 initialization of the streams, and the step method, for the update of
 values resulting of a synchronous step.
+
+In \cite{Bourke}, the source language is a subset of \lustre{} and the
+target language is an imperative language called Obc. A \lustre{}
+program is composed of nodes; each node treats a set of input streams
+and publishes output streams after the computation of its statement
+body. In its statement body, a \lustre{} node possibly refers to
+instances of other nodes. In the compilation process, each \lustre{}
+node is translated into an Obc class. An Obc class holds a vector of
+variables composing its internal memory and a vector of other Obc
+class instances. The authors define a data flow semantics for the
+\lustre{} language; the rule instances of the semantics describe how
+output streams are computed based on input streams.  On the side of
+the Obc language, the semantics define a function $step$ that computes
+the execution of the Obc classes over one clock cycle. To prove the
+semantic preservation theorem, the state comparison relation binds the
+values of input and output streams on one side to the values of
+variables and Obc class instances on the other side. The semantic
+preservation theorem is as follows: if a \lustre{} node yields the
+output stream $o$ from an input stream $i$, then the iterative
+execution of the $step$ function for the corresponding Obc class
+incrementally builds the output stream $o$ given the values of the
+input stream $i$. The proof is done by induction over the clock step
+count, and by induction over the evaluation relation for the \lustre{}
+statements composing the body of nodes.
 
 In \cite{Loow2021}, the authors describe a compiler that transforms
 Verilog programs into netlists targeting given FPGA models. Verilog
@@ -453,59 +492,6 @@ memory is a part of the code, whereas it does not appear in the input
 program.
 
 % FROM CHAPTER PROOF
-In the case of HDL (Hardware Description Language) compilers, proving
-semantic preservation is very similar to the case of GPL compilers. Of
-course, the difference lies in the semantics of HDL languages and the
-description of execution states. The semantics of HDLs is
-intrinsically related to the notion of execution over time, or over
-multiple clock cycles; we are dealing with reactive
-systems. Therefore, the semantic preservation theorems are formulated
-w.r.t. the synchronous or the time-related semantics of the considered
-languages.
-
-In \cite{Bourgeat2020,Braibant2013}, the source language is a subset
-of the BlueSpec specification language for hardware synthesis, and the
-target language is an RTL representation of the circuit. The runtime
-state of the source and target programs are basically a mapping
-between registers to values. In \cite{Bourgeat2020}, the execution
-state also holds a log of the read and write operations of the input
-program, and this log is compared to the log of the RTL
-representation. The semantic preservation theorem takes the general
-form of Definition~\ref{def:gen-beh-pres-thm}, however, the final
-states refer to the states of source and target programs at the end of
-a clock cycle. Thus, the semantic preservation theorem states that
-starting from equal register stores after the execution of a source
-program and its RTL (Register Transfer Level\footnote{The acronymn RTL
-  is used both in the world of microelectronic and computer
-  science. In computer science, it means Register Transfer Language
-  and refers to a language which level is close to assembly
-  languages. In microelectronic, it means Register Transfer Level and
-  is a method to give a high-level representation of a circuit.})
-circuit after one clock cycle leads to equal register stores.
-
-In \cite{Bourke}, the source language is a subset of \lustre{} and the
-target language is an imperative language called Obc. A \lustre{}
-program is composed of nodes; each node treats a set of input streams
-and publishes output streams after the computation of its statement
-body. In its statement body, a \lustre{} node possibly refers to
-instances of other nodes. In the compilation process, each \lustre{}
-node is translated into an Obc class. An Obc class holds a vector of
-variables composing its internal memory and a vector of other Obc
-class instances. The authors define a data flow semantics for the
-\lustre{} language; the rule instances of the semantics describe how
-output streams are computed based on input streams.  On the side of
-the Obc language, the semantics define a function $step$ that computes
-the execution of the Obc classes over one clock cycle. To prove the
-semantic preservation theorem, the state comparison relation binds the
-values of input and output streams on one side to the values of
-variables and Obc class instances on the other side. The semantic
-preservation theorem is as follows: if a \lustre{} node yields the
-output stream $o$ from an input stream $i$, then the iterative
-execution of the $step$ function for the corresponding Obc class
-incrementally builds the output stream $o$ given the values of the
-input stream $i$. The proof is done by induction over the clock step
-count, and by induction over the evaluation relation for the \lustre{}
-statements composing the body of nodes.
 
 In \cite{Loow2021}, the HDL compiler translates Verilog modules into
 netlists. The execution state of Verilog module holds the value of the
@@ -693,24 +679,24 @@ state. The target models are PNs. Both xSpem models and PNs have a
 state transition semantics. The state comparison is performed by
 checking the correspondence between each current status of the
 activities describe in an xSpem model and the marking of the PN. Then,
-the authors prove a bisimulation theorem, illustrated in
-Figure~\ref{fig:bisim-ref-transl}.
+the authors prove a bisimulation theorem. % , illustrated in
+% Figure~\ref{fig:bisim-ref-transl}
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[keepaspectratio,width=.3\linewidth]{Figures/Proof/bisim-ref-sem-to-transl-sem}
+%   \caption[An example of bisimulation diagram]{Bisimulation diagram relating an xSpem model execution and a Petri net execution}
+%   \label{fig:bisim-ref-transl}
+% \end{figure}
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[keepaspectratio,width=.3\linewidth]{Figures/Proof/bisim-ref-sem-to-transl-sem}
-  \caption[An example of bisimulation diagram]{Bisimulation diagram relating an xSpem model execution and a Petri net execution}
-  \label{fig:bisim-ref-transl}
-\end{figure}
-
-In Figure~\ref{fig:bisim-ref-transl}, on the right side of the
-diagram, i.e, the Petri net side, one can see that a Petri net
-possibly performs many internal actions (represented the arrow
-$\stackrel{\tau}{\rightarrow}^{*}$) before and after executing the
-computation step that is of interest for the proof (i.e, action
-$\lambda$). The proof is performed by reasoning by induction on the
-structure of the xSpem models, and then by reasoning of the state
-transition semantics of xSpem models and PNs.
+% In Figure~\ref{fig:bisim-ref-transl}, on the right side of the
+% diagram, i.e, the Petri net side, one can see that a Petri net
+% possibly performs many internal actions (represented the arrow
+% $\stackrel{\tau}{\rightarrow}^{*}$) before and after executing the
+% computation step that is of interest for the proof (i.e, action
+% $\lambda$).
+The proof is performed by reasoning by induction on the structure of
+the xSpem models, and then by reasoning of the state transition
+semantics of xSpem models and PNs.
 
 In \cite{Yang2014}, the authors describe a transformation from a model
 of the AADL formalism (Architecture Analysis and Design Language) to a
@@ -746,6 +732,8 @@ marking $M'$. To prove this theorem, the authors proceed by induction
 on the number of places of the input Petri net.
 
 % GLOBAL DISCUSSIONS
+
+\paragraph{Global discussion}
 
 Transformation functions are mappings from a source representation to
 a target representation. The more the mapping from source to target is
