@@ -300,7 +300,7 @@ base of 2 person-years.
 
 A few works exist on the correctness of compilers for object-oriented
 languages. In \cite{Strecker2002}, M. Strecker describes a verified
-compiler for a subset of the Java, called $\mu{}Java$;
+compiler for a subset of the Java, called $\mu{}Java$; in
 \cite{Klein2006}, Klein et al. also present a correctness proof, among
 other properties, for a compiler of a Java-like language called Jinja.
 In both cases, the source language is endowed with a big-step
@@ -330,20 +330,18 @@ programs into account. The proof is formalized with the \textsf{Lem}
 language that permits the generation of \isahol{}, \coq{} or \ocaml{}
 code.
 
-Verified compilers for functional programming languages
-\cite{Benton2009, Chlipala2010, Tan2016} follow the same patterns as
-the ones for imperative languages in terms of the expression of
-program states and execution semantics. Of course, they have to
-tackled down specific problems related to functional programming
-languages while performing the proof of semantic
-preservation. \cite{Chlipala2010}, the author treats the problem of
-binder renaming in lambda functions, and of the fact that it induces a
-lot of efforts during the proof of semantic preservation, by embedding
-the syntax of the source language into \textit{parametric higher-order
-  abstract syntax} \cite{Chlipala2008}. The author also puts much
-thought on the way to build mechanized proofs with a proof assistant
-is a reusable way, i.e. robust to the addition of new constructs in
-the source language. 
+A lot of works pertain to the verification of compilers for functional
+programming languages \cite{Benton2009, Chlipala2010, Tan2016}. Of
+course, they have to tackled down specific problems related to
+functional programming languages while performing the proof of
+semantic preservation. In \cite{Chlipala2010}, A. Chlipala treats the
+problem of binder renaming in lambda functions, and of the fact that
+it induces a lot of efforts during the proof of semantic preservation,
+by embedding the syntax of the source language into \textit{parametric
+  higher-order abstract syntax} \cite{Chlipala2008}. The author also
+puts much thought on the way to build mechanized proofs with a proof
+assistant is a reusable way, i.e. robust to the addition of new
+constructs in the source language.
 
 \paragraph{Compilers for Hardware Description Languages (HDLs)}
 
