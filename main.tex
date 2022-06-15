@@ -47,8 +47,9 @@
 
 \begin{document}
 
-\title[Formal verification of the \hilecop{} methodology]{Formal verification of a methodology for the design and
-  production of safety-critical digital systems}
+\title[Formal verification of the \hilecop{} methodology]{Formal
+  verification of a methodology for the design of safety-critical
+  digital systems}
 
 %%=============================================================%%
 %% Prefix	-> \pfx{Dr}
@@ -91,11 +92,11 @@ systems, in a well-documented, safe and reliable way. Comparable to
 what Model Driven Engineering (MDE) does in the world of software
 engineering, models are first order concepts in MBSE.  As illustrated
 in Figure~\ref{fig:MBSE-ps}, a MBSE process describes a way to design
-a digital system starting from a high-level view of the system. This
-high-level view can follow a graphical formalism such as SysML
-\cite{Friedenthal2014} or Petri nets (PNs) \cite{Petri1962}, or a
-textual one such as SystemC \cite{Black2009} or VHDL
-\cite{Ashenden2010}. Then, the MBSE process describes many refinements
+a digital system starting from a high-level specfication of the
+system. This specification can follow a graphical formalism such as
+SysML \cite{Friedenthal2014} or Petri nets (PNs) \cite{Petri1962}, or
+a textual one such as SystemC \cite{Black2009} or VHDL
+\cite{Ashenden2010}. Then, the MBSE process describes many refinement
 phases (the downward-going green arrows in Figure~\ref{fig:MBSE-ps})
 during which the input model will be transformed; at each refinement
 phase, the model goes down in abstraction towards its final
@@ -123,7 +124,7 @@ safety-critical digital systems, the CAMIN team came up with a process
 called the ``\hilecop{} methodology'' \cite{Andreu2009}.  This
 methodology follows the principles of a MBSE process and relies on
 several transformations going from abstract models to concrete FPGA
-(Field-Programmable Gate Array) or ASIC (Application-Specific
+(Field-Programmable Gate Array) or digital ASIC (Application-Specific
 Integrated Circuit) implementations through the production of VHDL
 code. Figure~\ref{fig:hilecop-wf} details the global workflow of
 \hilecop{}.
@@ -142,16 +143,16 @@ code. Figure~\ref{fig:hilecop-wf} details the global workflow of
 In Figure~\ref{fig:hilecop-wf}, Step~1 corresponds to the design phase
 of a digital system. At this step, the user produces a model of the
 required system; the leveraged model formalism is a graphical
-formalism based on component diagrams and specific Petri nets (PNs).
-In Figure~\ref{fig:hilecop-wf}, the transformation from Step~1 to
-Step~2 flattens the model. The internal behaviors of separate
-components are connected according to the interface compositions, and
-embedding component structures are removed. The result of this
-transformation step is a global PN that represents the internal
-behavior of the digital system.  The class of PNs used in \hilecop{}
-has been specifically devised for the design of safety-critical
-digital systems; a first thesis has formalized the execution semantics
-of these PN models \cite{Leroux2014}. % What makes them a very
+formalism based on component diagrams and Petri nets (PNs).  In
+Figure~\ref{fig:hilecop-wf}, the transformation from Step~1 to Step~2
+flattens the model. The internal behaviors of separate components are
+connected according to the interface compositions, and embedding
+component structures are removed. The result of this transformation
+step is a global PN that represents the behavior of the digital
+system.  The class of PNs used in \hilecop{} has been specifically
+devised for the design of safety-critical digital systems; a first
+thesis has formalized the execution semantics of these PN models
+\cite{Leroux2014}. % What makes them a very
 % particular kind of models is their \textit{synchronous} execution
 % semantics. This semantics denotes from the standard
 % \textit{asynchronous} execution of PNs.
@@ -183,8 +184,8 @@ programming, or ASIC realization, are finally performed using
 industrial tools. At the end of Step~4, the designed circuit is
 physically built on an FPGA device or an ASIC.  What happens between
 Step~3 and Step~4 appears as a black box in the whole \hilecop{}
-methodology. Therefore, we will not consider this transformation
-phase, which will not be verified.
+methodology. Therefore, we will not consider this circuit synthesis
+phase in our verification process.
 
 % \subsection{Verifying the \hilecop{} methodology}
 % \label{sec:verif-hilecop}
@@ -202,21 +203,20 @@ changes the input model in a way that would alter its behavior. % Thus,
 % device.
 In order to reinforce the confidence in the \hilecop{} methodology,
 the goal of our work is to verify, by establishing a formal proof,
-that the model-to-text transformation from Step~2 to Step~3 (i.e. the
-framed part with red dotted lines in Figure~\ref{fig:hilecop-wf})
-preserves the behavior of the input models into the generated \vhdl{}
-designs. We choose to carry out this task as a deductive verification
-task.  We aim at proving a theorem stating that the \hilecop{}
-model-to-text transformation is
+that the model-to-text transformation from Step~2 to Step~3, referred
+to as the HM2T, preserves the behavior of the input models into the
+generated \vhdl{} designs. We choose to carry out this task as a
+deductive verification task.  We aim at proving a that the HM2T is
 \textit{semantic-preserving}. According to the literature
-\cite{Patrignani2019,Leroy2009}, such a theorem takes the following
-form: a given transformation function is semantic-preserving if for
-any source instance (i.e. a program, a model, etc.) passed as input
-the resulting output instance has the same behavior as the source at
-runtime.  In the case of the HM2T, the theorem is of the following
-form: for all PN model, input to the transformation, the generated
-output \vhdl{} design behaves similarly at runtime. The proof will be
-mechanized with the \coq{} proof assistant.
+\cite{Patrignani2019,Leroy2009}, this is expressed through a
+\textit{correctness} theorem of the following form: a given
+transformation function is semantic-preserving if for any source
+instance (i.e. a program, a model, etc.) passed as input the resulting
+output instance has the same behavior as the source at runtime.  In
+the case of the HM2T, the theorem is of the following form: for all PN
+model, input to the transformation, the generated output \vhdl{}
+design behaves similarly at runtime. The proof will be mechanized with
+the \coq{} proof assistant.
 
 The task of formally verifying the \hilecop{} model-to-text
 transformation can appear as yet another proof of semantic
@@ -236,24 +236,27 @@ begin with, the input formalism of the HM2T depends on Petri nets,
 which are quite abstract mathematical models, and thus is not a common
 programming language.  Moreover, the output language, \vhdl{}, is also
 not a common programming language as its purpose is both the
-structural and behavioral description of hardware circuits.
+structural and behavioral description of hardware circuits. By their
+very nature, all instructions defining the behavior of circuits in
+\vhdl{} have a concurrent execution logic. This also differs from the
+execution of programs written in generic programming languages which
+are often sequential programs.
 
-To further motivate the necessity of the verification task, the
-development of neuroprostheses by the INRIA CAMIN team is at the base
-of the creation of the Neurrinov
-company\footnote{\url{http://neurinnov.com/}}. The Neurrinov company
-is now looking towards the industrial development of such
-neuroprostheses. We hope that once the verification performed on the
-\hilecop{} methodology, it will help to obtain the CE certification,
-related to the EU 2017/745 regulation text, necessary to qualify the
-neuroprostheses as eligible for the medical market.
+% To further motivate the necessity of the verification task, the
+% development of neuroprostheses by the INRIA CAMIN team is at the base
+% of the creation of the Neurrinov
+% company\footnote{\url{http://neurinnov.com/}}. The Neurrinov company
+% is now looking towards the industrial development of such
+% neuroprostheses. We hope that once the verification performed on the
+% \hilecop{} methodology, it will help to obtain the CE certification,
+% related to the EU 2017/745 regulation text, necessary to qualify the
+% neuroprostheses as eligible for the medical market.
 
 Moreover, the \hilecop{} methodology comes with a working
-implementation based on the Eclipse framework. This software is
-currently used by the engineers of the Neurinnov company to design the
-digital systems having a part in safety-critical implantable medical
-devices.
-
+implementation based on the Eclipse framework used by the CAMIN team
+to design and develop neuroprostheses. % This software is currently used
+% by the engineers of the Neurinnov company to design the digital
+% systems having a part in safety-critical implantable medical devices.
 To the purpose of formal verification, we will implement the
 \hilecop{} model-to-text transformation leveraging the functional
 language of the \coq{} proof assistant. However, after the
@@ -278,8 +281,8 @@ expressing that the \hilecop{} transformation is semantic-preserving.
 It also gives the high-level theorems and lemmas involved in the proof
 of the semantic preservation theorem.  Finally,
 Section~\ref{sec:concl} ends the article, and outlines the
-perspectives regarding the full completion of the task of proving that
-the \hilecop{} transformation is semantic-preserving.
+perspectives regarding the full verification of the \hilecop{}
+methodology.
 
 \section{Models of digital systems in \hilecop{}}
 \label{sec:hilecop-models}
@@ -325,7 +328,7 @@ in this way will be copied as is in the output \vhdl{} design during
 the model-to-text transformation. Note that all components declare a
 clock and a reset signal (cf. \texttt{clk} and \texttt{rst} in
 Figure~\ref{fig:abs-model}). These signals are related to the
-synchronous execution of the system in the final physical device.
+synchronous execution of the system in the generated circuit.
 
 Before being transformed into \vhdl{} code, the model is flattened
 down (cf. Step \circled{1} to step \circled{2} in
@@ -349,9 +352,9 @@ PNs, generalized PNs, interpreted PNs, time PNs and PNs with
 priorities. A generalized Petri net admits the weight of its arcs to
 be a natural number instead of the default value of one (i.e. when no
 number is written above the arc). An extended Petri net introduces two
-kind of place-transition arcs, the \textit{inhibitor} arc,
+kinds of place-transition arcs, the \textit{inhibitor} arc,
 characterized by a white circle head, and the \textit{test} arc, which
-has a black circle head. These arcs add conditions the firing of a
+has a black circle head. These arcs add conditions to the firing of a
 connected transition, however, they do not cause tokens to be removed
 from input places at firing time. In Figure~\ref{fig:impl-model}, the
 arc from place CycleCt to transition ExecFunction is an inhibitor arc,
@@ -392,11 +395,11 @@ associated to the Compute and LogError places.
 
 In a TPN, time intervals can be associated to transitions, along with
 a dynamic time counter value. Thus, the firing of a transition must
-happen in a certain time window. In the \hilecop{} version of TPNs,
-time intervals are of the form $[a, b]$, where $a\in\mathbb{N}^{*}$
-and $b\in\mathbb{N}^{*}\sqcup\{\infty\}$.  In
-Figure~\ref{fig:impl-model}, transitions SustainrLED and TimeOut are
-both associated with time intervals.
+happen in a given time window. In the \hilecop{} version of TPNs, time
+intervals are of the form $[a, b]$, where $a\in\mathbb{N}^{*}$ and
+$b\in\mathbb{N}^{*}\sqcup\{\infty\}$.  In Figure~\ref{fig:impl-model},
+transitions SustainrLED and TimeOut are both associated with time
+intervals.
 
 \paragraph{Petri nets with priorities}
 
@@ -878,7 +881,7 @@ the SITPN execution relation
 (i.e. Definition~\ref{def:sitpn-exec}). However, the definition of the
 SITPN full execution relation is necessary because the first cycle of
 execution, starting from the initial state $s_0$, is particular. As a
-matter of fact, no transitions are fired during the first rising
+matter of fact, no transition is fired during the first rising
 edge. Thus, the first rising edge does not change the initial state
 $s_0$. This is why, in the second rule, the execution trace begins
 with two states $s_0$, thus representing the idle first rising edge.
@@ -910,7 +913,7 @@ the firing of $t_1$.
 In the context of a SITPN, a branching like the one of
 Figure~\ref{fig:double-consum}, normally interpreted as a disjunctive
 branching, takes the semantics of a conjunctive branching if no
-priority are specified between the conflicting transitions. To avoid
+priority is specified between the conflicting transitions. To avoid
 the phenomenon of ``double consumption'' of tokens, we enforce the
 resolution of any structural conflict by means of mutual exclusion or
 through the application of priorities. This policy about the
@@ -1029,29 +1032,27 @@ transformation of a SITPN model into a \vhdl{} design.
 \section{A target language: \hvhdl{}}
 \label{sec:hvhdl}
 
-The \hilecop{} model-to-text transformation generates a \vhdl{}
+The \hilecop{} model-to-text transformation (HM2T) generates a \vhdl{}
 \emph{design} out of an input SITPN model.  \vhdl{} is a hardware
 description language. A design represents the highest entity level
 that can be described in \vhdl{}. A design defines an interface
-(i.e. ports and dimensioning constants), and internal behavior
+(i.e. ports and dimensioning constants), and an internal behavior
 (i.e. the design architecture). The \vhdl{} Language Reference Manual
 (LRM) \cite{VHDL2000} gives an informal semantics describing how to
 simulate the behavior of a design described with the \vhdl{}. This
 semantics takes the form of a simulation algorithm expressed in
-natural language. To prove that the \hilecop{} transformation is
-semantic-preserving, the syntax and semantics of the \vhdl{} language
-must be formally set. The designs generated by the \hilecop{}
-transformation rely on subset of the \vhdl{} language that we identify
-as \hvhdl{}. The following section presents the abstract syntax and
-the semantics of \hvhdl{}.
+natural language. To prove that the HM2T is semantic-preserving, the
+syntax and semantics of the \vhdl{} language must be formally set. The
+designs generated by the HM2T rely on a subset of the \vhdl{} language
+that we identify as \hvhdl{}. The following section presents the
+abstract syntax and the semantics of \hvhdl{}.
 
 \subsection{The abstract syntax of \hvhdl{}}
 \label{subsec:abs-syntax}
 
 The following subset of \vhdl{} has been determined based on the
-characteristics of the designs generated by the \hilecop{}
-model-to-text transformation. As it will be presented in
-Section~\ref{sec:m2t}, the \hilecop{} transformation is mainly about
+characteristics of the designs generated by the HM2T. As it will be
+presented in Section~\ref{sec:m2t}, the HM2T is mainly about
 instantiating, i.e. creating an instance of a design acting as a
 subcomponent in the behavior of an embedding design, two pre-defined
 designs that have been devised with the methodology: the place and
@@ -1136,7 +1137,7 @@ statement includes the classical conditional, range loop, and sequence
 statements. We add particular statements, namely the falling edge,
 rising edge and reset conditional statements, derived from the
 concrete syntax of \vhdl{}.  These statements are convenient to
-express block of statements to be executed only at certain phases of
+express block of statements to be executed only at specific phases of
 the simulation. Table~\ref{tab:equiv-hvhdl-vhdl} gives the
 correspondence between these particular \hvhdl{} statements and what
 their translation in \vhdl{} syntax looks like. The falling
@@ -1193,11 +1194,11 @@ last section of this article.
   \end{tabular}
 \end{table}
 
-A type indication informs us about the type of a given signal, local
+A type indication informs us of the type of a given signal, local
 variable, or generic constant at the time of its declaration. A
 signal, a local variable or a generic constant can be a Boolean, a
-natural number defined in a certain range, or an array of elements
-associated with a certain type indication.
+natural number defined in a range, or an array of elements associated
+with a certain type indication.
 
 \begin{table}[!htbp]
   \caption{Concurrent statements}
@@ -1237,8 +1238,8 @@ design. A design instantiation statement indicates which design entity
 is instantiated as a subcomponent (i.e. $id_e$). It also indicates how
 the subcomponent is dimensioned through a generic constant map
 (i.e. $g$). Moreover, it indicates how the subcomponent is connected
-to the other parts of the embedding design through a input port
-(i.e. $i$) and output port map (i.e. $o$).
+to the other parts (e.g. other subcomponents) of the embedding design
+through an input port (i.e. $i$) and output port map (i.e. $o$).
 
 \begin{table}[!htbp]
   \caption{Design}
@@ -1269,7 +1270,7 @@ signals (i.e. $sigs$). Finally, a design declares an internal behavior
 Table~\ref{tab:design-hvhdl-vhdl} presents the correspondence between
 a design described in concrete \vhdl{} syntax and its equivalent in
 \hvhdl{} syntax. A \hvhdl{} design merges together the couple
-entity-architecture which the way to describe a hardware in
+entity-architecture which is the way to describe a hardware in
 \vhdl{}. The declarative parts of the entity-architecture couple find
 their equivalent in $gens$, $ports$ and $sigs$ sets on the \hvhdl{}
 side. The type indications of variables and signals are converted from
@@ -1291,12 +1292,12 @@ statement body is executed at the occurrence of the rising edge of the
 synchronization signal. The design instantiation statement declares an
 instance of the \texttt{notgate} design. The instance is named
 \texttt{notsubcmp}. This implies that the \texttt{notgate} design has
-been previously through another entity-architecture couple. The
-\texttt{notsubcmp} design instance declares an empty generic map, and
-its port map connects the synchronization and reset signals of the
-embedding design to its own synchronization and reset input
-ports. Note that these connections are not replicated in \hvhdl{} for
-the reasons cited above.
+been previously defined through another entity-architecture
+couple. The \texttt{notsubcmp} design instance declares an empty
+generic map, and its port map connects the synchronization and reset
+signals of the embedding design to its own synchronization and reset
+input ports. Note that these connections are not replicated in
+\hvhdl{} for the reasons cited above.
 
 \begin{table}[!h]
   \resizebox{\textwidth}{!}{%  
@@ -1430,7 +1431,7 @@ is the result of the elaboration phase conducted on a \hvhdl{}
 design. The elaborated version of a design will act as a global
 environment in the expression of the simulation rules. During the
 elaboration phase as described in the LRM, a design is statically
-type-checked, and certain tests are performed regarding its syntactic
+type-checked, and some tests are performed regarding its syntactic
 well-formedness (e.g. connections in port maps, multiply-driven
 signals, etc.). In the LRM, the elaboration phase also involves the
 transformation of design instantiation statements into \textit{block}
@@ -1449,11 +1450,11 @@ of the elaboration relation is presented here
 Let $ElDesign$ be the set of elaborated designs. An elaborated design
 is a composite environment built out of multiple sub-environments.
 Each sub-environment is a table, represented as a partial function,
-mapping identifiers of a certain category of constructs (e.g, input
-port identifiers) to their declaration information (e.g, type
-indication for input ports). We represent an elaborated design as a
-record where the fields are the sub-environments. An elaborated design
-is defined as follows:
+mapping identifiers of a given category of constructs (e.g, input port
+identifiers) to their declaration information (e.g, type indication
+for input ports). We represent an elaborated design as a record where
+the fields are the sub-environments. An elaborated design is defined
+as follows:
 
 \begin{definition}[Elaborated design]
   \label{def:elab-design}
@@ -1482,7 +1483,7 @@ is defined as follows:
 We assume that there is no overlapping between the identifiers of the
 sub-environments of an elaborated design (i.e, an identifier belongs
 to at most one sub-environment), and also between the identifiers of
-the sub-environments and the identifiers of local environments. When
+the sub-environments and the identifiers of local variables. When
 there is no ambiguity, we write $\Delta(x)$ to denote the value
 returned for identifier $x$, where $x$ is looked up in the appropriate
 field of $\Delta$. We write $x\in\Delta$ to state that identifier $x$
@@ -1571,7 +1572,7 @@ from the index 0, and we must explicitly convert the index to a zero
 starting range when evaluating an indexed identifier expression. In
 Table~\ref{tab:expr-eval}, we omit the evaluation rules for the cases
 of an indexed local variable identifier and an indexed output port
-identifier as they are almost similar to the given example. We use to
+identifier as they are almost similar to the given example. We use two
 primitive operations to read from and to write to an array at a
 certain index. We write $a[i]$ when reading from an array $a$ at index
 $i$, and $a[i]\leftarrow{}x$ to write $x$ at the position $i$ in array
@@ -2353,11 +2354,11 @@ embedding design, $\mathcal{S}_c\in{}id\nrightarrow{}v$ is the signal
 store of the design instance,
 $assoc_{op}::=(id\Rightarrow{}(name|\mathtt{open}))\big|(id(e)\Rightarrow{}name)$
 is an output port map association, and $\mathcal{S}'_c$ is the signal
-store resulting from the evaluation of the association. When an output
-port is left unconnected is the output port map of a design instance,
-it is associated to the \texttt{open} keyword. As shown in
-Table~\ref{tab:pmap-eval}, the evaluation of an unconnected output
-port does not impact the signal store of the embedding design.
+store resulting from the evaluation of the association. An unconnected
+output port is associated with the \texttt{open} keyword in the output
+port map of a design instance.  As shown in Table~\ref{tab:pmap-eval},
+the evaluation of an unconnected output port does not impact the
+signal store of the embedding design.
 
 \subsubsection{Evaluation of concurrent statements}
 \label{subsubsec:cs-eval}
@@ -2572,21 +2573,48 @@ semantics \cite{Borger1995}. This simplification is possible because we
 are targeting a very precise subset of the language, free of time
 constructs and with explicit synchronous blocks, aimed at the
 expression of designs both synthesizable and synchronous. Our
-simulation algorithm is fit for all such designs. Our aim is to
-simplify as much as possible our formal setting to ease the proof of
-semantic preservation and its mechanization. Simplifying as much as
-possible the simulation algorithm will lead to straight-forward
-reasoning at the time of proofs, whereas the formalization of
-fully-fledged simulation algorithm, however not deprived of interests
-(e.g. to set the formal specification of a \vhdl{} simulator), will
-only contribute to add complexity to our proofs.
+simulation algorithm is fit for all such designs.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[keepaspectratio,width=\textwidth]{sim-alg.eps}
+  \caption{The simulation algorithm as defined for \hvhdl{}
+    designs. The hatched areas indicate a stabilization phase
+    happening between two clock edges. }
+  \label{fig:sim-alg}
+\end{figure}
+
+Figure~\ref{fig:sim-alg} illustrates the different phases of the
+\hvhdl{} simulation algorithm, each triggering the execution of
+specific parts of the design under simulation. The different phases of
+the algorithm are tied to the events of a synchronization signal
+(i.e. a clock signal). At the beginning of the simulation, the
+initialization phase triggers the execution of the first part of reset
+blocks, and a stabilization phase follows. Then, the same phases are
+repeated over each clock cycle of the simulation:
+
+\begin{enumerate}
+\item At the start of each clock cycle, fresh values are injected in
+  the input ports of the design under simulation, referred to as
+  \textit{primary} input ports.
+\item At the occurrence of the rising (resp. falling) edge of the
+  clock signal, all rising (resp. falling) edge blocks are executed
+  and a stabilization phase follows.  
+\end{enumerate}
+
+Our aim is to simplify as much as possible our formal setting to ease
+the proof of semantic preservation and its mechanization. Simplifying
+as much as possible the simulation algorithm will lead to
+straight-forward reasoning at the time of proofs, whereas the
+formalization of fully-fledged simulation algorithm, however not
+deprived of interests (e.g. to set the formal specification of a
+\vhdl{} simulator), will only contribute to add complexity to our
+proofs.
 
 \paragraph{Stabilization}
 
-The simulation of a \hvhdl{} design goes through multiple phases. Each
-phase is related to the execution of a particular part of the design's
-behavior. During a stabilization phase, all the combinational parts of
-a design's behavior are executed. In the \hvhdl{} language, all
+During a stabilization phase, all the combinational parts of a
+design's behavior are executed. In the \hvhdl{} language, all
 statements that are not enclosed in falling or rising blocks are
 considered as combinational statements (with the exception of the
 first part of reset blocks), and are thus executed during the
@@ -2760,7 +2788,7 @@ the beginning of the cycle, the value of the input ports of the design
 under simulation are updated with the values yielded by the simulation
 environment $E_p$ at clock count $\tau$. Given a simulation
 environment $E_p\in\mathbb{N}\rightarrow(id\nrightarrow{}v)$, the
-\texttt{inj} function that update of the value of signals at a given
+\texttt{inj} function that updates the value of signals at a given
 design state $\sigma\in\Sigma$ and clock cycle count
 $\tau\in{}\mathbb{N}$ is defined as follows:
 $\mathtt{inj}(\sigma,E_p,\tau)=(\mathcal{S}_i,\mathcal{C})$ where
@@ -2808,16 +2836,16 @@ execution of the first part of reset blocks (the $i$ flag is on)
 followed by a stabilization phase. The execution of reset blocks
 corresponds to the virtual activation of a reset signal at the
 beginning of the simulation. This reset signal triggers the execution
-of certain part of the behavior responsible for the initialization of
-the value of chosen signals, which are all associated to an implicit
-default value otherwise\footnote{In the default state, i.e. the state
-  yielded after the elaboration of a design, all signals are
-  associated to the implicit default value of their type in the signal
-  store. }. Then, the simulation trace $\theta$ is the result of the
-simulation of design $d$ during $\tau$ clock cycles with $\sigma_0$ as
-starting state. As a side condition, we enforce the fact that, at
-every clock count of the simulation, the definition domain of the
-simulation environment is a subset of the input port
+of specific parts of the behavior responsible for the initialization
+of the value of chosen signals, which are all associated to an
+implicit default value otherwise\footnote{In the default state,
+  i.e. the state yielded after the elaboration of a design, all
+  signals are associated to the implicit default value of their type
+  in the signal store. }. Then, the simulation trace $\theta$ is the
+result of the simulation of design $d$ during $\tau$ clock cycles with
+$\sigma_0$ as starting state. As a side condition, we enforce the fact
+that, at every clock count of the simulation, the definition domain of
+the simulation environment is a subset of the input port
 identifiers. Otherwise, the update of signal values happening at the
 beginning of a clock cycle possibly overrides the value of signals
 other than input ports.
@@ -2942,8 +2970,8 @@ model will lead to an infinite incrementation of the number of tokens
 in a given place. This infinite incrementation, while valid in the
 mathematical world, can never be mirrored by a \vhdl{} implementation
 of the model where all values must be finite. Therefore, the behavior
-of the SITPN model and its \hvhdl{} implementation will diverge at a
-certain point of their execution.
+of the SITPN model and its \hvhdl{} implementation will diverge at
+some point of their execution.
 
 \bigskip
 
@@ -3160,8 +3188,8 @@ and the full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
   \ref{it:tdi-time-itval} state the existence of a corresponding TDI
   for each transition of the input model, and specify how its generic
   map and its input port map must be built regarding the properties of
-  the transition, namely: the shape of the time interval, the number
-  of input arcs, the number of associated
+  the transition, namely: the type of the time interval, the number of
+  input arcs, the number of associated
   conditions. Figure~\ref{fig:gen-tdi-ex} illustrates how the
   properties of a transition are implemented in the interface of the
   corresponding TDI.
@@ -3239,31 +3267,36 @@ and the full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
                                       & \land(\mathtt{rtt}(i)\Rightarrow{}id_{rt})\in{}o_p\land(\mathtt{rt}(j)\Rightarrow{}id_{rt})\in{}i_t \\
                                       & \land(\mathtt{otf}(i)\Rightarrow{}id_{frd})\in{}i_p\land(\mathtt{fired}\Rightarrow{}id_{frd})\in{}o_t \\
                                       & \land(\mathtt{pah}(i)\Rightarrow{}id_{frd})\in{}o_p \\
-                                      & \land(a=\mathtt{test}\lor{}a=\mathtt{inhib}\lor{}\mathtt{confl}(p)=\emptyset\Rightarrow(\mathtt{pah}(j)\Rightarrow\mathtt{true})\in{}i_t) \\
-                                      & \land(a=\mathtt{basic}\land{}\mathtt{confl}(p)\neq\emptyset~or~\mathtt{err}\Rightarrow(\mathtt{pah}(j)\Rightarrow{}id_{pah})\in{}i_t). \\
+                                      & \land(a=\mathtt{test}\lor{}a=\mathtt{inhib}\lor{}\mathtt{sbmut}(p)\Rightarrow(\mathtt{pah}(j)\Rightarrow\mathtt{true})\in{}i_t) \\
+                                      & \land(a=\mathtt{basic}\land{}\lnot\mathtt{sbmut}(p)\Rightarrow(\mathtt{pah}(j)\Rightarrow{}id_{pah})\in{}i_t). \\
                     \end{aligned} \\
       \end{aligned}
     \end{equation*}
-    where $\mathtt{confl}\in{}P\rightarrow{}2^T\cup\{\mathtt{err}\}$
-    takes a place $p$ as input and yields either an error or an
-    ordered set of transitions computed as follows:
-    \begin{enumerate}
-    \item If all conflicts between the output transitions of $p$ are
-      solved by mutual exclusion, or if the set of conflicting
-      transitions of $p$ is a singleton, then $\mathtt{confl}$ returns
-      an empty set.
-    \item Otherwise, the function tries to establish a total ordering
-      over the set of conflicting transitions of $p$ w.r.t the firing
-      priority relation:
-      \begin{itemize}
-      \item If no such ordering can be established (in that case, the
-        firing priority relation is ill-formed, and the input SITPN is
-        not well-defined), $\mathtt{confl}$ returns the \texttt{err}
-        value.
-      \item Otherwise, the function returns the set in a decreasing
-        priority order.
-      \end{itemize}
-    \end{enumerate}
+    where $\mathtt{sbmut}(p)$ is a predicate stating that all
+    conflicts in the output transitions of a given place $p$ are
+    solved by mutual exclusion as outlined in
+    Definition~\ref{def:mutex-conds} and \ref{def:mutex-inhib}.
+
+    % $\mathtt{confl}\in{}P\rightarrow{}2^T\cup\{\mathtt{err}\}$
+    % takes a place $p$ as input and yields either an error or an
+    % ordered set of transitions computed as follows:
+    % \begin{enumerate}
+    % \item If all conflicts between the output transitions of $p$ are
+    %   solved by mutual exclusion, or if the set of conflicting
+    %   transitions of $p$ is a singleton, then $\mathtt{confl}$ returns
+    %   an empty set.
+    % \item Otherwise, the function tries to establish a total ordering
+    %   over the set of conflicting transitions of $p$ w.r.t the firing
+    %   priority relation:
+    %   \begin{itemize}
+    %   \item If no such ordering can be established (in that case, the
+    %     firing priority relation is ill-formed, and the input SITPN is
+    %     not well-defined), $\mathtt{confl}$ returns the \texttt{err}
+    %     value.
+    %   \item Otherwise, the function returns the set in a decreasing
+    %     priority order.
+    %   \end{itemize}
+    % \end{enumerate}
     
   \end{enumerate}
 
@@ -3316,16 +3349,20 @@ and the full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
                     \end{aligned} \\
       \end{aligned}
     \end{equation*}
+
+    where
+    \texttt{confl}$(p)=\{t~\vert~pre(p,t)=\lfloor(\omega,\mathtt{basic})\rfloor\}$,
+    the set of conflicting output transitions of place $p$.
   \end{enumerate}
 
   \bigskip
 
   As specified in Point~\ref{it:port-indices-ordering}, the port
   indices in the interface of a PDI must reflect the priority order
-  established between its \textit{conflicting} TDIs. Of course, this
-  is only mandatory for the ports connecting the PDI to its
-  conflicting TDIs. Otherwise, the index order does not matter, for
-  instance while reifying a post arc connection.
+  established between its \textit{conflicting} TDIs.%  Of course, this
+  % is only mandatory for the ports connecting the PDI to its
+  % conflicting TDIs. Otherwise, the index order does not matter, for
+  % instance while reifying a post arc connection.
   Figure~\ref{fig:gen-prio-order} illustrates the ordering of the port
   indices in the interface of a PDI as described in
   Point~\ref{it:port-indices-ordering}.
@@ -4570,8 +4607,7 @@ Lemma~\ref{lem:sim-init-states}, \ref{lem:fst-re-lock-step},
 writing, we have only mechanized two points over the six that
 constitute the proof of Lemma~\ref{lem:sim-init-states}. However, the
 effort to achieve this little part of the overall verification amounts
-to three months of work, and no more than lines of proof
-script\todo{Add count of proof script lines.}.
+to three months of work, and about 7000 lines of proof script.
 
 \bigskip
 
@@ -4591,7 +4627,7 @@ lock-step lemma is tackled down by performing inductive reasoning over
 the relation that computes one execution step for the source
 program. This opens a proof sub-goal for each form of the source
 program, thus following the structure of the abstract syntax of the
-source langugae. Each simple form leads to the production of a simple
+source language. Each simple form leads to the production of a simple
 output, and this mechanism increases the straightforwardness of the
 proof. In our case, performing inductive reasoning over the SITPN
 state transition relation, that is the execution step relation, does
@@ -4680,37 +4716,17 @@ stabilization phase does not modify its value. This among other
 accessory but yet necessary lemmas to prove, such that the fact that
 there is unique PDI $\gamma(p)$ in the behavior of the output design,
 or the fact that the \texttt{marking} process is the only one to
-assign the \texttt{sm} signal, etc. In its machine-checked version,
-this sentence amounts to approximately \todo{Determine number of
-  lines} lines of proof script.
+assign the \texttt{sm} signal, etc. % In its machine-checked version,
+% this sentence amounts to approximately \todo{Determine number of
+%   lines} lines of proof script.
 
 \section{Related work}
 \label{sec:related-work}
 
-The task of formally verifying the \hilecop{} model-to-text
-transformation can appear as yet another proof of semantic
-preservation for yet another transformation function. Proving a
-semantic preservation theorem for a transformation program, and
-implementing the proof within a proof assistant, is now a well-known
-task and many successful works can be found in the literature.
-Therefore, the scientific interest of our research comes from the
-specificities of the HM2T compared to the other transformations that
-have been formally verified. Mostly, in the literature, the
-transformation programs that are formally verified are compilers for
-programming languages. From this fact naturally arises the will to
-compare the HM2T to a compiler program, and to determine which
-elements could introduce additional technical difficulties regarding
-the formal verification process.  To begin with, the input formalism
-of the HM2T depends on Petri nets, which are quite abstract
-mathematical models, and thus is not a common programming language.
-Moreover, the output language, \vhdl{}, is also not a common
-programming language as its purpose is both the structural and
-behavioral description of hardware circuits.
-
 %% SCOPE OF THE REVIEW
 
-Now, let us look at the works of the literature pertaining to proofs
-of semantic preservation for transformations, also known as
+Let us look at the works of the literature pertaining to proofs of
+semantic preservation for transformations, also known as
 transformation \textit{correctness}, with an extra interest when the
 proofs have been mechanized. We will present the works through three
 categories of transformation, namely: compilers for Generic
@@ -4749,14 +4765,14 @@ correctness comes down to the proof of a simulation lemma of the
 following form: if one execution step in the source program leads from
 state $s$ to state $s'$, and the target program's state $t$ is similar
 to state $s$, then there exists a state $t'$ such that none, one or
-multiple execution step in the target program leads from state $t$ to
+multiple execution steps in the target program lead from state $t$ to
 $t'$ and $s'$ and $t'$ are similar. This is referred to as a
 \textit{forward} simulation as the execution step is assumed for the
 source program. When the inverse is assumed, it is referred to as
 \textit{backward} simulation. The similarity relation between the
 state of the source and target programs is a parameter of the
 framework. Its definition varies from the simple equality between two
-equivalent memory models, to much complex comparison schemes when the
+equivalent memory models to much complex comparison schemes when the
 distance between the source and target languages is important
 (e.g. the compilation pass from \textsf{CminorSel} to RTL). The proof
 of the simulation lemma is performed by induction on the transition
@@ -4774,27 +4790,27 @@ operational semantics written in a relational style. Klein et
 al. define also a small-step semantics used only for a type-safety
 proof. Both correctness theorems are expressed as forward simulation
 theorems, and the proofs are performed by induction on the execution
-relation of the source program. The work of M.Strecker on the compiler
-for $\mu{}Java$ represents an overall of 5 months of programming for a
-total of 3200 lines of \isahol{} code, while the work of Klein et
-al. represents a total of 20000 lines of \isahol{} code-- containing
-also the formalization and proof of type-safety, and equivalence
-between big-step and small-step semantics. In \cite{Lochbihler2010},
-A. Lochbihler extends the proof of correctness of \cite{Klein2006} by
-adding concurrency to the Java-like language Jinja. The addition of
-concurrency brings the number of lines of \isahol{} code for the
-formalization and proofs to 47000. However, A. Lochbihler proves a
-bisimulation theorem (i.e. both backward and forward simulation are
-proved) to state the correctness of its compiler, explaining partly
-that the size of the code doubles compared to \cite{Klein2006}. In
-\cite{Batty2012}, Batty et al. describe the correctness of an
-\textit{idealized} compiler (or \textit{compilation scheme} as the
-authors say) from concurrent C++11 to PowerPC. The proof of
-correctness focuses on the concurrency aspects of the execution, and
-thus does not take the entire syntax and execution semantics of C++11
-programs into account. The proof is formalized with the \textsf{Lem}
-language that permits the generation of \isahol{}, \coq{} or \ocaml{}
-code.
+relation of the source program. The work of M.~Strecker on the
+compiler for $\mu{}Java$ represents an overall of 5 months of
+programming for a total of 3200 lines of \isahol{} code, while the
+work of Klein et al. represents a total of 20000 lines of \isahol{}
+code-- containing also the formalization and proof of type-safety, and
+equivalence between big-step and small-step semantics. In
+\cite{Lochbihler2010}, A. Lochbihler extends the proof of correctness
+of \cite{Klein2006} by adding concurrency to the Java-like language
+Jinja. The addition of concurrency brings the number of lines of
+\isahol{} code for the formalization and proofs to 47000. However,
+A. Lochbihler proves a bisimulation theorem (i.e. both backward and
+forward simulation are proved) to state the correctness of its
+compiler, explaining partly that the size of the code doubles compared
+to \cite{Klein2006}. In \cite{Batty2012}, Batty et al. describe the
+correctness of an \textit{idealized} compiler (or \textit{compilation
+  scheme} as the authors say) from concurrent C++11 to PowerPC. The
+proof of correctness focuses on the concurrency aspects of the
+execution, and thus does not take the entire syntax and execution
+semantics of C++11 programs into account. The proof is formalized with
+the \textsf{Lem} language that permits the generation of \isahol{},
+\coq{} or \ocaml{} code.
 
 A lot of works pertain to the verification of compilers for functional
 programming languages \cite{Dold2001, Dargaye2009, Benton2009,
@@ -4811,11 +4827,11 @@ the source language is \textsf{CakeML}, a significant subset of
 ML. The proved compiler performs 14 translation passes and has 12
 intermediate languages. This is the most complete work regarding the
 proof of correctness for a compiler of an impure functional language
-know as today. It represents no more than 100000 lines of HOL4
+known as today. It represents no more than 100000 lines of HOL4
 code. However, no information is given regarding the number of persons
-that worked on the project, and during how much time to mechanized the
-whole.  In \cite{Chlipala2010}, A. Chlipala verifies a compiler from
-an impure functional language to some abstract low-level assembly
+that worked on the project, and how much time was taken to mechanized
+the whole.  In \cite{Chlipala2010}, A. Chlipala verifies a compiler
+from an impure functional language to some abstract low-level assembly
 code.  The author puts much thought on the way to build mechanized
 proofs with a proof assistant is a reusable way, i.e. robust to the
 addition of new constructs in the source language. In
@@ -5042,7 +5058,7 @@ decomposition of a translation function permits to reason on simple
 translation cases; yet, each of these translations cases yields a
 piece of target code that can be executed or interpreted in an
 independent manner. In the case of the \hilecop{}, we tried as much as
-possible to express the transformation in a mdoular way. First, we
+possible to express the transformation in a modular way. First, we
 tried to devise the transformation by building up transformation
 functions for each element of the SITPN structure, i.e.: a
 transformation function for the places, another for the
@@ -5089,15 +5105,12 @@ relations are themselves defined by following the inductive structure
 of the language ASTs. In the case of model transformations, when the
 source model makes it possible, the proofs are performed similarly by
 applying inductive reasoning over the structure of the input model.
-This enables incremental reasoning, i.e: to split the difficulty of
+This enables incremental reasoning, i.e. to split the difficulty of
 proving the semantic preservation theorem into simpler lemmas about
 the execution of simpler programs or simple model structures.
 
 \section{Conclusion}
 \label{sec:concl}
-
-\todo[inline]{Add concrete metrics about the mechanization (lines of
-  formalization, lines of proof scripts, person-years, etc.)}
 
 In this article, we have reported on the formal verification of the
 \hilecop{} methodology, more specifically pertaining to the proof that
@@ -5170,11 +5183,10 @@ of the implementation rather than the optimizing aspects of it.
 %%%%%% LIMITS OF THE RESEARCH %%%%%%
 
 Although the proof of semantic preservation has been established on
-paper, we were not able to fully mechanize it within the \coq{} proof
-assistant; at least not in the time span of a three-year
-Ph.D. thesis. This has brought a lot of thinking about the reasons
-surrounding the difficulties of the mechanization, and also about the
-solutions that would allow us to go over these
+paper, we were not able to fully mechanize it in the time span of a
+three-year Ph.D. thesis. This has brought a lot of thinking about the
+reasons surrounding the difficulties of the mechanization, and also
+about the solutions that would allow us to go over these
 difficulties. Specifically, we were wondering if the mechanization
 could not be brought out entirely because of a lack of engineering
 skills or because of other considerations. In our experience, the two
@@ -5215,7 +5227,10 @@ overall completion of the mechanization advances very slowly at the
 beginning of the project because a lot of little bricks must be
 set. Eventually, the verification goes much faster when all the
 necessary tools are in place (notably thanks to the \texttt{auto}
-tactic of the \coq{} proof assistant, and the hint databases system).
+tactic of the \coq{} proof assistant, and the hint databases
+system). Currently, the mechanization of the proof amounts to about
+8000 of programs and specifications and 7000 lines of proof script for
+approximately a one person-one year job.
 
 The \hilecop{} methodology is an industrial product with all its
 subtleties. Our guess is that, to complete the mechanization of the
@@ -5226,30 +5241,35 @@ semantic preservation to be fully mechanized; now, it is only a
 question of human and time resources to complete it.  Once the
 mechanization completed, we will have the formal proof that the HM2T
 is semantic preserving. This formal proof can help to certify the
-\hilecop{} methodology as an eligible methodology for the design and
-production of safety-critical digital systems.  The Neurinnov company
-exploits the \hilecop{} methodology for the production of
-neuroprostheses, which are considered highly critical medical
-devices. To certify the neuroprostheses as eligible for market, the UE
-regulation asks for the thorough testing of all the programs involved
-in the production chain, thus including the \hilecop{} methodology.
-For the moment, the UE regulation standards for medical devices do not
-consider a formal proof as sufficient to certify a given program.  All
-the standards in the domain of avionics, railways, power plants and
-many others consider a formal proof as sufficient. Therefore, we are
-confident in the fact that the UE regulation standards for medical
-devices will soon evolve in this way.
+\hilecop{} methodology as an eligible methodology for the design of
+safety-critical digital systems.  The Neurinnov company exploits the
+\hilecop{} methodology for the design of neuroprostheses, which are
+considered highly critical medical devices. % To certify the
+% neuroprostheses as eligible for market, the UE regulation asks for the
+% thorough testing of all the programs involved in the production chain,
+% thus including the \hilecop{} methodology.
+Both
+MDR2017/745\footnote{\url{https://eur-lex.europa.eu/legal-content/FR/TXT/PDF/?uri=CELEX:32017R0745}}
+and applicable standards requires, for quality and safety reasons,
+that the circuits involved in medical devices be tested. \hilecop{}
+has been designed to provide for formal proofs instead of, often not
+exhaustive, tests.  For the moment, the MDR2017/745 harmonised
+standard regulation standards for medical devices do not consider a
+formal proof as a substitute for conventional testing, unlike other
+industrial sectors such as avionics for example. We are confident in
+the fact that the UE regulation standards for medical devices will
+soon evolve in this way.
 
 %%%%% PERSPECTIVES %%%%%
 
 \subsection{Future work}
 \label{sec:future}
 
-In the immediate future, the first work to complete is of course the
-mechanization of the proof of Theorem~\ref{thm:full-trace-sim}.
-Finally, we must take into account all the aspects of the \hilecop{}
-high-level models, which actually have a richer structure than the one
-presented in Section~\ref{sec:hilecop-models}.
+The mechanization of the proof of Theorem~\ref{thm:full-trace-sim} is
+an on-going work.  Afterwards, we must take into account all the
+aspects of the \hilecop{} high-level models, which actually have a
+richer structure than the one presented in
+Section~\ref{sec:hilecop-models}.
 
 The first aspect to reconsider in the definition of the SITPN
 structure is \textit{interpretation}. The interpretation aspect has
@@ -5276,18 +5296,23 @@ into an environment that handles exceptions.
   \caption[An SITPN model with a macroplace.]{The macroplace is the
     double-lined circle that encapsulates an SITPN subnet; the subnet
     is called a \textit{refinement}. The arcs that enter and go out of
-    the macroplace are particular arcs, thus with a particular
-    semantics, represented by dotted arrows.}
+    the macroplace are particular arcs represented by dotted
+    arrows. The input (resp. output) arc on top (at the bottom left)
+    of the macroplace is a called an input (resp. output) situation
+    arc. The arc at the bottom right of the macroplace is called an
+    \emph{exception} arc.}
   \label{fig:macroplace}
 \end{figure}
 
 The formal definition of the SITPN structure with macroplaces and its
 formal semantics have been described in \cite{Leroux2014}. Adding
 macroplaces to the actual SITPN structure will impact the
-transformation function, and all the surrounding proofs. It will also
-bring a new \hvhdl{} design (i.e. the one defining macroplace
-components) in the loop, and will modify the code of the place and
-transition designs.
+transformation function, and all the surrounding proofs. Moreover, a
+macroplace is connected to an exception arc that comes with an
+asynchronous firing semantics. The mixing of asynchronous and
+synchronous semantics in the formal semantics of SITPNs with
+macroplaces will add new challenges in terms of formalization and
+proofs.
 
 In the actual semantics of SITPNs, we considered that only one clock
 signal regulated the evolution of the system. However, the formalism
@@ -5298,7 +5323,7 @@ system. It means that the different parts of the system are not
 evolving at the same pace. Therefore, a mechanism of
 \textit{asynchronous} message sending relates two parts with different
 clock domains, and allows these parts to communicate together. The
-system is said to have a Globally Asynchronous Locally Synchronous
+system corresponds to a Globally Asynchronous Locally Synchronous
 (GALS) architecture.  The semantics of SITPNs that integrate
 multi-clock domains has not been formalized yet. The multi-clock
 domain aspect also implies modifying the \hvhdl{} semantics to

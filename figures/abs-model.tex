@@ -69,8 +69,9 @@
   %%% LEFT COMPONENT
 
   \node[inner sep=20pt, draw, rectangle, line width=2pt] (lcomp) {
-    \sitpnOne{}
-  };
+    \sitpnOne{} };
+  \draw[line width=2pt] ($(lcomp.north)+(2.9,0)$) -- ($(lcomp.south)+(2.9,0)$);
+  
   \draw ($(lcomp.west)!.9!(lcomp.north west)$) -- ++(0.3,-0.3) node[right] {\Large\tt clk} -- ++(-0.3,-0.3) ;
   \draw ($(lcomp.west)!.65!(lcomp.north west)$) --++ (-.6,0);
   \node at ($(lcomp.west)!.65!(lcomp.north west)+(10pt,0)$) [anchor=west]  {\Large\tt rst};
@@ -101,6 +102,9 @@
   \node[inner sep=10pt, draw, rectangle, line width=2pt] (rcomp) at ($(lcomp.east)+(9,0)$) {
     \sitpnTwo{}
   };
+
+  \draw[line width=2pt] ($(rcomp.north)-(3.5,0)$) -- ($(rcomp.south)-(3.5,0)$);
+  
   \draw ($(rcomp.west)!.9!(rcomp.north west)$) -- ++(0.3,-0.3) node[right] {\Large\tt clk} -- ++(-0.3,-0.3) ;
   \draw ($(rcomp.west)!.65!(rcomp.north west)$) --++ (-.6,0);
   \node at ($(rcomp.west)!.65!(rcomp.north west)+(10pt,0)$) [anchor=west]  {\Large\tt rst};
