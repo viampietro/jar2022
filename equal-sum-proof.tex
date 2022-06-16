@@ -260,6 +260,91 @@
           \begin{equation*}
             \boxed{\sum\limits_{a'\in{}A'}f(a')=\sum\limits_{b\in{}B}g(b).}
           \end{equation*}
+
+          Appealing to the induction hypothesis with $B:=B$, $Y:=Y$
+          and $g:=g$, it is now sufficient two show that
+          \begin{equation*}
+            \boxed{
+              \begin{aligned}[t]
+                \exists{}\beta\in{}&Y\rightarrow{}B~s.t.~\\
+                                   & \mathtt{bij}(\beta)\land\mathtt{fg}(A',Y,\beta)\land\mathtt{f0}(A',Y)\land\mathtt{g0}(B,A',\beta) \\
+              \end{aligned}
+            }
+          \end{equation*}
+
+          Let us use $\beta$ to prove the goal. We must show the four following points:
+          \begin{enumerate}
+          \item $\boxed{\mathtt{bij}(\beta).}$
+          \item $\boxed{\mathtt{fg}(A',Y,\beta).}$
+          \item $\boxed{\mathtt{f0}(A',Y).}$
+          \item $\boxed{\mathtt{g0}(B,A',\beta).}$
+          \end{enumerate}
+
+          \vspace{10pt}
+
+          \begin{enumerate}
+          \item $\boxed{\mathtt{bij}(\beta).}$ Trivial by assumption.
+          \item $\boxed{\mathtt{fg}(A',Y,\beta).}$ Then, we must show that
+            \begin{equation*}
+              \boxed{\forall{}a'\in{}A'\cap{}Y,f(a')=g(\beta(a')).}
+            \end{equation*}
+
+            Given $a'\in{}A'\cap{}Y$, let us show that
+            \begin{equation*}
+              \boxed{f(a')=g(\beta(a')).}
+            \end{equation*}
+
+            From the previous assumption that
+            $\mathtt{fg}(\{a\}\cup{}A',Y,\beta)$, it suffices to show
+            that
+            \begin{equation*}
+              \boxed{a'\in(\{a\}\cup{}A')\cap{}Y.}
+            \end{equation*}
+            Trivial from $a'\in{}A'\cap{}Y$.
+            
+          \item $\boxed{\mathtt{f0}(A',Y).}$ Then, we must show that
+            \begin{equation*}
+              \boxed{\forall{}a'\in{}A'\setminus{}Y,f(a')=0.}
+            \end{equation*}
+
+            Given $a'\in{}A'\setminus{}Y$, let us show
+            \begin{equation*}
+              \boxed{f(a')=0.}
+            \end{equation*}
+
+            From the previous assumption that
+            $\mathtt{f0}(\{a\}\cup{}A',Y)$, it suffices to show that
+            \begin{equation*}
+              \boxed{a'\in(\{a\}\cup{}A')\setminus{}Y.}
+            \end{equation*}
+            Trivial from $a'\in{}A'\setminus{}Y$.
+            
+          \item $\boxed{\mathtt{g0}(B,A',\beta).}$ Then, we must show
+            that
+            \begin{equation*}
+              \boxed{\forall{}b\in{}B,\beta^{-1}(b)\notin{}A'\Rightarrow{}g(b)=0.}
+            \end{equation*}
+
+            Given $b\in{}B$ and assuming that
+            $\beta^{-1}(b)\notin{}A'$, let us show
+            \begin{equation*}
+              \boxed{g(b)=0.}
+            \end{equation*}
+
+            From the previous assumption that
+            $\mathtt{g0}(B,\{a\}\cup{}A',\beta)$, it suffices to show that
+            \begin{equation*}
+              \boxed{\beta^{-1}(b)\notin{}\{a\}\cup{}A'.}
+            \end{equation*}
+            Then, we must show the two following points:
+            \begin{enumerate}
+            \item $\boxed{\beta^{-1}(b)\neq{}a.}$ If $\beta^{-1}(b)=a$
+              then $a\in{}Y$, thus contradicting the previous
+              assumption that $a\notin{}Y$.
+            \item $\boxed{\beta^{-1}(b)\notin{}A'.}$ Trivial by
+              assumption.
+            \end{enumerate}
+          \end{enumerate}
           
         \end{enumerate}
       \end{enumerate}
