@@ -1,0 +1,275 @@
+\documentclass[pdflatex,sn-mathphys]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+
+%%%% Standard Packages and macros (don't forget to paste the macros in
+%%%% the main at the end of the writing).
+\usepackage{todonotes}
+\usepackage{lstvhdl, lstautogobble, lstpseudocoq, lstcoq}
+\usepackage{enumitem}
+\usepackage{ebproof}
+\ebproofset{left label template=\fontsize{9}{11}\selectfont\inserttext}
+\ebproofset{right label template=\fontsize{7}{10}\selectfont\inserttext}
+
+\include{macros}
+
+%%%%
+
+\jyear{2022}%
+
+%% as per the requirement new theorem styles can be included as shown below
+\theoremstyle{thmstyleone}%
+\newtheorem{theorem}{Theorem}%  meant for continuous numbers
+%%\newtheorem{theorem}{Theorem}[section]% meant for sectionwise numbers
+%% optional argument [theorem] produces theorem numbering sequence instead of independent numbers for Proposition
+\newtheorem{proposition}[theorem]{Proposition}% 
+%%\newtheorem{proposition}{Proposition}% to get separate numbers for theorem and proposition etc.
+
+\theoremstyle{thmstyletwo}%
+\newtheorem{example}{Example}%
+\newtheorem{remark}{Remark}%
+\newtheorem*{pf}{Proof}%
+
+\theoremstyle{thmstylethree}%
+\newtheorem{definition}{Definition}%
+\newtheorem{lemma}{Lemma}%
+
+\raggedbottom
+
+\begin{document}
+
+    \begin{theorem}[Equality between two sums]
+      \label{thm:sums-equal}
+      For all sets $X,A$ such that $A\subseteq{}X$,
+      $f\in{}A\rightarrow\mathbb{N}$, and for all sets $Y, B$, such
+      that $Y\subseteq{}X$, and $g\in{}B\rightarrow\mathbb{N}$, if
+      there exists $\beta\in{}Y\rightarrow{}B$ such that:
+      \begin{itemize}
+      \item $\beta$ is a bijection
+      \item $\forall{}a\in{}A\cap{}Y,~f(a)=g(\beta(a))$
+      \item $\forall{}a\in{}A\setminus{}Y,~f(a)=0$
+      \item $\forall{}b\in{}B,\beta^{-1}(b)\notin{}A\Rightarrow{}g(b)=0$
+      \end{itemize}
+      then $\sum\limits_{a\in{}A}f(a)=\sum\limits_{b\in{}B}g(b)$.
+    \end{theorem}
+
+    \begin{pf}[Proof of Theorem~\ref{thm:sums-equal}]
+
+      First, let us define some useful notations to navigate across
+      the proof:
+
+      \begin{itemize}
+      \item $\mathtt{bij}(\beta)\equiv\beta$ is a bijection
+      \item
+        $\mathtt{fg}(A,Y,\beta)\equiv\forall{}a\in{}A\cap{}Y,~f(a)=g(\beta(a))$
+      \item $\mathtt{f0}(A,Y)\equiv\forall{}a\in{}A\setminus{}Y,~f(a)=0$
+      \item
+        $\mathtt{g0}(B,A,\beta)\equiv\forall{}b\in{}B,\beta^{-1}(b)\notin{}A\Rightarrow{}g(b)=0$
+      \item $\begin{aligned}[t]
+               \mathtt{P}(A,\sum\limits_{a\in{}A}f(a))\equiv{}& \begin{aligned}[t]
+                                                                  \forall{}Y&\subseteq{}X,B,g\in{}B\rightarrow{}\mathbb{N}, \\
+                                                                            & \big(\exists{}\beta\in{}Y\rightarrow{}B~s.t.~\mathtt{bij}(\beta)\land\mathtt{fg}(A,Y,\beta)\land\mathtt{f0}(A,Y)\land\mathtt{g0}(B,A,\beta)\big) \\
+                                                                            & \Rightarrow{}\sum\limits_{a\in{}A}f(a)=\sum\limits_{b\in{}B}g(b)\\
+                                                                \end{aligned} \\
+             \end{aligned}$
+      \end{itemize}
+
+      Given a $X, A\subseteq{}X$ and $f\in{}A\rightarrow{}\mathbb{N}$,
+      let us show that
+      \begin{equation*}
+        \boxed{\mathtt{P}(A,\sum\limits_{a\in{}A}f(a)).}
+      \end{equation*}
+
+      By induction on $\sum\limits_{a\in{}A}f(a)$, there are two cases
+      to prove:
+      \begin{enumerate}
+      \item $\boxed{\mathtt{P}(\emptyset,0)}$
+      \item
+        $\boxed{\mathtt{P}(\{a\}\cup{}A',f(a)+\sum_{a'\in{}A'}f(a'))}$
+        where $A=\{a\}\cup{}A'$ and such that $A'=A\setminus{}\{a'\}$.
+      \end{enumerate}
+
+      \begin{enumerate}
+      \item First, let us prove
+        \begin{equation*}
+          \boxed{\mathtt{P}(\emptyset,0).}
+        \end{equation*}
+
+        Given a $Y\subseteq{}X,B,g\in{}B$, and assuming
+        $\exists{}\beta\in{}Y\rightarrow{}B~s.t.~\mathtt{bij}(\beta)\land\mathtt{fg}(\emptyset,Y,\beta)\land\mathtt{f0}(\emptyset,Y)\land\mathtt{g0}(B,\emptyset,\beta)$,
+        let us show
+        \begin{equation*}
+          \boxed{0=\sum\limits_{b\in{}B}g(b).}
+        \end{equation*}
+        Let us take such a $\beta$. From $\mathtt{g0}(B,\emptyset,\beta)$,
+        we can deduce that $\forall{}b\in{}B,g(b)=0$, and thus that
+        $\sum\limits_{b\in{}B}g(b)=0$.
+      \item Then, let us prove that
+        \begin{equation*}
+          \boxed{\mathtt{P}(\{a\}\cup{}A',f(a)+\sum_{a'\in{}A'}f(a')).}
+        \end{equation*}
+        The induction hypothesis is
+        $\mathtt{P}(A',\sum\limits_{a'\in{}A'}f(a'))$. Given
+        $Y\subseteq{}X,B,g\in{}B$, and assuming
+        $\exists{}\beta\in{}Y\rightarrow{}B~s.t.~\mathtt{bij}(\beta)\land\mathtt{fg}(\{a\}\cup{}A',Y,\beta)\land\mathtt{f0}(\{a\}\cup{}A',Y)\land\mathtt{g0}(B,\{a\}\cup{}A',\beta)$,
+        let us show
+        \begin{equation*}
+          \boxed{f(a)+\sum_{a'\in{}A'}f(a')=\sum\limits_{b\in{}B}g(b).}
+        \end{equation*}
+        Let us take such a $\beta$ as described above. Assuming that
+        the membership is decidable for the elements of the $Y$ set,
+        there are two cases: $a\in{}Y$ or $a\notin{}Y$.
+
+        \begin{enumerate}
+        \item \textbf{CASE} $a\in{}Y$, and thus
+          $a\in(\{a\}\cup{}A')\cap{}Y$:\\
+
+          Then, from $\mathtt{fg}(\{a\}\cup{}A',Y,\beta)$, we can deduce
+          $f(a)=g(\beta(a))$, and the goal can be rewritten as follows:
+          \begin{equation*}
+            \boxed{f(a)+\sum_{a'\in{}A'}f(a')=g(\beta(a))+\sum\limits_{b\in{}B\setminus\{\beta(a)\}}g(b).}
+          \end{equation*}
+          From $f(a)=g(\beta(a))$, it is now sufficient to prove that
+          \begin{equation*}
+            \boxed{\sum_{a'\in{}A'}f(a')=\sum\limits_{b\in{}B\setminus\{\beta(a)\}}g(b).}
+          \end{equation*}
+
+          Appealing to the induction hypothesis with
+          $B:=B\setminus\{\beta(a)\}$, $Y:=Y\setminus\{a\}$ and
+          $g:=g$, it is now sufficient two show that
+          \begin{equation*}
+            \boxed{
+              \begin{aligned}[t]
+                \exists{}\beta\in{}&Y\setminus\{a\}\rightarrow{}B\setminus\{\beta(a)\}~s.t.~\\
+                                   & \mathtt{bij}(\beta)\land\mathtt{fg}(A',Y\setminus\{a\},\beta)\land\mathtt{f0}(A',Y\setminus\{a\})\land\mathtt{g0}(B\setminus\{\beta(a)\},A',\beta) \\
+              \end{aligned}
+            }
+          \end{equation*}
+
+          Let us take $\beta$ restricted to the domain of
+          $Y\setminus\{a\}$, and called it $\beta_r$, to prove the
+          goal. By definition of the restriction,
+          $\beta_r\in{}Y\setminus\{a\}\rightarrow{}B\setminus\{\beta(a)\}$. Then,
+          we must show the four following points:
+          \begin{enumerate}
+          \item $\mathtt{bij}(\beta_r)$
+          \item $\mathtt{fg}(A',Y\setminus\{a\},\beta_r)$
+          \item $\mathtt{f0}(A',Y\setminus\{a\})$
+          \item $\mathtt{g0}(B_r\setminus\{\beta(a)\},A',\beta_r)$
+          \end{enumerate}
+
+          \vspace{10pt}
+          
+          \begin{enumerate}
+          \item $\boxed{\mathtt{bij}(\beta_r).}$ Trivial by definition of $\beta_r$.
+          \item $\boxed{\mathtt{fg}(A',Y\setminus\{a\},\beta_r).}$
+            Then, we must show
+            \begin{equation*}
+              \boxed{\forall{}a'\in{}A'\cap(Y\setminus\{a\}),f(a')=g(\beta_r(a')).}
+            \end{equation*}
+            Given a $a'\in{}A'\cap(Y\setminus\{a\})$, let us show
+            \begin{equation*}
+              \boxed{f(a')=g(\beta_r(a')).}
+            \end{equation*}
+            As $a'\in{}A'\cap(Y\setminus\{a\})$, then
+            $a'\in{}(\{a\}\cup{}A')\cap{}Y$ and $a'\neq{}a$. Thanks to
+            the previous assumption that
+            $\mathtt{fg}(\{a\}\cup{}A',Y,\beta)$,
+            $a'\in{}(\{a\}\cup{}A')\cap{}Y$ and $a'\neq{}a$, we can
+            deduce $f(a')=g(\beta(a'))$ and $\beta(a')=\beta_r(a')$
+            (since $a'\neq{}a$). Thus, we have $f(a')=g(\beta_r(a'))$.
+            
+          \item $\boxed{\mathtt{f0}(A',Y\setminus\{a\}).}$ Then, we must show
+            \begin{equation*}
+              \boxed{\forall{}a'\in{}A'\setminus(Y\setminus\{a\}),f(a')=0.}
+            \end{equation*}
+
+            Given a $a'\in{}A'\setminus(Y\setminus\{a\})$, let us show
+            \begin{equation*}
+              \boxed{f(a')=0.}
+            \end{equation*}
+
+            By definition, $a'\in{}A'$ and
+            $a'\notin{}Y\setminus\{a\}$. Then, from the previous
+            assumption that $\mathtt{f0}(\{a\}\cup{}A',Y)$, it is
+            sufficient to show that
+            \begin{equation*}
+              \boxed{a'\in(\{a\}\cup{}A')\setminus{}Y.}
+            \end{equation*}
+
+            Then, it is sufficient to show the two following points:
+            \begin{enumerate}
+            \item $\boxed{a'\in\{a\}\cup{}A'.}$
+            \item $\boxed{a'\notin{}Y.}$
+            \end{enumerate}
+
+            \vspace{10pt}
+
+            \begin{enumerate}
+            \item $\boxed{a'\in\{a\}\cup{}A'.}$ Trivial as $a'\in{}A'$.
+            \item $\boxed{a'\notin{}Y.}$ Since
+              $a'\notin{}Y\setminus\{a\}$, then either $a'\notin{}Y$,
+              or $a'=a$ which contradicts $a'\in{}A'$ as we know that
+              $a\notin{}A'$.
+            \end{enumerate}
+            
+          \item $\boxed{\mathtt{g0}(B\setminus\{\beta_r(a)\},A',\beta_r).}$ Then, we must show
+            \begin{equation*}
+              \boxed{\forall{}b\in{}B\setminus\{\beta_r(a)\},\beta_r^{-1}(b)\notin{}A'\Rightarrow{}g(b)=0.}
+            \end{equation*}
+
+            Given $b\in{}B\setminus\{\beta_r(a)\}$ and assuming that
+            $\beta_r^{-1}(b)\notin{}A'$, let us show
+            \begin{equation*}
+              \boxed{g(b)=0.}
+            \end{equation*}
+
+            From the previous assumption
+            $\mathtt{g0}(B,\{a\}\cup{}A',\beta)$, it is sufficient to
+            show the two following points:
+            \begin{enumerate}
+            \item $\boxed{b\in{}B.}$
+            \item $\boxed{\beta^{-1}(b)\notin\{a\}\cup{}A'.}$ 
+            \end{enumerate}
+
+            \vspace{10pt}
+
+            \begin{enumerate}
+            \item $\boxed{b\in{}B.}$ Trivial from
+              $b\in{}B\setminus{\beta_r(a)}$.
+            \item $\boxed{\beta^{-1}(b)\notin\{a\}\cup{}A'.}$ Then, we
+              must show the two following points:
+
+              \begin{itemize}
+              \item $\boxed{\beta^{-1}(b)\neq{}a.}$ If
+                $\beta^{-1}(b)=a$, then $\beta_r^{-1}(b)\notin{}A'$ is
+                a contradiction since $b$ is not defined in the domain
+                of $\beta_r^{-1}$. Otherwise, $\beta^{-1}(b)\neq{}a$.
+              \item $\boxed{\beta^{-1}(b)\notin{}A'.}$ Trivial from
+                $\beta_r^{-1}(b)\notin{}A'$ and knowing now that
+                $\beta^{-1}(b)\neq{}a$.
+              \end{itemize}
+            \end{enumerate}
+            
+          \end{enumerate}
+
+          \vspace{10pt}
+          
+        \item \textbf{CASE} $a\notin{}Y$ and thus $a\in{}(\{a\}\cup{}A')\setminus{}Y$:
+
+          Then, from $\mathtt{f0}(\{a\}\cup{}A',Y)$, we can deduce
+          $f(a)=0$ and the goal can be rewritten as follows:
+          \begin{equation*}
+            \boxed{\sum\limits_{a'\in{}A'}f(a')=\sum\limits_{b\in{}B}g(b).}
+          \end{equation*}
+          
+        \end{enumerate}
+      \end{enumerate}
+      
+    \end{pf}
+
+\end{document}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
