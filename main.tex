@@ -4400,9 +4400,19 @@ implementation. All the presented metrics are obtained by the running
 the \texttt{coqwc} program, which comes with the distribution of the
 \coq{} proof assistant, on the source files. At the end of the
 section, we discuss on the difficulty of the mechanization of the
-proof in our particular transformation case.
+proof in our particular transformation case. The whole code is
+accessible in our \textsf{Git} repository:
+
+\begin{center}
+  \url{https://github.com/viampietro/ver-hilecop}
+\end{center}
 
 \paragraph{Implementation of SITPNs}
+
+% COMMAND RUN TO COUNT PROG, SPECS AND PROOF LINES:
+% 
+% coqwc $(find sitpn/ -name *.v ! -regex "sitpn/proofs/.*")
+%
 
 Our first contribution to the mechanization of the proof is the
 implementation of the structure and semantics of SITPNs.  We did two
@@ -4416,28 +4426,37 @@ of the semantics. The code of the dependent type free version of
 SITPNs and the proof of equivalence between the relational and
 functional semantics is accessible
 here\footnote{\url{https://github.com/viampietro/ver-hilecop}}; it
-amounts to 5200 lines of programs and specifications and 7000 lines of
-proof scripts. The code of the current version of the SITPN structure
+amounts to 5200 lines of program and specification and 7000 lines of
+proof script. The code of the current version of the SITPN structure
 and semantics is accessible under the \texttt{sitpn} folder in our
-\textsf{Git}
-repository\footnote{\url{https://github.com/viampietro/ver-hilecop}};
-it amounts to 220 lines of programs and specifications and 500 lines
-of proof script.
+\textsf{Git} repository; it amounts to 680 lines of programs and
+specifications.
 
 \paragraph{Implementation of the \hvhdl{} language}
 
+% COMMAND RUN TO COUNT PROG, SPECS AND PROOF LINES:
+% 
+% coqwc $(find hvhdl/ -name *.v ! -regex "hvhdl/proofs/.*")
+%
+
 Our second contribution to the mechanization of the proof is the
 implementation of the syntax and semantics of the \hvhdl{} language.
-It amounts to 4240 lines of programs and specifications, and to 2840
-lines of proof script. The proof scripts include the mechanization of
-the proofs for some properties of the \hvhdl{} semantics, for instance
-regarding the determinism of some of the execution relations, or the
-commutativity and associativity of the composition operators (e.g. for
-concurrent statements) in certain contexts, etc. The code of the
-implementation of the \hvhdl{} language is accessible under the
-\texttt{hvhdl} folder in our \textsf{Git} repository.
+It amounts to about 2400 lines of program and specification. The code
+of the implementation of the \hvhdl{} language is accessible under the
+\texttt{hvhdl} folder in our \textsf{Git} repository. The proof
+scripts, to be found under the \texttt{proofs} subfolder, include the
+mechanization of the proofs for some properties of the \hvhdl{}
+semantics, for instance regarding the determinism of some of the
+execution relations, or the commutativity and associativity of the
+composition operators (e.g. for concurrent statements) in certain
+contexts, etc.
 
 \paragraph{Implementation of the \hilecop{} model-to-text transformation}
+
+% COMMAND RUN TO COUNT PROG, SPECS AND PROOF LINES:
+% 
+% coqwc $(find transformation/ -name *.v ! -regex "transformation/proofs/.*")
+%
 
 Regarding the \coq{} implementation of the HM2T, we have implemented
 both its specification (cf. Definition~\ref{def:hm2t-spec}) and a
@@ -4446,8 +4465,9 @@ the algorithm outlined in \cite{Iampietro2021} which is inspired from
 the \textsc{Java} implementation of the \hilecop{} methodology. We
 used the state-and-error monad for our \coq{} implementation of the
 HM2T to mimick the imperative traits of the \textsf{Java}
-implementation. The total amounts to 1600 lines of programs and
-specifications, and to 1100 lines of proof script.
+implementation. The total amounts to about 1300 lines of program and
+specification. The code is accessible under the
+\texttt{transformation} folder in our \textsf{Git} repository.
 
 % In this section, we give metrics to measure this gap. We point out
 % some of the reasons that may explain the gap, and comment on some
@@ -4655,6 +4675,11 @@ specifications, and to 1100 lines of proof script.
 \paragraph{Mechanization of the proof of
   Theorem~\ref{thm:full-trace-sim}}
 
+% COMMAND RUN TO COUNT PROG, SPECS AND PROOF LINES:
+% 
+% coqwc $(find common/ sitpn/proofs/ hvhdl/proofs/ transformation/proofs/ behavior-preservation/ -name *.v ! -regex common/DFMapWeakList.v)
+%
+
 The work of mechanizing the proof of Theorem~\ref{thm:full-trace-sim}
 is an ongoing task. To complete it, we have to mechanize the proofs of
 Lemma~\ref{lem:sim-init-states}, \ref{lem:fst-re-lock-step},
@@ -4662,7 +4687,11 @@ Lemma~\ref{lem:sim-init-states}, \ref{lem:fst-re-lock-step},
 writing, we have only mechanized two points over the six that
 constitute the proof of Lemma~\ref{lem:sim-init-states}. However, the
 effort to achieve this little part of the overall verification amounts
-to three months of work, and about 7000 lines of proof script.
+to three months of work, about 4700 lines of specification and 5200
+lines of proof script. The code including the declaration of the
+different theorems and lemmas presented in Section~\ref{sec:proof} is
+accessible under the \texttt{behavior-preservation} folder in our
+\textsf{Git} repository.
 
 \bigskip
 
