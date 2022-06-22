@@ -47,9 +47,9 @@
 
 \begin{document}
 
-\title[Formal verification of the \hilecop{} methodology]{Formal
-  verification of a methodology for the design of safety-critical
-  digital systems}
+\title[Formal Verification of the \hilecop{} Methodology]{Formal
+  Verification of \hilecop{}: A Methodology for the Design of
+  Safety-critical Digital Systems}
 
 %%=============================================================%%
 %% Prefix	-> \pfx{Dr}
@@ -65,7 +65,7 @@
 
 \author*[1]{\fnm{Vincent} \sur{Iampietro}}
 \author[1]{\fnm{David} \sur{Delahaye}}
-\author[1,2]{\fnm{David} \sur{Andreu}}
+\author[2]{\fnm{David} \sur{Andreu}}
 
 \email{Firstname.Lastname@lirmm.fr}
 \email{David.Andreu@neurinnov.com}
@@ -4378,7 +4378,7 @@ expressed by Lemma~\ref{lem:re-eq-marking}.
      \end{equation*}
 
      From Lemma ``Falling edge not equal fired''
-     \cite[p.351]{Iampietro2021} and knowing that
+     \cite[p.~351]{Iampietro2021} and knowing that
      $t_i\notin{}Fired(s)$, we can conclude the proof. Lemma ``Falling
      edge not equal fired'' states that, at the end of a falling edge
      step, for all transition that is not fired, then the value of the
@@ -4389,124 +4389,179 @@ expressed by Lemma~\ref{lem:re-eq-marking}.
  
 \end{pf}
 
-
-\subsection{Mechanization with the \coq{} proof assistant}
+\section{Mechanization with the \coq{} proof assistant}
 \label{sec:mech-of-the-proof}
 
-  % In this section, we give
-% metrics to measure this gap. We point out some of the reasons that may
-% explain the gap, and comment on some employed techniques to reduce the
-% size of proof scripts. As a remainder, the full code including
-% specifications and proof scripts is available at
-% \url{https://github.com/viampietro/ver-hilecop}.
+Here, the different contributions pertaining to the mechanization of
+proof of semantic preservation with the \coq{} proof assistant are
+outlined. For each one of the previous sections, we give metrics
+related to the produced code and the amount of time taken by the
+implementation. All the presented metrics are obtained by the running
+the \texttt{coqwc} program, which comes with the distribution of the
+\coq{} proof assistant, on the source files. At the end of the
+section, we discuss on the difficulty of the mechanization of the
+proof in our particular transformation case.
 
-Listing~\ref{lst:coq-full-trace-sim-thm} presents the \coq{}
-implementation of Theorem~\ref{thm:full-trace-sim} along with the
-sequence of tactics constituting its proof.
+\paragraph{Implementation of SITPNs}
 
-\begin{lstlisting}[language=Coq,caption={\coq{} implementation of
-Theorem~\ref{thm:full-trace-sim} and the mechanized version of its
-proof.},label={lst:coq-full-trace-sim-thm},
-framexleftmargin=1.5em,
-xleftmargin=2em,
-numbers=left,
-numberstyle=\tiny\ttfamily,
-basicstyle=\fontsize{9}{11}\selectfont,
-frame=tb]
-Theorem sitpn2hvhdl_full_trace_sim :
-  forall $\tau$ sitpn $E_c$ $\theta_s$ d $E_p$ b $\theta_\sigma$ $\gamma$,
+Our first contribution to the mechanization of the proof is the
+implementation of the structure and semantics of SITPNs.  We did two
+implementations of the SITPN structure, one with and one without
+dependent types. The currently used version is the one with dependent
+types.  For the version without dependent types, we have implemented
+an interpret, or \textit{token player}, and by doing so, we gave a
+functional operational semantics to the SITPN formalism, and proved
+the equivalence between the relational and functional implementation
+of the semantics. The code of the dependent type free version of
+SITPNs and the proof of equivalence between the relational and
+functional semantics is accessible
+here\footnote{\url{https://github.com/viampietro/ver-hilecop}}; it
+amounts to 5200 lines of programs and specifications and 7000 lines of
+proof scripts. The code of the current version of the SITPN structure
+and semantics is accessible under the \texttt{sitpn} folder in our
+\textsf{Git}
+repository\footnote{\url{https://github.com/viampietro/ver-hilecop}};
+it amounts to 220 lines of programs and specifications and 500 lines
+of proof script.
 
-    (* sitpn is well-defined. *)
-    IsWellDefined sitpn ->
+\paragraph{Implementation of the \hvhdl{} language}
+
+Our second contribution to the mechanization of the proof is the
+implementation of the syntax and semantics of the \hvhdl{} language.
+It amounts to 4240 lines of programs and specifications, and to 2840
+lines of proof script. The proof scripts include the mechanization of
+the proofs for some properties of the \hvhdl{} semantics, for instance
+regarding the determinism of some of the execution relations, or the
+commutativity and associativity of the composition operators (e.g. for
+concurrent statements) in certain contexts, etc. The code of the
+implementation of the \hvhdl{} language is accessible under the
+\texttt{hvhdl} folder in our \textsf{Git} repository.
+
+\paragraph{Implementation of the \hilecop{} model-to-text transformation}
+
+Regarding the \coq{} implementation of the HM2T, we have implemented
+both its specification (cf. Definition~\ref{def:hm2t-spec}) and a
+program that performs the transformation. The latter program follows
+the algorithm outlined in \cite{Iampietro2021} which is inspired from
+the \textsc{Java} implementation of the \hilecop{} methodology. We
+used the state-and-error monad for our \coq{} implementation of the
+HM2T to mimick the imperative traits of the \textsf{Java}
+implementation. The total amounts to 1600 lines of programs and
+specifications, and to 1100 lines of proof script.
+
+% In this section, we give metrics to measure this gap. We point out
+% some of the reasons that may explain the gap, and comment on some
+% employed techniques to reduce the size of proof scripts. As a
+% remainder, the full code including specifications and proof scripts
+% is available at \url{https://github.com/viampietro/ver-hilecop}.
+
+% Listing~\ref{lst:coq-full-trace-sim-thm} presents the \coq{}
+% implementation of Theorem~\ref{thm:full-trace-sim} along with the
+% sequence of tactics constituting its proof.
+
+% \begin{lstlisting}[language=Coq,caption={\coq{} implementation of
+% Theorem~\ref{thm:full-trace-sim} and the mechanized version of its
+% proof.},label={lst:coq-full-trace-sim-thm},
+% framexleftmargin=1.5em,
+% xleftmargin=2em,
+% numbers=left,
+% numberstyle=\tiny\ttfamily,
+% basicstyle=\fontsize{9}{11}\selectfont,
+% frame=tb]
+% Theorem sitpn2hvhdl_full_trace_sim :
+%   forall $\tau$ sitpn $E_c$ $\theta_s$ d $E_p$ b $\theta_\sigma$ $\gamma$,
+
+%     (* sitpn is well-defined. *)
+%     IsWellDefined sitpn ->
     
-    (* The HM2T takes sitpn and b as inputs and 
-       yields the couple (d, $\gamma$) . *)
-    sitpn2hvhdl sitpn b = (inl (d, $\gamma$)) ->
+%     (* The HM2T takes sitpn and b as inputs and 
+%        yields the couple (d, $\gamma$) . *)
+%     sitpn2hvhdl sitpn b = (inl (d, $\gamma$)) ->
 
-    (* Environments are similar. *)
-    SimEnv sitpn $\gamma$ $E_c$ $E_p$ ->
+%     (* Environments are similar. *)
+%     SimEnv sitpn $\gamma$ $E_c$ $E_p$ ->
     
-    (* $\theta_s$ is the execution trace of sitpn after $\tau$ clock cycles. *)
-    SitpnFullExec $E_c$ $\tau$ sitpn $\theta_s$ ->    
+%     (* $\theta_s$ is the execution trace of sitpn after $\tau$ clock cycles. *)
+%     SitpnFullExec $E_c$ $\tau$ sitpn $\theta_s$ ->    
     
-    (* $\theta_\sigma$ is the simulation trace of d after $\tau$ clock cycles. *)
-    hfullsim $E_p$ $\tau$ d $\theta_\sigma$ ->
+%     (* $\theta_\sigma$ is the simulation trace of d after $\tau$ clock cycles. *)
+%     hfullsim $E_p$ $\tau$ d $\theta_\sigma$ ->
     
-    (* ** Conclusion: traces are similar. ** *)
-    SimTrace $\gamma$ $\theta_s$ $\theta_\sigma$.
-Proof.
-  (* Case analysis on $\tau$ *)
-  destruct $\tau$; intros;
-  match goal with
-  | [ H0: SitpnFullExec _ _ _, H1: hfullsim _ _ _ _ |- _ ] =>
-    inversion_clear H0; inversion_clear H1
-  end;
-  match goal with
-  | [ H2: simloop _ _ _ _ _ _ _ |- _ ] =>
-      inversion_clear H2
-  end.
+%     (* ** Conclusion: traces are similar. ** *)
+%     SimTrace $\gamma$ $\theta_s$ $\theta_\sigma$.
+% Proof.
+%   (* Case analysis on $\tau$ *)
+%   destruct $\tau$; intros;
+%   match goal with
+%   | [ H0: SitpnFullExec _ _ _, H1: hfullsim _ _ _ _ |- _ ] =>
+%     inversion_clear H0; inversion_clear H1
+%   end;
+%   match goal with
+%   | [ H2: simloop _ _ _ _ _ _ _ |- _ ] =>
+%       inversion_clear H2
+%   end.
 
-  (* CASE $\tau=0$, GOAL $\gamma\vdash{}s_0\approx\sigma_0$. 
-     Solved with [sim_init_states] lemma. *)
-  - constructor; eauto with hilecop.
+%   (* CASE $\tau=0$, GOAL $\gamma\vdash{}s_0\approx\sigma_0$. 
+%      Solved with [sim_init_states] lemma. *)
+%   - constructor; eauto with hilecop.
 
-  (* CASE $\tau>0$, GOAL $\gamma\vdash[s_0 :: s_0 :: s_1 :: \theta_s]\sim[\sigma_0 :: \sigma'_0 :: \sigma_1 :: \theta_\sigma]$.   
-     Solved with [first_rising_edge], [falling_edge] 
-     and [trace_sim] lemmas. *)
-  - match goal with
-    | [ H: simcycle _ _ _ _ _ _ _ _ |- _ ] =>
-        inversion_clear H; repeat (constructor; eauto with hilecop)
-    end.
-Qed.
-\end{lstlisting}
+%   (* CASE $\tau>0$, GOAL $\gamma\vdash[s_0 :: s_0 :: s_1 :: \theta_s]\sim[\sigma_0 :: \sigma'_0 :: \sigma_1 :: \theta_\sigma]$.   
+%      Solved with [first_rising_edge], [falling_edge] 
+%      and [trace_sim] lemmas. *)
+%   - match goal with
+%     | [ H: simcycle _ _ _ _ _ _ _ _ |- _ ] =>
+%         inversion_clear H; repeat (constructor; eauto with hilecop)
+%     end.
+% Qed.
+% \end{lstlisting}
 
-The proof script laid out in Listing~\ref{lst:coq-full-trace-sim-thm}
-follows the structure of the paper proof of
-Theorem~\ref{thm:full-trace-sim}. However, most part of the proof has
-been abstracted away thanks to the use of the hint database mechanism
-in conjunction with the \texttt{auto} and \texttt{eauto}
-tactics\footnote{See
-  \url{https://coq.inria.fr/refman/proofs/automatic-tactics/auto.html}
-  for more information on programmable proof search using hint
-  databases and the \texttt{auto} tactic.}.  This is representative of
-our strategy to keep our mechanized proofs robust to change. To
-achieve this, we follow the advices laid out in \cite{Chlipala2010}.
+% The proof script laid out in Listing~\ref{lst:coq-full-trace-sim-thm}
+% follows the structure of the paper proof of
+% Theorem~\ref{thm:full-trace-sim}. However, most part of the proof has
+% been abstracted away thanks to the use of the hint database mechanism
+% in conjunction with the \texttt{auto} and \texttt{eauto}
+% tactics\footnote{See
+%   \url{https://coq.inria.fr/refman/proofs/automatic-tactics/auto.html}
+%   for more information on programmable proof search using hint
+%   databases and the \texttt{auto} tactic.}.  This is representative of
+% our strategy to keep our mechanized proofs robust to change. To
+% achieve this, we follow the advices laid out in \cite{Chlipala2010}.
 
-In the proof script of Listing~\ref{lst:coq-full-trace-sim-thm}, we
-first perform case analysis on the clock cycle count $\tau$ by
-appealing to the \texttt{destruct} tactic. This leads to the creation
-of two proof sub-goals, one for $\tau=0$ and another for
-$\tau>0$. Before solving each sub-goal individually, we prepare the
-proof context by appealing to the \texttt{intros} tactic and then by
-performing pattern matching and unfolding of definitions. The
-\texttt{intros} tactic introduces all universally-bound variables and
-hypotheses in the proof context. Then, the pattern matching of
-Lines~25 to 32 in conjunction with the \texttt{inversion\_clear}
-tactic unfolds the definition of the SITPN full execution relation
-(resp. the \hvhdl{} full simulation relation and the \hvhdl{}
-simulation loop relation) which is an implementation of
-Definition~\ref{def:sitpn-full-exec} (resp. Table~\ref{tab:full-sim}
-and Table~\ref{tab:sim-loop}).  Then, the \texttt{constructor} tactic
-builds sub-goals to be proved based on the definition of the full
-trace similarity relation, i.e. \texttt{SimTrace}, which is an
-implementation of Definition~\ref{def:full-exec-trace-sim}. We let the
-\texttt{eauto} tactic decide which lemma apply to solve the sub-goals
-generated by the \texttt{constructor} tactics. We give a hint to the
-\texttt{eauto} tactic so that it looks in the user-defined
-\texttt{hilecop} database of theorems and lemmas to solve the
-sub-goals. The \texttt{hilecop} database contains the \coq{}
-implementation of all the theorems and lemmas used to prove
-Theorem~\ref{thm:full-trace-sim}, namely: the
-\texttt{sim\_init\_states} lemma which implements
-Lemma~\ref{lem:sim-init-states}, the \texttt{first\_rising\_edge}
-lemma which implements Lemma~\ref{lem:fst-re-lock-step}, the
-\texttt{rising\_edge} lemma which implements
-Lemma~\ref{lem:re-lock-step}, and the \texttt{falling\_edge} lemma
-which implements Lemma~\ref{lem:fe-lock-step}.  The second part of the
-proof, corresponding to the induction on $\tau$, is abstracted away in
-an intermediary lemma called \texttt{sim\_trace}. The
-\texttt{sim\_trace} lemma is automatically called by the
-\texttt{eauto} tactic to complete the goal.
+% In the proof script of Listing~\ref{lst:coq-full-trace-sim-thm}, we
+% first perform case analysis on the clock cycle count $\tau$ by
+% appealing to the \texttt{destruct} tactic. This leads to the creation
+% of two proof sub-goals, one for $\tau=0$ and another for
+% $\tau>0$. Before solving each sub-goal individually, we prepare the
+% proof context by appealing to the \texttt{intros} tactic and then by
+% performing pattern matching and unfolding of definitions. The
+% \texttt{intros} tactic introduces all universally-bound variables and
+% hypotheses in the proof context. Then, the pattern matching of
+% Lines~25 to 32 in conjunction with the \texttt{inversion\_clear}
+% tactic unfolds the definition of the SITPN full execution relation
+% (resp. the \hvhdl{} full simulation relation and the \hvhdl{}
+% simulation loop relation) which is an implementation of
+% Definition~\ref{def:sitpn-full-exec} (resp. Table~\ref{tab:full-sim}
+% and Table~\ref{tab:sim-loop}).  Then, the \texttt{constructor} tactic
+% builds sub-goals to be proved based on the definition of the full
+% trace similarity relation, i.e. \texttt{SimTrace}, which is an
+% implementation of Definition~\ref{def:full-exec-trace-sim}. We let the
+% \texttt{eauto} tactic decide which lemma apply to solve the sub-goals
+% generated by the \texttt{constructor} tactics. We give a hint to the
+% \texttt{eauto} tactic so that it looks in the user-defined
+% \texttt{hilecop} database of theorems and lemmas to solve the
+% sub-goals. The \texttt{hilecop} database contains the \coq{}
+% implementation of all the theorems and lemmas used to prove
+% Theorem~\ref{thm:full-trace-sim}, namely: the
+% \texttt{sim\_init\_states} lemma which implements
+% Lemma~\ref{lem:sim-init-states}, the \texttt{first\_rising\_edge}
+% lemma which implements Lemma~\ref{lem:fst-re-lock-step}, the
+% \texttt{rising\_edge} lemma which implements
+% Lemma~\ref{lem:re-lock-step}, and the \texttt{falling\_edge} lemma
+% which implements Lemma~\ref{lem:fe-lock-step}.  The second part of the
+% proof, corresponding to the induction on $\tau$, is abstracted away in
+% an intermediary lemma called \texttt{sim\_trace}. The
+% \texttt{sim\_trace} lemma is automatically called by the
+% \texttt{eauto} tactic to complete the goal.
 
 % \paragraph{Robustness to change}
 % \label{sec:robustness}
@@ -4597,7 +4652,8 @@ an intermediary lemma called \texttt{sim\_trace}. The
 %   \texttt{GenerateHVhdlInvs.v} under the \texttt{sitpn2hvhdl} folder
 %   of the Git repository.}.
 
-\paragraph{On the difficulty of mechanizing the proof}
+\paragraph{Mechanization of the proof of
+  Theorem~\ref{thm:full-trace-sim}}
 
 The work of mechanizing the proof of Theorem~\ref{thm:full-trace-sim}
 is an ongoing task. To complete it, we have to mechanize the proofs of
@@ -5268,78 +5324,67 @@ The mechanization of the proof of Theorem~\ref{thm:full-trace-sim} is
 an on-going work.  Afterwards, we must take into account all the
 aspects of the \hilecop{} high-level models, which actually have a
 richer structure than the one presented in
-Section~\ref{sec:hilecop-models}.
+Section~\ref{sec:hilecop-models}. The complete structure of the
+high-level formalism is presented in 
 
-The first aspect to reconsider in the definition of the SITPN
-structure is \textit{interpretation}. The interpretation aspect has
-been simplified in the actual version of SITPNs. We could at least
-consider the set of \vhdl{} signals, i.e. the variables of the
-interpretation, as being a part of the SITPN structure. Depending on
-the precision level we want to achieve, we can relate the conditions
-to concrete Boolean expressions, and the actions/functions to concrete
-operations. Moreover, we can equip the SITPN semantics with an
-operational semantics to evaluate the expressions and operations
-performed over \vhdl{} signals. In that case, the SITPN state would
-include a mapping between the set of \vhdl{} signals and their current
-value.
+% The first aspect to reconsider in the definition of the SITPN
+% structure is \textit{interpretation}. The interpretation aspect has
+% been simplified in the actual version of SITPNs. We could at least
+% consider the set of \vhdl{} signals, i.e. the variables of the
+% interpretation, as being a part of the SITPN structure. Depending on
+% the precision level we want to achieve, we can relate the conditions
+% to concrete Boolean expressions, and the actions/functions to
+% concrete operations. Moreover, we can equip the SITPN semantics with
+% an operational semantics to evaluate the expressions and operations
+% performed over \vhdl{} signals. In that case, the SITPN state would
+% include a mapping between the set of \vhdl{} signals and their
+% current value.
 
-The two other main aspects still to be integrated are
-\textit{macro\-places} and \textit{multi-clock domains}.  The
-macroplace mechanism, illustrated in Figure~\ref{fig:macroplace},
-enables the encapsulation of an SITPN subnet, called a refinement,
-into an environment that handles exceptions.
+% The two other main aspects still to be integrated are
+% \textit{macro\-places} and \textit{multi-clock domains}.  The
+% macroplace mechanism, illustrated in Figure~\ref{fig:macroplace},
+% enables the encapsulation of an SITPN subnet, called a refinement,
+% into an environment that handles exceptions.
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[keepaspectratio,width=.6\textwidth]{macroplace.eps}
-  \caption[An SITPN model with a macroplace.]{The macroplace is the
-    double-lined circle that encapsulates an SITPN subnet; the subnet
-    is called a \textit{refinement}. The arcs that enter and go out of
-    the macroplace are particular arcs represented by dotted
-    arrows. The input (resp. output) arc on top (at the bottom left)
-    of the macroplace is a called an input (resp. output) situation
-    arc. The arc at the bottom right of the macroplace is called an
-    \emph{exception} arc.}
-  \label{fig:macroplace}
-\end{figure}
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[keepaspectratio,width=.6\textwidth]{macroplace.eps}
+%   \caption[An SITPN model with a macroplace.]{The macroplace is the
+%     double-lined circle that encapsulates an SITPN subnet; the subnet
+%     is called a \textit{refinement}. The arcs that enter and go out of
+%     the macroplace are particular arcs represented by dotted
+%     arrows. The input (resp. output) arc on top (at the bottom left)
+%     of the macroplace is a called an input (resp. output) situation
+%     arc. The arc at the bottom right of the macroplace is called an
+%     \emph{exception} arc.}
+%   \label{fig:macroplace}
+% \end{figure}
 
-The formal definition of the SITPN structure with macroplaces and its
-formal semantics have been described in \cite{Leroux2014}. Adding
-macroplaces to the actual SITPN structure will impact the
-transformation function, and all the surrounding proofs. Moreover, a
-macroplace is connected to an exception arc that comes with an
-asynchronous firing semantics. The mixing of asynchronous and
-synchronous semantics in the formal semantics of SITPNs with
-macroplaces will add new challenges in terms of formalization and
-proofs.
+% The formal definition of the SITPN structure with macroplaces and its
+% formal semantics have been described in \cite{Leroux2014}. Adding
+% macroplaces to the actual SITPN structure will impact the
+% transformation function, and all the surrounding proofs. Moreover, a
+% macroplace is connected to an exception arc that comes with an
+% asynchronous firing semantics. The mixing of asynchronous and
+% synchronous semantics in the formal semantics of SITPNs with
+% macroplaces will add new challenges in terms of formalization and
+% proofs.
 
-In the actual semantics of SITPNs, we considered that only one clock
-signal regulated the evolution of the system. However, the formalism
-of the \hilecop{} high-level models includes the possibility to assign
-different clock \textit{domains} to different parts of the same input
-model. Thus, the modeled system is qualified as a multi-clock domain
-system. It means that the different parts of the system are not
-evolving at the same pace. Therefore, a mechanism of
-\textit{asynchronous} message sending relates two parts with different
-clock domains, and allows these parts to communicate together. The
-system corresponds to a Globally Asynchronous Locally Synchronous
-(GALS) architecture.  The semantics of SITPNs that integrate
-multi-clock domains has not been formalized yet. The multi-clock
-domain aspect also implies modifying the \hvhdl{} semantics to
-integrate multiple clock signals in the simulation loop.
-
-% The \coq{} proof assistant provides a way to extract \ocaml{} or
-% \textsf{Haskell} code from a \coq{} function. Thus, proving that our
-% \coq{} implementation of the \hilecop{} model-to-text transformation
-% is semantic preserving would allow us to extract a sound \ocaml{} or
-% \textsf{Haskell} program out of it. This program could then replace
-% the existing \textsf{Java} implementation of the \hilecop{}
-% methodology. At least, the engineers in charge of maintaining the
-% current \hilecop{} implementation are open to the idea. However, in
-% the certification standards of safety-critical software programs, the
-% executed code may not be the one over which the formal verification
-% has been conducted (e.g. EAL 7 in the Common Criterion standard).
-
+Another main aspect still to be integrated is the notion of
+\textit{multi-clock domains}.  The actual version of the SITPN
+semantics considers that only one clock signal regulates the evolution
+of the system. However, the formalism of the \hilecop{} high-level
+models includes the possibility to assign different clock
+\textit{domains} to different parts of the same input model. Thus, the
+modeled system is qualified as a multi-clock domain system. It means
+that the different parts of the system are not evolving at the same
+pace. Therefore, a mechanism of \textit{asynchronous} message sending
+relates two parts with different clock domains, and allows these parts
+to communicate together. The system corresponds to a Globally
+Asynchronous Locally Synchronous (GALS) architecture.  The semantics
+of SITPNs that integrates multi-clock domains has not been formalized
+yet. The multi-clock domain aspect also implies modifying the \hvhdl{}
+semantics to integrate multiple clock signals in the simulation loop.
 The question of how much our actual execution semantics and proofs
 will adapt to the addition of these new elements is still
 open. Moreover, the question of how to parameterize our execution
@@ -5347,14 +5392,14 @@ semantics and transformation function in order to anticipate these
 changes is also an interesting question regarding the field of proof
 engineering.
 
-All the programming tasks described in this article have been
-performed within the framework of the \coq{} proof assistant. The
-produced code is fully accessible under the following \textsf{Git}
-repository:
+% All the programming tasks described in this article have been
+% performed within the framework of the \coq{} proof assistant. The
+% produced code is fully accessible under the following \textsf{Git}
+% repository:
 
-\begin{center}
-  \url{https://github.com/viampietro/ver-hilecop}
-\end{center}
+% \begin{center}
+%   \url{https://github.com/viampietro/ver-hilecop}
+% \end{center}
 
 % \include{intro}
 % \include{sitpn}
