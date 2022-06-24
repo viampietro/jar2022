@@ -4393,12 +4393,14 @@ expressed by Lemma~\ref{lem:re-eq-marking}.
 \label{sec:mech-of-the-proof}
 
 Here, the different contributions pertaining to the mechanization of
-proof of semantic preservation with the \coq{} proof assistant are
-outlined. For each one of the previous sections, we give metrics
-related to the produced code and the amount of time taken by the
-implementation. All the presented metrics are obtained by the running
-the \texttt{coqwc} program, which comes with the distribution of the
-\coq{} proof assistant, on the source files. At the end of the
+the proof of semantic preservation with the \coq{} proof assistant are
+outlined. For each one of the contributions, we give metrics related
+to the produced code such as the number of lines of proof script or
+the amount of time taken by the implementation, etc. All the presented
+metrics related to the count of lines of code are obtained by the
+running the \texttt{coqwc} program --part of the \coq{} distribution--
+on the source files. The commands run to obtain the metrics are
+presented in Appendix~\ref{app:impl-metrics}.  At the end of the
 section, we discuss on the difficulty of the mechanization of the
 proof in our particular transformation case. The whole code is
 accessible in our \textsf{Git} repository:
@@ -4419,18 +4421,18 @@ implementation of the structure and semantics of SITPNs.  We did two
 implementations of the SITPN structure, one with and one without
 dependent types. The currently used version is the one with dependent
 types.  For the version without dependent types, we have implemented
-an interpret, or \textit{token player}, and by doing so, we gave a
-functional operational semantics to the SITPN formalism, and proved
-the equivalence between the relational and functional implementation
-of the semantics. The code of the dependent type free version of
-SITPNs and the proof of equivalence between the relational and
-functional semantics is accessible
-here\footnote{\url{https://github.com/viampietro/ver-hilecop}}; it
-amounts to 5200 lines of program and specification and 7000 lines of
-proof script. The code of the current version of the SITPN structure
-and semantics is accessible under the \texttt{sitpn} folder in our
-\textsf{Git} repository; it amounts to 680 lines of programs and
-specifications.
+an interpret, or \textit{token player}, thus giving a functional
+operational semantics to the SITPN formalism. We proved the
+equivalence between the relational and functional implementation of
+the semantics. The code of the dependent type free version of SITPNs
+and the proof of equivalence between the relational and functional
+semantics is accessible
+here\footnote{\url{https://github.com/viampietro/sitpns}}; it amounts
+to 5200 lines of program and specification and 7000 lines of proof
+script. The code of the current version of the SITPN structure and
+semantics is accessible under the \texttt{sitpn} folder in our
+\textsf{Git} repository; it amounts to 680 lines of program and
+specification.
 
 \paragraph{Implementation of the \hvhdl{} language}
 
@@ -4469,215 +4471,12 @@ implementation. The total amounts to about 1300 lines of program and
 specification. The code is accessible under the
 \texttt{transformation} folder in our \textsf{Git} repository.
 
-% In this section, we give metrics to measure this gap. We point out
-% some of the reasons that may explain the gap, and comment on some
-% employed techniques to reduce the size of proof scripts. As a
-% remainder, the full code including specifications and proof scripts
-% is available at \url{https://github.com/viampietro/ver-hilecop}.
-
-% Listing~\ref{lst:coq-full-trace-sim-thm} presents the \coq{}
-% implementation of Theorem~\ref{thm:full-trace-sim} along with the
-% sequence of tactics constituting its proof.
-
-% \begin{lstlisting}[language=Coq,caption={\coq{} implementation of
-% Theorem~\ref{thm:full-trace-sim} and the mechanized version of its
-% proof.},label={lst:coq-full-trace-sim-thm},
-% framexleftmargin=1.5em,
-% xleftmargin=2em,
-% numbers=left,
-% numberstyle=\tiny\ttfamily,
-% basicstyle=\fontsize{9}{11}\selectfont,
-% frame=tb]
-% Theorem sitpn2hvhdl_full_trace_sim :
-%   forall $\tau$ sitpn $E_c$ $\theta_s$ d $E_p$ b $\theta_\sigma$ $\gamma$,
-
-%     (* sitpn is well-defined. *)
-%     IsWellDefined sitpn ->
-    
-%     (* The HM2T takes sitpn and b as inputs and 
-%        yields the couple (d, $\gamma$) . *)
-%     sitpn2hvhdl sitpn b = (inl (d, $\gamma$)) ->
-
-%     (* Environments are similar. *)
-%     SimEnv sitpn $\gamma$ $E_c$ $E_p$ ->
-    
-%     (* $\theta_s$ is the execution trace of sitpn after $\tau$ clock cycles. *)
-%     SitpnFullExec $E_c$ $\tau$ sitpn $\theta_s$ ->    
-    
-%     (* $\theta_\sigma$ is the simulation trace of d after $\tau$ clock cycles. *)
-%     hfullsim $E_p$ $\tau$ d $\theta_\sigma$ ->
-    
-%     (* ** Conclusion: traces are similar. ** *)
-%     SimTrace $\gamma$ $\theta_s$ $\theta_\sigma$.
-% Proof.
-%   (* Case analysis on $\tau$ *)
-%   destruct $\tau$; intros;
-%   match goal with
-%   | [ H0: SitpnFullExec _ _ _, H1: hfullsim _ _ _ _ |- _ ] =>
-%     inversion_clear H0; inversion_clear H1
-%   end;
-%   match goal with
-%   | [ H2: simloop _ _ _ _ _ _ _ |- _ ] =>
-%       inversion_clear H2
-%   end.
-
-%   (* CASE $\tau=0$, GOAL $\gamma\vdash{}s_0\approx\sigma_0$. 
-%      Solved with [sim_init_states] lemma. *)
-%   - constructor; eauto with hilecop.
-
-%   (* CASE $\tau>0$, GOAL $\gamma\vdash[s_0 :: s_0 :: s_1 :: \theta_s]\sim[\sigma_0 :: \sigma'_0 :: \sigma_1 :: \theta_\sigma]$.   
-%      Solved with [first_rising_edge], [falling_edge] 
-%      and [trace_sim] lemmas. *)
-%   - match goal with
-%     | [ H: simcycle _ _ _ _ _ _ _ _ |- _ ] =>
-%         inversion_clear H; repeat (constructor; eauto with hilecop)
-%     end.
-% Qed.
-% \end{lstlisting}
-
-% The proof script laid out in Listing~\ref{lst:coq-full-trace-sim-thm}
-% follows the structure of the paper proof of
-% Theorem~\ref{thm:full-trace-sim}. However, most part of the proof has
-% been abstracted away thanks to the use of the hint database mechanism
-% in conjunction with the \texttt{auto} and \texttt{eauto}
-% tactics\footnote{See
-%   \url{https://coq.inria.fr/refman/proofs/automatic-tactics/auto.html}
-%   for more information on programmable proof search using hint
-%   databases and the \texttt{auto} tactic.}.  This is representative of
-% our strategy to keep our mechanized proofs robust to change. To
-% achieve this, we follow the advices laid out in \cite{Chlipala2010}.
-
-% In the proof script of Listing~\ref{lst:coq-full-trace-sim-thm}, we
-% first perform case analysis on the clock cycle count $\tau$ by
-% appealing to the \texttt{destruct} tactic. This leads to the creation
-% of two proof sub-goals, one for $\tau=0$ and another for
-% $\tau>0$. Before solving each sub-goal individually, we prepare the
-% proof context by appealing to the \texttt{intros} tactic and then by
-% performing pattern matching and unfolding of definitions. The
-% \texttt{intros} tactic introduces all universally-bound variables and
-% hypotheses in the proof context. Then, the pattern matching of
-% Lines~25 to 32 in conjunction with the \texttt{inversion\_clear}
-% tactic unfolds the definition of the SITPN full execution relation
-% (resp. the \hvhdl{} full simulation relation and the \hvhdl{}
-% simulation loop relation) which is an implementation of
-% Definition~\ref{def:sitpn-full-exec} (resp. Table~\ref{tab:full-sim}
-% and Table~\ref{tab:sim-loop}).  Then, the \texttt{constructor} tactic
-% builds sub-goals to be proved based on the definition of the full
-% trace similarity relation, i.e. \texttt{SimTrace}, which is an
-% implementation of Definition~\ref{def:full-exec-trace-sim}. We let the
-% \texttt{eauto} tactic decide which lemma apply to solve the sub-goals
-% generated by the \texttt{constructor} tactics. We give a hint to the
-% \texttt{eauto} tactic so that it looks in the user-defined
-% \texttt{hilecop} database of theorems and lemmas to solve the
-% sub-goals. The \texttt{hilecop} database contains the \coq{}
-% implementation of all the theorems and lemmas used to prove
-% Theorem~\ref{thm:full-trace-sim}, namely: the
-% \texttt{sim\_init\_states} lemma which implements
-% Lemma~\ref{lem:sim-init-states}, the \texttt{first\_rising\_edge}
-% lemma which implements Lemma~\ref{lem:fst-re-lock-step}, the
-% \texttt{rising\_edge} lemma which implements
-% Lemma~\ref{lem:re-lock-step}, and the \texttt{falling\_edge} lemma
-% which implements Lemma~\ref{lem:fe-lock-step}.  The second part of the
-% proof, corresponding to the induction on $\tau$, is abstracted away in
-% an intermediary lemma called \texttt{sim\_trace}. The
-% \texttt{sim\_trace} lemma is automatically called by the
-% \texttt{eauto} tactic to complete the goal.
-
-% \paragraph{Robustness to change}
-% \label{sec:robustness}
-
-% The proof laid out in Listing~\ref{lst:coq-full-trace-sim-thm} is
-% representative of our strategy to keep our mechanized proofs robust to
-% change. The robustness criterion is important for multiple reasons.
-% First, in the proceeding of the proof, we can always realize that some
-% case is missing in the expression of the transformation function or
-% discover that the semantics of the SITPNs or the \hvhdl{} language is
-% incomplete or incorrect. Therefore, we want to structure our proofs in
-% a way that will lower the impact of correcting the transformation
-% function or completing the semantics. Second, we know that the SITPN
-% structure and the \hvhdl{} code of the place and transition designs
-% will be evolving in the future. Therefore, we want to be able to adapt
-% our proofs with a minimum effort. To reach robustness to change, we
-% follow the indications laid out in \cite{Chlipala2010}. Mainly, we
-% make an important use of the pattern matching constructs, such as
-% \texttt{lazymatch} or \texttt{match}, to seek hypotheses in the
-% current proof context. Also, we build hint databases and rely as much
-% as possible on the use of the \texttt{auto} and \texttt{eauto} to
-% solve the conclusions.
-
-% \paragraph{Automation}
-
-% To shorten the size of proofs, we develop user-defined tactics using
-% the \coq{} \texttt{Ltac} language. The tactic that most contributed to
-% the reduction of the size of the proof scripts is the \texttt{minv}
-% tactic (see \texttt{StateAndErrorMonadTactics.v} under the
-% \texttt{common} folder). The \texttt{minv} tactic automates the proof
-% of certain lemmas regarding the properties of the \hilecop{}
-% transformation function in the context of the state-and-error monad.
-% Our \coq{} implementation of the \hilecop{} transformation function
-% implements the state-and-error monad. This monad simulates imperative
-% language traits into functional languages. All functions involved in
-% the \hilecop{} transformation function carry a compile-time state,
-% defined as the \coq{} type \texttt{CompileTimeState}. Each function
-% either returns a value, modifies the compile-time state or does
-% both. To give an example of the use of the \texttt{minv} tactic,
-% Listing~\ref{lst:gen-p-comp-inst} shows the implementation of the
-% \texttt{generate\_place\_comp\_inst} function involved in \hilecop{}
-% transformation function. The \texttt{generate\_place\_comp\_inst}
-% function generates a \hvhdl{} PCI statement from a place $p$ passed as
-% a parameter. As a side effect, the
-% \texttt{generate\_place\_comp\_inst} function adds the PCI statement
-% to the behavior of the top-level design currently built in the
-% compile-time state.
-
-% \begin{lstlisting}[language=coq,caption={\coq{} implementation of the \texttt{generate\_place\_comp\_inst} function; the function takes an SITPN place $p$ as a parameter, and modifies the compile-time state without returning a value (i.e. the function return type is \texttt{unit})},label={lst:gen-p-comp-inst}]
-% Definition generate_place_comp_inst (p : P sitpn) : CompileTimeState unit :=
-
-%    do id         <- get_nextid;
-%    do _          <- bind_place p id;
-%    do pcomp      <- get_pcomp p;
-%    do pcomp_inst <- HComponent_to_comp_inst id place_entid pcomp;
-%    add_cs pcomp_inst.
-% \end{lstlisting}
-
-% In its definition body, function \texttt{generate\_place\_comp\_inst}
-% sequentially calls to functions that sometimes modify the compile-time
-% state (e.g. the \texttt{bind\_place} function adds a binding between
-% $p$ and $id$ in the generated $\gamma$ binder, i.e. $\gamma(p)=id$
-% after the call to \texttt{bind\_place}), or sometimes simply return a
-% value without modifying the state (e.g. \texttt{get\_pcomp} returns an
-% intermediate structure representing the place component instance
-% associated to place $p$ in the compile-time state). During the
-% mechanization of the proof, we often need to prove that some
-% properties hold between the input compile-time state and the output
-% compile-time after the call to a certain function. For example, after
-% calling the \texttt{generate\_place\_comp\_inst} function on a given
-% place $p$ and for a given input state $s$, let us say that a new
-% compile-time state $s'$ is returned. We want to show that the part of
-% the $\gamma$ binder pertaining to the binding of transitions to TCI
-% identifiers has not changed between state $s$ and state
-% $s'$\footnote{Remember that the $\gamma$ binder is part of the
-%   compile-time state record type.}. To perform the proof, we need to
-% show that each function call composing the sequence of the
-% \texttt{generate\_place\_comp\_inst} function returns a compile-time
-% state verifying the wanted property. Proving simple property like
-% verifying that part of the compile-time states are equal through the
-% multiple invocation of functions is highly automatable. We adapt the
-% tactic \texttt{monadInv} defined in the \ccert{} project
-% \cite{Leroy2009} to automate proof for such properties. The result is
-% the tactic \texttt{minv} massively used in the proofs pertaining to
-% state invariants\footnote{State invariance lemmas are to be found in
-%   the \texttt{GenerateInfosInvs.v},
-%   \texttt{GenerateArchitectureIns.v}, \texttt{GeneratePortsInvs.v} and
-%   \texttt{GenerateHVhdlInvs.v} under the \texttt{sitpn2hvhdl} folder
-%   of the Git repository.}.
-
 \paragraph{Mechanization of the proof of
   Theorem~\ref{thm:full-trace-sim}}
 
 % COMMAND RUN TO COUNT PROG, SPECS AND PROOF LINES:
 % 
-% coqwc $(find common/ sitpn/proofs/ hvhdl/proofs/ transformation/proofs/ behavior-preservation/ -name *.v ! -regex common/DFMapWeakList.v)
+% coqwc $(find common/ sitpn/proofs/ hvhdl/proofs/ transformation/proofs/ behavior-preservation/ -name *.v)
 %
 
 The work of mechanizing the proof of Theorem~\ref{thm:full-trace-sim}
@@ -4697,28 +4496,22 @@ accessible under the \texttt{behavior-preservation} folder in our
 
 First, we explain the difficulty of the mechanization, in comparison
 with the verification works conducted for compiler for programming
-languages, by the structure of our source
-formalism.  % At the beginning
-% of the project aiming at verifying that the HM2T is semantic
-% preserving, we were inspired by the successful works conducted in
-% the field of compiler verification. However, the main difference
-% between the HM2T and compilers for programming languages (PLs) lies
-% in the source formalism.
-The structure of SITPNs greatly impacts the reasoning method,
-especially for the proof of the lock-step lemmas. In the works
-pertaining to the verification of compilers for PLs, the proof of a
-lock-step lemma is tackled down by performing inductive reasoning over
-the relation that computes one execution step for the source
-program. This opens a proof sub-goal for each form of the source
-program, thus following the structure of the abstract syntax of the
-source language. Each simple form leads to the production of a simple
-output, and this mechanism increases the straightforwardness of the
-proof. In our case, performing inductive reasoning over the SITPN
-state transition relation, that is the execution step relation, does
-not lead to the decomposition of the source model into simpler
-structures that would be transformed into simple output in terms of
-\vhdl{} code. To summarize, we can not rely on the inductive structure
-of the source formalism to cut down the difficulty of our proofs.
+languages, by the structure of our source formalism.  The structure of
+SITPNs greatly impacts the reasoning method, especially for the proof
+of the lock-step lemmas. In the works pertaining to the verification
+of compilers for PLs, the proof of a lock-step lemma is tackled down
+by performing inductive reasoning over the relation that computes one
+execution step for the source program. This opens a proof sub-goal for
+each form of the source program, thus following the structure of the
+abstract syntax of the source language. Each simple form leads to the
+production of a simple output, and this mechanism increases the
+straightforwardness of the proof. In our case, performing inductive
+reasoning over the SITPN state transition relation, that is the
+execution step relation, does not lead to the decomposition of the
+source model into simpler structures that would be transformed into
+simple output in terms of \vhdl{} code. To summarize, we can not rely
+on the inductive structure of the source formalism to cut down the
+difficulty of our proofs.
 
 \bigskip
 
@@ -4803,6 +4596,35 @@ or the fact that the \texttt{marking} process is the only one to
 assign the \texttt{sm} signal, etc. % In its machine-checked version,
 % this sentence amounts to approximately \todo{Determine number of
 %   lines} lines of proof script.
+
+The de Bruijn factor \cite{Wiedijk2000} is the factor that measures
+the ratio between the size of a paper proof and the size is its
+machine-checked counterpart. Table~\ref{tab:de-bruijn} presents the de
+Bruijn factor in the current state of the mechanization:
+
+\begin{table}[!htbp]
+\begin{tabular}{llll}
+  & paper & machine-checked & \textit{de Bruijn factor} \\ \cline{2-4}
+  uncompressed & 40K & 752K & 18.8 \\
+  compressed   & 8K & 92K & 11.5 \\ \cline{2-4}
+  & & &
+\end{tabular}
+\caption{Computation of the de Bruijn factor for the correctness proof
+  of the HM2T. The size of the paper and machine-checked proofs are
+  given in bytes.}
+\label{tab:de-bruijn}
+\end{table}
+
+The factor has been computed based on the proof \TeX{} file, minus the
+parts that have not yet been mechanized, and on the \coq{} source
+files. The commands to compute the sizes are given in
+Appendix~\ref{app:impl-metrics}. The de Bruijn factor in our case is
+very high compared to the ones given in \cite{Wiedijk2000} for fields
+of Mathematics. However, this factor is only relevant when the
+machine-checked proof is complete as many refactoring phases during
+the mechanization can contribute to reduce the size of
+scripts. Nonetheless, we believe that in our case the factor will
+still be very high even once the mechanization completed.
 
 \section{Related work}
 \label{sec:related-work}
@@ -5742,13 +5564,12 @@ ps (fired_evaluation, $\emptyset$, fired <= and(s_firable, s_priority_combinatio
     \texttt{s\_input\_token\_sum} & \texttt{sits} & internal signal (P) & $\mathtt{nat}(0,\mathtt{mm})$ \\
     \hline
   \end{tabular}}
-  \caption[Constants and signals reference for the \hvhdl{}
-  \texttt{transition} and \texttt{place} designs.]{Constants and
-    signals reference for the \hvhdl{} transition and place
-    designs. In the \textit{Category} column, T (resp. P) indicates a
-    generic constant, input port, output port or internal signal
-    defined in the \texttt{transition} (resp. \texttt{place})
-    design. }
+\caption[Constants and signals reference for the \hvhdl{}
+\texttt{transition} and \texttt{place} designs.]{Constants and signals
+  reference for the \hvhdl{} transition and place designs. In the
+  \textit{Category} column, T (resp. P) indicates a generic constant,
+  input port, output port or internal signal defined in the transition
+  (resp. place) design. }
   \label{tab:consts-and-sigs-ref}
 \end{table}
 
@@ -5788,7 +5609,7 @@ ps (fired_evaluation, $\emptyset$, fired <= and(s_firable, s_priority_combinatio
        \item $\boxed{\mathtt{P}(\emptyset,0)}$
        \item
          $\boxed{\mathtt{P}(\{a\}\cup{}A',f(a)+\sum_{a'\in{}A'}f(a'))}$
-         where $A=\{a\}\cup{}A'$ and such that $A'=A\setminus{}\{a'\}$.
+         where $A=\{a\}\cup{}A'$ and such that $A'=A\setminus{}\{a\}$.
        \end{enumerate}
 
        \begin{enumerate}
@@ -6061,6 +5882,45 @@ ps (fired_evaluation, $\emptyset$, fired <= and(s_firable, s_priority_combinatio
   
 \end{appendices}
 
+\section{Commands for implementation metrics}
+\label{app:impl-metrics}
+
+All the following commands are run at the root of our \textsf{Git}
+repository, which is located at:
+
+\begin{center}
+  \url{https://github.com/viampietro/ver-hilecop}
+\end{center}
+
+\bigskip
+
+\begin{itemize}
+\item Implementation of SITPNs: \\
+  \texttt{coqwc \$(find sitpn/ -name *.v ! -regex "sitpn/proofs/.*")}
+\item Implementation of the \hvhdl{} language:\\
+  \texttt{coqwc \$(find hvhdl/ -name *.v ! -regex "hvhdl/proofs/.*")}
+\item Implementation of the \hilecop{} model-to-text transformation: \\
+  \texttt{coqwc \$(find transformation/ -name *.v ! -regex "transformation/proofs/.*")}
+\item Mechanization of the proof of Theorem~\ref{thm:full-trace-sim}: \\
+  \texttt{coqwc \$(find common/ sitpn/proofs/ hvhdl/proofs/ transformation/proofs/ behavior-preservation/ -name *.v)}
+\item Size of the uncompressed paper proof. Here, you have to manually remove the parts that have not yet been mechanized before running the command, i.e. all the content starting from Section ``Initial states and reset orders'' :\\
+  \texttt{du -h Proof.tex}
+\item Size of the uncompressed machine-checked proof:
+  \texttt{du -h -c \$(find common/ sitpn/proofs/ hvhdl/proofs/ transformation/proofs/ behavior-preservation/ -name *.v)}
+\item Size of the compressed paper proof. Here, you have to manually
+  remove the parts that have not yet been mechanized, i.e. all the
+  content starting from Section ``Initial states and reset orders'',
+  before running the commands:
+  \begin{itemize}
+  \item \texttt{cat Proof.tex | gzip > Proof.gz}
+  \item \texttt{du -h Proof.gz}
+  \end{itemize}
+\item Size of the compressed machine-checked proof:
+  \begin{itemize}
+  \item \texttt{cat \$(find common/ sitpn/proofs/ hvhdl/proofs/ transformation/proofs/ behavior-preservation/ -name *.v) | gzip > Proof.gz}
+  \item \texttt{du -h Proof.gz}
+  \end{itemize}
+\end{itemize}
 
 \bibliography{references}
 
