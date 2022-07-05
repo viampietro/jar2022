@@ -86,21 +86,20 @@
 
 The domain of Model-Based Systems Engineering (MBSE) \cite{Long2011}
 proposes a framework to help engineers to design and produce digital
-systems, in a well-documented, safe and reliable way. Comparable to
+systems, in a well-documented, safe, and reliable way. Comparable to
 what Model Driven Engineering (MDE) does in the world of software
-engineering, models are first order concepts in MBSE.  As illustrated
+engineering, models are first-order concepts in MBSE.  As illustrated
 in Figure~\ref{fig:MBSE-ps}, a MBSE process describes a way to design
 a digital system starting from a high-level specfication of the
-system. This specification can follow a graphical formalism such as
-SysML \cite{Friedenthal2014} or Petri nets (PNs) \cite{Petri1962}, or
-a textual one such as SystemC \cite{Black2009} or VHDL
-\cite{Ashenden2010}. Then, the MBSE process describes many refinement
-phases (the downward-going green arrows in Figure~\ref{fig:MBSE-ps})
-during which the input model will be transformed; at each refinement
-phase, the model goes down in abstraction towards its final
-implementation as a hardware circuit. A refinement phase, which is
-also a transformation phase, can be performed automatically or
-manually.
+system. This specification possibly follows a graphical formalism such
+as SysML \cite{Friedenthal2014} or Petri nets (PNs) \cite{Petri1962},
+or a textual one such as SystemC \cite{Black2009} or VHDL
+\cite{Ashenden2010}. The MBSE process then describes many refinement
+phases (the downward-going arrows in Figure~\ref{fig:MBSE-ps}) during
+which the input model will be transformed; at each refinement phase,
+the model goes down in abstraction toward its final implementation as
+a hardware circuit. A refinement phase, which is also a transformation
+phase, can be performed automatically or manually.
 
 \begin{figure}[H] \centering
 \includegraphics[keepaspectratio,width=.6\textwidth]{MBSE-ps.png}
@@ -118,18 +117,19 @@ extent of mathematical reasoning to prove that safety properties are
 met during the design V\&V phase (cf. Figure~\ref{fig:MBSE-ps}).
 
 To assist the engineers in the design and the implementation of
-safety-critical digital systems, the CAMIN team came up with a process
-called the ``\hilecop{} methodology'' \cite{Andreu2009}.  This
+safety-critical digital systems, the Inria CAMIN team came up with a
+process called the ``\hilecop{} methodology'' \cite{Andreu2009}.  This
 methodology follows the principles of a MBSE process and relies on
 several transformations going from abstract models to concrete FPGA
 (Field-Programmable Gate Array) or digital ASIC (Application-Specific
 Integrated Circuit) implementations through the production of VHDL
+(Very high speed integrated circuit Hardware Description Language)
 code. Figure~\ref{fig:hilecop-wf} details the global workflow of
 \hilecop{}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[keepaspectratio=true,width=\textwidth]{hilecop-wf.eps}
+\includegraphics[keepaspectratio=true,width=\textwidth]{hilecop-wf-focus-preuve.eps}
 \caption[Workflow of the \hilecop{} methodology.]{Workflow of the
   \hilecop{} methodology; horizontal double arrows indicate the
   transformation phases, i.e. the refinement phases in MBSE terms;
@@ -141,70 +141,68 @@ code. Figure~\ref{fig:hilecop-wf} details the global workflow of
 In Figure~\ref{fig:hilecop-wf}, Step~1 corresponds to the design phase
 of a digital system. At this step, the user produces a model of the
 required system; the leveraged model formalism is a graphical
-formalism based on component diagrams and Petri nets (PNs).  In
-Figure~\ref{fig:hilecop-wf}, the transformation from Step~1 to Step~2
-flattens the model. The internal behaviors of separate components are
-connected according to the interface compositions, and embedding
-component structures are removed. The result of this transformation
-step is a global PN that represents the behavior of the digital
-system.  The class of PNs used in \hilecop{} has been specifically
-devised for the design of safety-critical digital systems; a first
-thesis has formalized the execution semantics of these PN models
+formalism based on component diagrams and Petri Nets (PNs).  The
+transformation from Step~1 to Step~2 flattens the model. The internal
+behaviors of separate components are connected according to the
+interface compositions, and embedding component structures are
+removed. The result of this transformation step is a global PN that
+represents the behavior of the digital system.  The class of PNs used
+in \hilecop{} has been specifically devised for the design of
+safety-critical digital systems. A first thesis has formalized the
+execution semantics of these PN models
 \cite{Leroux2014}. % What makes them a very
 % particular kind of models is their \textit{synchronous} execution
 % semantics. This semantics denotes from the standard
 % \textit{asynchronous} execution of PNs.
-Due to its mathematical
-foundations, a PN model can be analyzed, and a proof that a given
-model meets some properties can be automatically produced through the
-direct analysis of the structure or through the use of model-checking
-techniques. This feature of PNs has been one of the reason of the
-adoption of this formalism as \hilecop{}'s base formalism. A thesis
-has been dedicated to the development of new methods to analyze the
-\hilecop{} PN models \cite{Merzoug2018}. The analysis phase is here to
-convince the engineers that they are indeed designing a safe
-system. The analysis process is a round trip between Step~1 and
-Step~2.  It aims at producing a model that is conflict-free (see
-Section~\ref{sec:hilecop-models} for more details about the definition
-of a conflict), bounded, and deadlock-free, using model-checking
-techniques.  After several iterations, the model should reach
-soundness and is then said to be \emph{implementation-ready}.
+Due to its mathematical foundations, a PN model can be analyzed, and a
+proof that a given model meets some properties can be automatically
+produced through the direct analysis of the structure or through the
+use of model-checking techniques. This feature of PNs has been one of
+the reason of the adoption of this formalism as \hilecop{}'s base
+formalism. Another thesis has been dedicated to the development of new
+methods to analyze the \hilecop{} PN models \cite{Merzoug2018}. The
+analysis phase is here to convince the engineers that they are
+designing a safe system. The analysis process is a round trip between
+Step~1 and Step~2.  It aims at producing a model that is conflict-free
+(see Section~\ref{sec:hilecop-models} for more details about the
+definition of a conflict), bounded, and deadlock-free using
+model-checking techniques.  After several iterations, the model should
+reach soundness and is then said to be \emph{implementation-ready}.
 
 In Figure~\ref{fig:hilecop-wf}, from Step~2 to Step~3, \vhdl{} source
-code is then generated by means of an automatic model-to-text
-transformation. The generated code describes a \vhdl{} design, i.e. a
-textual description of a hardware system, which has an interface
-defining input and output ports and an internal behavior called an
-architecture.
+code is then generated by means of a model-to-text transformation. The
+generated code describes a \vhdl{} design, i.e. a textual description
+of a hardware system, which has an interface defining input and output
+ports and an internal behavior called an architecture.
 
 From Step~3 to Step~4, the \vhdl{} compilation/synthesis and the FPGA
 programming, or ASIC realization, are finally performed using
 industrial tools. At the end of Step~4, the designed circuit is
 physically built on an FPGA device or an ASIC.  What happens between
 Step~3 and Step~4 appears as a black box in the whole \hilecop{}
-methodology. Therefore, we will not consider this circuit synthesis
-phase in our verification process.
+methodology. We will not consider this circuit synthesis phase in our
+verification process.
 
 % \subsection{Verifying the \hilecop{} methodology}
 % \label{sec:verif-hilecop}
 
-The use of Petri nets as a base model is one of the major advantage of
-the \hilecop{} methodology. All the analysis tools that accompany the
-Petri net formalism, and allow us to prove that the models meet some
-required properties, qualify the \hilecop{} methodology as a formal
-method for the design and implementation of safety-critical digital
-systems. However, the advantages provided by the use Petri nets would
-be lost if one of the transformations performed during the process
-changes the input model in a way that would alter its behavior. % Thus,
+The use of PNs as a base model is one of the major advantage of the
+\hilecop{} methodology. All the analysis tools that accompany the PN
+formalism, and allow us to prove that the models meet some required
+properties, qualify the \hilecop{} methodology as a formal method for
+the design and implementation of safety-critical digital
+systems. However, the advantages provided by the use PNs would be lost
+if one of the transformations performed during the process changes the
+input model in a way that would alter its behavior. % Thus,
 % the engineers would have specified a perfectly correct digital
 % system but would never obtain the expected circuit on a physical
 % device.
 In order to reinforce the confidence in the \hilecop{} methodology,
-the goal of our work is to verify, by establishing a formal proof,
-that the model-to-text transformation from Step~2 to Step~3, referred
-to as the HM2T, preserves the behavior of the input models into the
-generated \vhdl{} designs. We choose to carry out this task as a
-deductive verification task.  We aim at proving a that the HM2T is
+the goal of our work is to verify that the model-to-text
+transformation from Step~2 to Step~3, referred to as the HM2T,
+preserves the behavior of the input models into the generated \vhdl{}
+designs. We choose to carry out this task as a deductive verification
+task consisting in proving that the HM2T is
 \textit{semantic-preserving}. According to the literature
 \cite{Patrignani2019,Leroy2009}, this is expressed through a
 \textit{correctness} theorem of the following form: a given
@@ -213,15 +211,15 @@ instance (i.e. a program, a model, etc.) passed as input the resulting
 output instance has the same behavior as the source at runtime.  In
 the case of the HM2T, the theorem is of the following form: for all PN
 model, input to the transformation, the generated output \vhdl{}
-design behaves similarly at runtime. The proof will be mechanized with
-the \coq{} proof assistant.
+design behaves similarly at runtime. The proof will be mechanized
+using the \coq{} proof assistant \cite{Coq2021}.
 
 The task of formally verifying the \hilecop{} model-to-text
 transformation can appear as yet another proof of semantic
 preservation for yet another transformation function. Proving a
 semantic preservation theorem for a transformation program, and
 implementing the proof within a proof assistant, is now a well-known
-task and many successful works can be found in the literature
+task and many successful initiatives can be found in the literature
 (cf. Section~\ref{sec:related-work}).  Therefore, the scientific
 interest of our research comes from the specificities of the HM2T
 compared to the other transformations that have been formally
@@ -230,13 +228,15 @@ are formally verified are compilers for programming languages. From
 this fact naturally arises the will to compare the HM2T to a compiler
 program, and to determine which elements could introduce additional
 technical difficulties regarding the formal verification process.  To
-begin with, the input formalism of the HM2T depends on Petri nets,
-which are quite abstract mathematical models, and thus is not a common
-programming language.  Moreover, the output language, \vhdl{}, is also
-not a common programming language as its purpose is both the
-structural and behavioral description of hardware circuits. By their
-very nature, all instructions defining the behavior of circuits in
-\vhdl{} have a concurrent execution logic. This also differs from the
+begin with, the input formalism of the HM2T depends on PNs, which are
+quite abstract mathematical models, and thus is not a common
+programming language. Also, the semantics of the \hilecop{}'s PNs
+follows a synchronous execution, which is quite different from the
+standard asynchronous PNs semantics. Moreover, the output language,
+\vhdl{}, is not a common programming language as its purpose is both
+the structural and behavioral description of hardware circuits. By
+their very nature, all instructions defining the behavior of circuits
+in \vhdl{} have a concurrent execution logic. This differs from the
 execution of programs written in generic programming languages which
 are often sequential programs.
 
@@ -260,53 +260,52 @@ To the purpose of formal verification, we will implement the
 language of the \coq{} proof assistant. However, after the
 mechanization of the proof of semantic preservation, we could use the
 extraction feature of the \coq{} proof assistant to produce the
-implemented transformation as an \ocaml{} program. Then, we will be
+implemented transformation as an \ocaml{} program. We will then be
 able to connect this program to the existing \hilecop{} software in
 order
 to use the verified version of the transformation.\\
 
 This article is structured as
 follows. Section~\ref{sec:hilecop-models} presents the specific kind
-of Petri net models that are the input of \hilecop{}'s model-to-text
+of PN models that are the input of \hilecop{}'s model-to-text
 transformation along with their formal semantics.
 Section~\ref{sec:hvhdl} gives a formal definition of the syntax and
 semantics of a subset of the \vhdl{} language that we call
 \hvhdl{}. \hvhdl{} is the target language of the programs generated by
 \hilecop{}'s model-to-text transformation.  Section~\ref{sec:m2t}
-presents the transformation through its formal specification.
-Section~\ref{sec:proof} details the semantic preservation theorem
-expressing that the \hilecop{} transformation is semantic-preserving.
-It also gives the high-level theorems and lemmas involved in the proof
-of the semantic preservation theorem.  Finally,
-Section~\ref{sec:concl} ends the article, and outlines the
-perspectives regarding the full verification of the \hilecop{}
-methodology.
+presents the transformation through the expression of its formal
+specification.  Section~\ref{sec:proof} details the semantic
+preservation theorem expressing that the \hilecop{} transformation is
+semantic-preserving.  It also gives the high-level theorems and lemmas
+involved in the proof of the semantic preservation theorem.  % Finally,
+% Section~\ref{sec:concl} ends the article, and outlines the
+% perspectives regarding the full verification of the \hilecop{}
+% methodology.
 
-\section{Models of digital systems in \hilecop{}}
+\section{Models of Digital Systems in \hilecop{}}
 \label{sec:hilecop-models}
 
 Let us introduce the input formalism of \hilecop{}'s model-to-text
 transformation: Synchronously executed, extended, generalized,
 Interpreted Time Petri Nets with priorities (SITPNs). The
 formalization of the SITPN structure and semantics is mainly the
-result of two Ph.D. theses \cite{Leroux2014,Merzoug2018}. We made a
-preciser definition of both the SITPN structure and its semantics, as
-precision is needed for proving semantic preservation. We have
-implemented both structure and semantics in
-\coq{}\footnote{\url{https://github.com/viampietro/ver-hilecop/tree/master/sitpn}}. Moreover,
-we added complementary definitions, concerning the well-definition of
-an SITPN input model, that are required to express our semantic
-preservation theorem. In this section, we assume that the reader has
-some knowledge of the Petri net formalism and its semantics, so that
-words like firing, or marking, need no explanation. For more
-information on the topic of Petri nets, the reader can refer to
+result of two Ph.D. theses \cite{Leroux2014,Merzoug2018}. We have made
+a more precise definition of both the SITPN structure and its
+semantics, as precision is needed for proving the semantic
+preservation. We have implemented both structure and semantics in
+\coq{}. Moreover, we added complementary definitions, concerning the
+well-definition of a SITPN input model, which are required to express
+our semantic preservation theorem. In this section, we assume that the
+reader has some knowledge of the PN formalism and its semantics, so
+that words like firing, or marking, need no explanation. For more
+information on the topic of PNs, the reader can refer to
 \cite{David1994}, \cite{Murata1989}, or \cite{Diaz2001}.
 
 \begin{figure}[H]
 \centering
 \includegraphics[keepaspectratio=true,width=\textwidth]{abs-model.eps}
 \caption[An example of model of digital system in \hilecop{}.]{A
-  component-based model of digital system in \hilecop{}.}
+  component-based model of a digital system in \hilecop{}.}
 \label{fig:abs-model}
 \end{figure}
 
@@ -330,9 +329,9 @@ synchronous execution of the system in the generated circuit.
 
 Before being transformed into \vhdl{} code, the model is flattened
 down (cf. Step \circled{1} to step \circled{2} in
-Figure~\ref{fig:hilecop-wf}). All component structures are removed,
-and the result is one global SITPN model. During this flattening step,
-all elements that were connected through fusion arcs are merged
+Figure~\ref{fig:hilecop-wf}). All component structures are removed and
+the result is one global SITPN model. During this flattening step, all
+the elements that were connected through fusion arcs are merged
 together. Figure~\ref{fig:impl-model} presents the global SITPN model
 resulting from the flattening of the component-based model of
 Figure~\ref{fig:abs-model}.
@@ -340,33 +339,33 @@ Figure~\ref{fig:abs-model}.
 \begin{figure}[H]
 \centering
 \includegraphics[keepaspectratio=true,width=\textwidth] {impl-model.eps}
-\caption[Global Petri net model.]{A global Petri net model obtained
+\caption[Global PN model.]{A global PN model obtained
   after the flattening of a \hilecop{} high-level model.}
 \label{fig:impl-model}
 \end{figure}
 
 SITPNs are a combination of multiple classes of PNs, namely: extended
-PNs, generalized PNs, interpreted PNs, time PNs and PNs with
-priorities. A generalized Petri net admits the weight of its arcs to
-be a natural number instead of the default value of one (i.e. when no
-number is written above the arc). An extended Petri net introduces two
-kinds of place-transition arcs, the \textit{inhibitor} arc,
-characterized by a white circle head, and the \textit{test} arc, which
-has a black circle head. These arcs add conditions to the firing of a
-connected transition, however, they do not cause tokens to be removed
-from input places at firing time. In Figure~\ref{fig:impl-model}, the
-arc from place CycleCt to transition ExecFunction is an inhibitor arc,
-and the arc from place WafterAnswer to ExecFunction is a test arc.
-Now, let us introduce more specifically the class of interpreted PNs,
-time PNs and PNs with priorities.
+PNs, generalized PNs, interpreted PNs, time PNs, and PNs with
+priorities. A generalized PN admits the weight of its arcs to be a
+natural number instead of the default value of one (i.e. when no
+number is written above the arc). An extended PN introduces two kinds
+of place-transition arcs, the \textit{inhibitor} arc, characterized by
+a white circle head, and the \textit{test} arc, which has a black
+circle head. These arcs add conditions to the firing of a connected
+transition, but they do not trigger tokens consumption at firing
+time. In Figure~\ref{fig:impl-model}, the arc from place CycleCt to
+transition ExecFunction is an inhibitor arc, and the arc from place
+WafterAnswer to ExecFunction is a test arc.  Now, let us introduce
+more specifically the class of interpreted PNs, time PNs, and PNs with
+priorities.
 
-\paragraph{Interpreted Petri nets (IPNs)}
+\paragraph{Interpreted Petri Nets (IPNs)}
 % As stated in \cite{David1994}, Interpreted Petri Nets (IPN) ``can be
 % applied to various interpretations according to the use wished to be
 % made of it''.
 In its general definition \cite{David1994}, an IPN is associated with
 a finite set of variables $V$, a finite set of operations $O$, and a
-finite set of conditions $C$. Operations of the $O$ set are associated
+finite set of conditions $C$. Operations of the set $O$ are associated
 with places and triggered when the places become marked. The execution
 of operations affects the value of the variables, and the value of
 conditions depends on Boolean expressions computed upon the variables.
@@ -375,50 +374,59 @@ firing process.  In the \hilecop{} version of
 IPNs, % refines the concepts of the general
 % definition. In this version, 
 the set of variables corresponds to the set of \vhdl{} signals that
-are handled by the model; a signal can be an input port, an output
+are handled by the model. A signal can be an input port, an output
 port or an internal signal of the modeled hardware circuit. The
 operations, implemented by \vhdl{} procedures, are separated in two
-kinds, namely: actions and functions. Actions (or continuous
-operations) are associated to the places; all the actions associated
+kinds, namely actions and functions. Actions (or continuous
+operations) are associated to the places. All the actions associated
 to a place $p$ are activated as long as $p$ is marked (i.e. as long as
 $p$ holds a token). Functions (or discrete operations) are associated
-to the transitions; when a transition $t$ is fired, all functions
+to the transitions. When a transition $t$ is fired, all functions
 associated to $t$ are executed once. In Figure \ref{fig:impl-model},
 \textbf{C-cond} is a condition associated to the transition SensorOn;
 \textbf{F-foo} is a function associated to the transition
 ExecFunction; \textbf{A-gLEDon} and \textbf{A-rLEDon} are two actions
 associated to the Compute and LogError places.
 
-\paragraph{Time Petri nets (TPNs)}
+\paragraph{Time Petri Nets (TPNs)}
 
 In a TPN, time intervals can be associated to transitions, along with
 a dynamic time counter value. Thus, the firing of a transition must
-happen in a given time window. In the \hilecop{} version of TPNs, time
-intervals are of the form $[a, b]$, where $a\in\mathbb{N}^{*}$ and
-$b\in\mathbb{N}^{*}\sqcup\{\infty\}$.  In Figure~\ref{fig:impl-model},
-transitions SustainrLED and TimeOut are both associated with time
-intervals.
+happen in a given time interval. In the \hilecop{} version of TPNs,
+time intervals are of the form $[a, b]$, where $a\in\mathbb{N}^{*}$
+and $b\in\mathbb{N}^{*}\cup\{\infty\}$.  In
+Figure~\ref{fig:impl-model}, transitions SustainrLED and TimeOut are
+both associated with time intervals.
 
-\paragraph{Petri nets with priorities}
+\paragraph{PNs with Priorities}
 
 Two transitions are in structural conflict if they have a common input
 place connected through a \textit{basic} arc (i.e. neither inhibitor
 nor test arc). When two transitions in structural conflict are firable
 at the same time and if the firing of one of the transitions disables
-the other, then, the conflict becomes \textit{effective}. In a Petri
-net with priorities, it is possible to specify a firing priority in
-the case where the conflict between two transitions becomes
-effective. In that case, the transition with the highest firing
-priority will always be fired first. In Figure \ref{fig:impl-model},
-the fact that transition TimeOut has a higher firing priority than
-transition RecvQuery is graphically represented by a dotted arrow. \\
+the other, then the conflict becomes \textit{effective}. In a PN with
+priorities, it is possible to specify a firing priority in the case
+where the conflict between two transitions becomes effective. In that
+case, the transition with the highest firing priority will always be
+fired first. In Figure \ref{fig:impl-model}, the fact that transition
+TimeOut has a higher firing priority than
+transition RecvQuery is graphically represented by a dotted arrow from TimeOut to RecvQuery. \\
 
-\noindent{}Now let us formally introduce the structure of SITPNs:
+\noindent{}Now let us formally introduce the structure of SITPNs. In
+the remainder of the article, and if not specifically stated
+otherwise, the $\rightarrow$ symbol will denote applications
+(i.e. total functions), and the $\nrightarrow$ symbol will denote
+partial functions. Moreover, we use the option type to express partial
+functions, or functions that can return errors.  We write
+$f(x)=\lfloor{}y\rfloor$ to state that some value $y$ is associated
+with the input $x$ through function $f$; we write $f(x)=\emptyset$ to
+state that either $x$ is not in the definition domain of $f$, or that
+an error is returned for the input $x$.
 
 \begin{definition}[SITPN]
   \label{def:sitpn}
   A synchronously executed, extended, generalized, interpreted, and
-  time Petri net with priorities is a tuple
+  time PN with priorities is a tuple
   ${<}P,T,pre,post,M_0,{\succ},\mathcal{A},\mathcal{C},\mathcal{F},
   \mathbb{A},\mathbb{C},\mathbb{F},{I_s}{>}$, where we have:
   % 
@@ -434,29 +442,35 @@ transition RecvQuery is graphically represented by a dotted arrow. \\
   \item $M_0\in{}P\rightarrow\mathbb{N}$, the initial marking of the SITPN.
   \item $\succ\subseteq{}(T\times{}T)$, the priority relation, which
     is a strict partial order over the set of transitions.
-  \item $\mathcal{A}=\{a_0,\ldots,a_i\}$, a finite set of continuous actions.
+  \item $\mathcal{A}=\{a_0,\ldots,a_i\}$, a finite set of actions.
   \item $\mathcal{F}=\{f_0,\ldots,f_k\}$, a finite set of functions.
   \item $\mathcal{C}=\{c_0,\ldots,c_j\}$, a finite set of conditions.
   \item $\mathbb{A}$ $\in$ ${}P$ $\rightarrow$ $\mathcal{A}$
     $\rightarrow$ $\mathbb{B}$, the function associating actions to
-    places.  $\forall{}p\in{}P$, $\forall{}a\in\mathcal{A}$,
-    $\mathbb{A}(p,a)=\mathtt{true}$, if $a$ is associated to $p$,
+    places.
+
+    $\forall{}p\in{}P$, $\forall{}a\in\mathcal{A}$,
+    $\mathbb{A}(p,a)=\mathtt{true}$ if $a$ is associated to $p$,
     $\mathbb{A}(p,a)=\mathtt{false}$ otherwise.
+    
   \item $\mathbb{F}\in{}T\rightarrow\mathcal{F}\rightarrow\mathbb{B}$,
     the function associating functions to transitions.
+
     $\forall{}t\in{}T,~\forall{}f\in\mathcal{F},$
-    $\mathbb{F}(t,f)=\mathtt{true}$, if $f$ is associated to $t$,
+    $\mathbb{F}(t,f)=\mathtt{true}$ if $f$ is associated to $t$,
     $\mathbb{F}(t,f)=\mathtt{false}$ otherwise.
     
-  \item $\mathbb{C} \in T \rightarrow \mathcal{C} \rightarrow\{-1,0,1\}$, the
-    function associating conditions to transitions.
-    $\forall t \in T$, $\forall c \in \mathcal{C}$,
-    $\mathbb{C}(t,c)=1$, if $c$ is associated to $t$,
-    $\mathbb{C}(t,c)=-1$, if $\bar{c}$ is associated to $t$,
-    $\mathbb{C}(t,c)=0$ otherwise.
   \item
-    $I_s\in{}T\nrightarrow(\mathbb{N}^{*}\times(\mathbb{N^{*}}\sqcup\{\infty\}))$,
-    the partial function associating time intervals to transitions.
+    $\mathbb{C} \in T \rightarrow \mathcal{C} \rightarrow\{-1,0,1\}$,
+    the function associating conditions to transitions.
+    $\forall t \in T$, $\forall c \in \mathcal{C}$,
+    $\mathbb{C}(t,c)=1$ if $c$ is associated to $t$,
+    $\mathbb{C}(t,c)=-1$ if $\bar{c}$ is associated to $t$,
+    $\mathbb{C}(t,c)=0$ otherwise.
+    
+  \item
+    $I_s\in{}T\nrightarrow(\mathbb{N}^{*}\times(\mathbb{N^{*}}\cup\{\infty\}))$,
+    the function associating time intervals to transitions.
   \end{enumerate}
 \end{definition}
 
@@ -465,15 +479,15 @@ signals manipulated by a SITPN model. As a consequence, the structure
 holds neither the association between conditions and Boolean
 expressions, and nor the association between actions/functions and
 operations (i.e. \vhdl{} procedures that act upon signal values).  In
-this simplified version of the SITPN structure, conditions, actions
+this simplified version of the SITPN structure, conditions, actions,
 and functions are only considered as finite sets of indexed elements
 associated with the places and transitions of a SITPN.
 
-\subsection{Synchronous execution semantics}
+\subsection{Synchronous Execution Semantics}
 \label{subsec:hpn-particularities}
 
 The SITPN semantics describes the evolution of the state of a SITPN
-through a given number of clock cycles; thus, we must first define the
+through a given number of clock cycles. Thus, we must first define the
 SITPN state structure. In what follows, for a given $sitpn\in{}SITPN$,
 $T_i$ denotes the definition domain of $I_s$, i.e. the set of
 transitions associated with a time interval, referred to as
@@ -494,7 +508,7 @@ transitions associated with a time interval, referred to as
     $reset_t\in{}T_i\rightarrow\mathbb{B}$ is the function mapping
     time transitions to time counter reset orders (defined as
     Booleans).
-  \item $ex\in{}\mathcal{A}\sqcup\mathcal{F}\rightarrow\mathbb{B}$ is
+  \item $ex\in{}\mathcal{A}\cup\mathcal{F}\rightarrow\mathbb{B}$ is
     the function representing the current activation (resp. execution)
     state of actions (resp. functions).
   \item $cond\in\mathcal{C}\rightarrow\mathbb{B}$ is the function representing the
@@ -506,9 +520,9 @@ As described in Definition~\ref{def:sitpnstate}, the state of a SITPN
 is characterized by its marking, the value of time counters, the reset
 orders assigned to time counters, the execution/activation status of
 actions/functions (Boolean values), and the value of conditions (also
-Boolean). Regarding actions and functions, note that we are only
+Booleans). Regarding actions and functions, note that we are only
 interested in the fact that a given action/function is
-activated/executed but no more in actually executing the associated
+activated/executed but not in actually executing the associated
 operation.\\
 
 Before describing the SITPN state transition relation, we need to
@@ -519,18 +533,27 @@ given SITPN state.
 \begin{definition}[Sensitization]
   \label{def:sens}
   A transition $t\in{}T$ is said to be sensitized, or enabled, by a
-  marking $M$, which is noted $t\in{}Sens(M)$, if
-  $\forall{}p\in{}P,\forall\omega\in\mathbb{N}^{*},~\big(pre(p,t)=(\omega,\mathtt{basic})\vee{}pre(p,t)=(\omega,\mathtt{test})\big)\Rightarrow{}M(p)\ge{}\omega$,
-  and $pre(p,t)=(\omega,\mathtt{inhib})\Rightarrow{}M(p)<{}\omega$.
+  marking $M$, which is noted $t\in{}Sens(M)$, if:
+  \begin{equation*}
+    \begin{aligned}[t]
+      \forall{}p\in{}P,\forall\omega\in\mathbb{N}^{*},~&\big(pre(p,t)=\lfloor(\omega,\mathtt{basic})\rfloor\lor{}pre(p,t)=\lfloor(\omega,\mathtt{test})\rfloor\big)\Rightarrow{}M(p)\ge{}\omega\\
+                                                       & \land{}pre(p,t)=\lfloor(\omega,\mathtt{inhib})\rfloor\Rightarrow{}M(p)<{}\omega.\\
+    \end{aligned}
+\end{equation*}
 \end{definition}
 
 \begin{definition}[Firability]
   \label{def:firable}
   A transition $t\in{}T$ is said to be firable at a state
-  $s={<}M,I,reset_t,ex,cond{>}$, which is noted $t\in{}Firable(s)$, if
-  $t\in{}Sens(M)$, and $t\notin{}T_i$ or $I(t)\in{}I_s(t)$, and
-  $\forall c \in \mathcal{C}, \mathbb{C}(t, c) = 1 \Rightarrow cond(c)
-  = 1$ and $\mathbb{C}(t, c) = -1 \Rightarrow cond(c) = 0$.
+  ${s={<}M,I,reset_t,ex,cond{>}}$, which is noted $t\in{}Firable(s)$,
+  if:
+  \begin{equation*}
+    \begin{aligned}[t]
+      & t\in{}Sens(M) \\
+      & \land{}(t\notin{}T_i\lor{}I(t)\in{}I_s(t)) \\
+      & \land\forall{}c\in\mathcal{C},~\mathbb{C}(t, c)=1\Rightarrow{}cond(c)=1\land\mathbb{C}(t, c)=-1\Rightarrow{}cond(c)=0. \\
+    \end{aligned}
+  \end{equation*}
 \end{definition}
 
 
@@ -541,12 +564,12 @@ that is, the marking resulting from the firing of transitions with a
 higher priority.  Priorities are defined with the priority relation,
 which is a part of the SITPN structure.  As illustrated in
 Figure~\ref{fig:resid-marking}, to determine which transitions of
-$t_0$, $t_1$ and $t_2$ are fired, a \emph{residual marking} is
-computed by following the priority order. For each transition of the
-group $t_0$, $t_1$ and $t_2$, the residual marking represents the
-remaining tokens in $p_0$ after the firing of transitions with a
-higher firing priority.  Thus, the recursive definition of the set of
-fired transitions at a given SITPN state is as follows:
+$t_0$, $t_1$, and $t_2$ are fired, a residual marking is computed by
+following the priority order. For each transition of the group $t_0$,
+$t_1$, and $t_2$, the residual marking represents the remaining tokens
+in $p_0$ after the firing of transitions with a higher firing
+priority.  Thus, the recursive definition of the set of fired
+transitions at a given SITPN state is as follows:
 
 \begin{definition}[Fired]
   \label{def:fired}
@@ -572,29 +595,27 @@ fired transitions at a given SITPN state is as follows:
 \end{figure}
 
 Note that the computation of the residual marking only involves the
-consumption phase of the firing process; tokens are withdrawn from
-places, but none are generated.
+consumption phase of the firing process. Tokens are withdrawn from
+places, but none are generated. Note also that there is an equivalence
+between being firable and being fired at a given state when
+considering a \textit{top-priority} transition, i.e. a transition for
+which there exists no transition with a higher firing priority.
 
-Note also that there is an equivalence between being firable and being
-fired at a given state when considering a \textit{top-priority}
-transition, i.e. a transition for which there exists no transition
-with a higher firing priority.
-
-\paragraph{The state transition relation}
+\paragraph{The State Transition Relation}
 
 The evolution of the state of a SITPN is \textit{synchronized} with
 the rising edge event and the falling edge event of a clock signal.
 The rising edge event triggers the marking update, the computation of
 time counter reset orders, and the execution of functions. On the
 falling edge of the clock signal, the value of conditions are
-updated. As the SITPN structure does not hold the link between Boolean
-expressions computed over \vhdl{} signals and conditions, the update
-of condition values is represented by the injection of fresh Boolean
-values coming from an environment. Moreover, the falling edge event
-triggers the evolution of the time counter values; values are
+updated. As the SITPN structure does not hold the relation between
+Boolean expressions computed over \vhdl{} signals and conditions, the
+update of condition values is represented by the injection of fresh
+Boolean values coming from an environment. Moreover, the falling edge
+event triggers the evolution of the time counter values. Values are
 incremented, reset, or stalling in the case where a time counter has
-reached the upper bound of its associated time interval. Finally, all
-actions associated with marked places are
+reached the upper bound of its associated time interval. Finally,
+during the ram down, all actions associated with marked places are
 activated. Figure~\ref{fig:sitpn-state-exec} gives an example of the
 evolution of the state of a given SITPN through one clock cycle,
 happening in the middle of other clock cycles.
@@ -602,13 +623,13 @@ happening in the middle of other clock cycles.
 \begin{figure}[H]
   \centering
   \includegraphics[keepaspectratio=true, width=.8\textwidth]{sitpn-state-evol.eps}
-  \caption[Evolution of an SITPN over one clock cycle.]{The evolution
+  \caption[Evolution of a SITPN over one clock cycle.]{The evolution
     of a SITPN over one clock cycle. Conditions (i.e. $c_0$ and $c_1$)
     appear in bold font when \texttt{true}; actions (i.e. $a_0$ and
     $a_1$) and functions ($f_0$) appear in bold font when
     activated/executed; time counters appear between diamond brackets,
-    and are represented between inverted brackets when they are
-    subject to a reset order.}
+    and are represented between inverted brackets and in bold when
+    they are subject to a reset order.}
   \label{fig:sitpn-state-exec}
 \end{figure}
 
@@ -620,22 +641,29 @@ $p_0$ and one token is produced in place $p_1$. Also, function $f_0$
 is executed at the occurrence of the rising edge of the clock signal,
 and thus, $f_0$ appears in bold font at Step~2. Consequently to the
 firing of $t_0$, a reset order is sent to the time counter of $t_0$,
-and it appears between inverted brackets at Step~2. From Step~2 to
+which appears between inverted brackets at Step~2. From Step~2 to
 Step~3, the falling edge updates the action activation status: $a_0$
 stays activated as place $p_0$ is still marked; $a_1$ becomes newly
 activated as place $p_1$ just received a token. Time counters are
 updated: $t_0$'s time counter is set to zero as the transition
 previously received a reset order. However, as $t_0$ is still enabled
 by the new marking, its time counter is incremented. Thus, the
-resulting time counter value at Step~3 is of one (i.e. result of reset
-plus increment). Also, the environment provides a new value to each
-condition. As a consequence, condition $c_0$ takes the value
-\texttt{false} and condition $c_1$ keeps the same value.
+resulting time counter value at Step~3 is one (i.e. the result of
+reset followed by an incrementation). Also, the environment provides a
+new value to each condition. As a consequence, condition $c_0$ takes
+the value \texttt{false} and condition $c_1$ keeps the same value.
 
 We formalize the evolution of a SITPN state synchronized with the
-events of a clock signal with the following state transition relation:
+events of a clock signal with the state transition relation of
+Definition~\ref{def:semantics}. In Definition~\ref{def:semantics} and
+in the remainder of the article, note that the sum expression $\sum$
+will contextually corresponds to the Boolean sum expression, i.e. the
+application of the \texttt{or} operator over the elements of the
+iterated set, or to the sum between natural numbers. Each definition
+case of the state transition relation is the conjunction of the
+enumerated items.
 
-\begin{definition}[SITPN state transition]
+\begin{definition}[SITPN State Transition]
   \label{def:semantics}
   For a given $sitpn\in{}SITPN$, the SITPN state transition relation
   $\rightarrow\subseteq{}(\mathbb{N}\rightarrow\mathcal{C}\rightarrow\mathbb{B})\times{}\mathbb{N}\times{}S(sitpn)\times{}\{\uparrow,\downarrow\}\times{}S(sitpn)$
@@ -758,11 +786,7 @@ Premises~\ref{it:cond-env} to \ref{it:reset-not-sens} describe the
 SITPN state evolution at the falling edge of the clock
 signal. Premises~\ref{it:cond-env} and \ref{it:activate-actions} deal
 with the update of condition values and the activation status of
-actions. Note that in Premise~\ref{it:activate-actions} (and also in
-Premise~\ref{it:exec-fun}), the sum expression corresponds to the
-Boolean sum expression, i.e. the application of the \texttt{or}
-operator over the elements of the iterated
-set. Premises~\ref{it:reset-counters}, \ref{it:inc-counters},
+actions.  Premises~\ref{it:reset-counters}, \ref{it:inc-counters},
 \ref{it:locked-counters} and \ref{it:reset-not-sens} focus on the
 update of time counter values.  In Premise~\ref{it:inc-counters} of
 the SITPN semantics, the \emph{active} time counters refer to the time
@@ -1522,13 +1546,6 @@ $id\in\mathsf{dom}(\mathcal{C}(\sigma))$.
 
 \subsubsection{Evaluation of expressions}
 \label{subsubsec:expr-eval}
-
-In what follows, we use the option type to express partial functions,
-or functions that can return errors.  We write
-$f(x)=\lfloor{}y\rfloor$ to state that some value $y$ is associated
-with the input $x$ through function $f$; we write $f(x)=\emptyset$ to
-state that either $x$ is not in the definition domain of $f$, or that
-an error is returned for the input $x$.
 
 Table~\ref{tab:expr-eval} presents the rules to evaluate the
 expressions defined in the \hvhdl{} abstract syntax. A rule instance
@@ -2931,7 +2948,7 @@ describes the SITPN-to-\hvhdl{} binder structure:
   \end{itemize}
 \end{definition}
 
-For a given binder $\gamma$ and an element of an SITPN structure
+For a given binder $\gamma$ and an element of a SITPN structure
 $e\in{}P\cup{}T\cup\mathcal{C}\cup\mathcal{A}\cup\mathcal{F}$, we
 write $\gamma(e)$ where $e$ is looked up in the appropriate
 function. For instance, for a given $f\in\mathcal{F}$, $\gamma(f)$ is
@@ -3587,7 +3604,7 @@ Definition~\ref{def:state-sim}.
 \begin{definition}[State similarity relation]
   \label{def:state-sim}
   For a given $sitpn\in{}SITPN$, a \hvhdl{} design $d\in{}design$, and
-  a binder $\gamma\in{}WM(sitpn,d)$, an SITPN state $s\in{}S(sitpn)$
+  a binder $\gamma\in{}WM(sitpn,d)$, a SITPN state $s\in{}S(sitpn)$
   and a design state $\sigma\in\Sigma$ are similar, written
   $\gamma\vdash{}s\approx\sigma$ if
   \begin{enumerate}
@@ -4836,7 +4853,7 @@ model-to-text transformations in the context of formal
 verification. Because of the nature of the transformation we propose
 to verify, i.e a model-to-text transformation, the following works are
 of particular interest to us.  We tried as much as possible to find
-articles related to model transformations involving Petri nets.
+articles related to model transformations involving PNs.
 
 Regarding model transformations, a lot of articles consider semantic
 preservation as the preservation of structural properties in the
@@ -4892,7 +4909,7 @@ triplet ${<}s,c,t{>}$ where the ``correspondence model $c$ explicitly
 stores correspondence relationships between source model $s$ and
 target model $t$''. The work described is \cite{Fronc2011} is really
 close to our own verification task. The article describes how Coloured
-Petri Nets (CPNs, specifically LLVM-labelled Petri nets) are
+Petri Nets (CPNs, specifically LLVM-labelled PNs) are
 transformed into LLVM (Low Level Virtual Machine) programs
 representing the state space (the graph of reachable markings) of
 these PNs. LLVM is a low-level assembly language. The aim is to enable
@@ -4904,8 +4921,8 @@ transition. Arcs are labelled by multisets of expressions. A marking
 is a function that maps each place to a multiset of values belonging
 to the place's type.  The authors define data structures (multisets,
 sets, markings\dots) with interfaces, i.e. sets of operations over
-structures, to represent the Petri nets in LLVM.  They define
-interpretation functions that draw equivalences between Petri nets
+structures, to represent the PNs in LLVM.  They define
+interpretation functions that draw equivalences between PNs
 objects and LLVM data structures.  The authors define two algorithms:
 $\mathtt{fire\_t}$ and $\mathtt{succ\_t}$ to compute the graph of
 reachable states.  These are the functions that transform CPNs into
@@ -4923,7 +4940,7 @@ leading from marking $M$ to marking $M'$, then applying running the
 $fire_t$ function over the generated LLVM program at state $LM$ (such
 that $LM$ implements marking $M$) leads to a new state $LM'$, such
 that $LM'$ implements marking $M'$. To prove this theorem, the authors
-proceed by induction on the number of places of the input Petri net.
+proceed by induction on the number of places of the input PN.
 
 % GLOBAL DISCUSSIONS
 
@@ -5022,7 +5039,7 @@ In this article, we have reported on the formal verification of the
 \hilecop{} methodology, more specifically pertaining to the proof that
 one transformation pass of the methodology is semantic preserving.
 The considered transformation pass is a \textit{model-to-text}
-transformation that takes a specific kind of Petri net model as input,
+transformation that takes a specific kind of PN model as input,
 i.e. a SITPN that represents the behavior of a safety-critical digital
 system, and generates an output \vhdl{} design. The formal
 verification of the \hilecop{} model-to-text transformation (HM2T) has
@@ -5046,6 +5063,9 @@ which is:
 
 %%%%%%%% ANSWERS TO RESEARCH QUESTIONS AND CONTRIBUTIONS %%%%%%%%%
 
+\subsection{Achievements and discussions}
+\label{sec:achiev-and-discuss}
+
 Following these steps, we brought the proof on paper and in a very
 detailed manner that the HM2T is semantic preserving. Even though the
 mechanization of the proof is not completed, each step of the approach
@@ -5060,7 +5080,7 @@ transformation. % As a matter of fact, the \hilecop{} transformation
 % condition of the input SITPN model.
 Through the formalization of a well-defined SITPN, we precisely
 characterized the way to handle a conflict between the transitions of
-an SITPN. This aspect of the SITPN semantics is complex and has been
+a SITPN. This aspect of the SITPN semantics is complex and has been
 one particularly subtle point of the proof of semantic preservation.
 About the output language of the transformation, we were able, by
 targeting a very precise subset of the \vhdl{} language, to devise a
@@ -5194,14 +5214,14 @@ high-level formalism is presented in
 % The two other main aspects still to be integrated are
 % \textit{macro\-places} and \textit{multi-clock domains}.  The
 % macroplace mechanism, illustrated in Figure~\ref{fig:macroplace},
-% enables the encapsulation of an SITPN subnet, called a refinement,
+% enables the encapsulation of a SITPN subnet, called a refinement,
 % into an environment that handles exceptions.
 
 % \begin{figure}[H]
 %   \centering
 %   \includegraphics[keepaspectratio,width=.6\textwidth]{macroplace.eps}
 %   \caption[An SITPN model with a macroplace.]{The macroplace is the
-%     double-lined circle that encapsulates an SITPN subnet; the subnet
+%     double-lined circle that encapsulates a SITPN subnet; the subnet
 %     is called a \textit{refinement}. The arcs that enter and go out of
 %     the macroplace are particular arcs represented by dotted
 %     arrows. The input (resp. output) arc on top (at the bottom left)
