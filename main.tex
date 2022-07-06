@@ -294,7 +294,7 @@ a more precise definition of both the SITPN structure and its
 semantics, as precision is needed for proving the semantic
 preservation. We have implemented both structure and semantics in
 \coq{}. Moreover, we added complementary definitions, concerning the
-well-definition of a SITPN input model, which are required to express
+well-definedness of a SITPN input model, which are required to express
 our semantic preservation theorem. In this section, we assume that the
 reader has some knowledge of the PN formalism and its semantics, so
 that words like firing, or marking, need no explanation. For more
@@ -583,7 +583,7 @@ transitions at a given SITPN state is as follows:
 
 \begin{figure}[H]
   \centering
-  \includegraphics[keepaspectratio=true, width=.8\textwidth]{resid-marking.eps}
+  \includegraphics[keepaspectratio=true, width=.7\textwidth]{resid-marking.eps}
   \caption[Computation of the residual marking of a group of
   conflicting transitions.]{Computation of the residual marking for a
     group of conflicting transitions. At \circled{1}
@@ -654,14 +654,16 @@ new value to each condition. As a consequence, condition $c_0$ takes
 the value \texttt{false} and condition $c_1$ keeps the same value.
 
 We formalize the evolution of a SITPN state synchronized with the
-events of a clock signal with the state transition relation of
+events of a clock signal through the state transition relation of
 Definition~\ref{def:semantics}. In Definition~\ref{def:semantics} and
-in the remainder of the article, note that the sum expression $\sum$
-will contextually corresponds to the Boolean sum expression, i.e. the
-application of the \texttt{or} operator over the elements of the
-iterated set, or to the sum between natural numbers. Each definition
-case of the state transition relation is the conjunction of the
-enumerated items.
+in the remainder of the article, note that the sum (resp. product)
+expression $\sum$ (resp. $\prod$) will contextually corresponds to the
+Boolean sum (res. product) expression, i.e. the application of the
+\texttt{or} (resp. \texttt{and}) operator over the elements of the
+iterated set, or to the sum (resp. product) between natural
+numbers. Note also that, in Definition~\ref{def:semantics}, each
+definition case of the state transition relation is the conjunction of
+the enumerated items.
 
 \begin{definition}[SITPN State Transition]
   \label{def:semantics}
@@ -691,19 +693,23 @@ enumerated items.
       
     \item\label{it:reset-order} A time transition receives a reset
       order if it is fired at state $s$, or, if there exists a place
-      $p$ connected to $t$ by a \texttt{basic} or \texttt{test arc}
+      $p$ connected to $t$ by a \texttt{basic} or \texttt{test} arc
       and at least one output transition of $p$ is fired and the
-      transient marking of $p$ disables $t$; no reset order is sent
-      otherwise:
+      transient marking\footnote{The transient marking is the marking
+        obtained between the token consumption phase and the token
+        production phase of the firing process.} of $p$ disables $t$;
+      no reset order is sent otherwise:
       \begin{equation*}
-        \begin{split}
-          \forall{}t\in{}T_i,&~t\in{}Fired(s) \\
-                             &\lor\big(\exists{}p\in{}P,\omega\in\mathbb{N}^{*}, \\
-                             &\quad\quad{}[pre(p,t)=(\omega,\mathtt{basic})\lor{}pre(p,t)=(\omega,\mathtt{test})] \\
-                             &\quad\quad\land\sum\limits_{t_i\in{}Fired(s)}pre(p,t_i)>0 \\
-                             &\quad\quad\land{}M(p)-\sum\limits_{t_i\in{}Fired(s)}pre(p,t_i)<\omega\big)\\
-                             & \Rightarrow{}reset'_t(t)=\mathtt{true}~and~reset'_t(t)=\mathtt{false}~otherwise.  \\
-        \end{split}
+        \begin{aligned}[t]
+          \forall{}t\in{}T_i,\Big(&t\in{}Fired(s) \\
+                                  & \begin{aligned}[t]
+                                      \lor\exists{}p&\in{}P,\omega\in\mathbb{N}^{*}, \\
+                                                    & \big(pre(p,t)=\lfloor(\omega,\mathtt{basic})\rfloor\lor{}pre(p,t)=\lfloor(\omega,\mathtt{test})\rfloor\big) \\
+                                                    &\land\sum\limits_{t_i\in{}Fired(s)}pre(p,t_i)>0 \\
+                                                    &\land{}M(p)-\sum\limits_{t_i\in{}Fired(s)}pre(p,t_i)<\omega\Big)\Rightarrow{}reset'_t(t)=\mathtt{true}\\
+                                    \end{aligned} \\
+                                  & and~reset'_t(t)=\mathtt{false}~otherwise. \\
+        \end{aligned}
       \end{equation*}
       
     \item\label{it:exec-fun} All functions associated with at least one fired transition are executed, i.e:
@@ -735,24 +741,28 @@ enumerated items.
     \item\label{it:reset-counters} All the time transitions that are
       sensitized by the marking $M$ and received the order to reset
       their time intervals, have their time counter reset and
-      incremented, i.e.:
+      incremented\footnote{The sensitization of the transition at the
+        current clock cycle implies an incrementation of the time
+        counter.}, i.e.:
       \begin{equation*}
         \forall{}t\in{}T_i,~t\in{}Sens(M)\land{}reset_t(t)=\mathtt{true}
         \Rightarrow{}I'(t)=1.
       \end{equation*}
       
     \item\label{it:inc-counters} All the time transitions that are
-      sensitized by the marking $M$, and
-      did not receive a reset order, increment their time counters if time counters are still active, i.e.:
+      sensitized by the marking $M$, and did not receive a reset
+      order, increment their time counters if the upper bound of the
+      time interval has not been reached yet, i.e.:
       \begin{equation*}
         \begin{split}
           \forall{}t\in{}T_i,~&t\in{}Sens(M)\land{}reset_t(t)=\mathtt{false}\land{}[I(t)\le{}u(I_s(t))\lor{}u(I_s(t))=\infty]\\
                               & \Rightarrow{}I'(t)=I(t)+1. \\
         \end{split}
       \end{equation*}
-    \item\label{it:locked-counters} All the time transitions
-      verifying the same
-      conditions as above, but with locked counters, keep having locked counters (values are stalling), i.e.:        
+    \item\label{it:locked-counters} All the time transitions verifying
+      the same conditions as above, but with locked counters (i.e. the
+      counter has reached the upper bound of the time interval), keep
+      having locked counters (values are stalling), i.e.:
       \begin{equation*}
         \begin{split}
           \forall{}t\in{}T_i,~&t\in{}Sens(M)\land{}reset_t(t)=\mathtt{false}\land{}I(t)>{}u(I_s(t))\land{}u(I_s(t))\neq\infty\\
@@ -760,7 +770,8 @@ enumerated items.
         \end{split}
       \end{equation*}
       
-    \item\label{it:reset-not-sens} All the time transitions disabled by the marking $M$ have their time counters set to zero, i.e.:
+    \item\label{it:reset-not-sens} All the time transitions disabled
+      by the marking $M$ have their time counters set to zero, i.e.:
       \begin{equation*}
         \forall{}t\in{}T_i,~t\notin{}Sens(M)\Rightarrow{}I'(t)=0.
       \end{equation*}
@@ -779,8 +790,8 @@ computes the reset orders for time transitions. There are two cases
 where a time transition receives the order to reset its time
 counter. First, if the transition is one of the fired transitions at
 state $s$, then its time counter must be reset on the next falling
-edge. Second, if the transition is disabled in a \emph{transient}
-manner, then its time counter must also be reset.
+edge. Second, if the transition is disabled in a transient manner,
+then its time counter must also be reset.
 
 Premises~\ref{it:cond-env} to \ref{it:reset-not-sens} describe the
 SITPN state evolution at the falling edge of the clock
@@ -791,12 +802,13 @@ actions.  Premises~\ref{it:reset-counters}, \ref{it:inc-counters},
 update of time counter values.  In Premise~\ref{it:inc-counters} of
 the SITPN semantics, the \emph{active} time counters refer to the time
 counters that have not yet overreached the upper bound of their
-associated time interval. Of course, a time counter is always active
-when the upper bound is infinite. In Premise~\ref{it:locked-counters},
-the \emph{locked} time counters refer to the time counters that have
-overreached the upper bound of their associated time interval. Of
-course, time counters can never be locked in the presence of an
-infinite upper bound. In Premises~\ref{it:inc-counters} and
+associated time interval. % Of course, a time counter is always active
+% when the upper bound is infinite. In
+% Premise~\ref{it:locked-counters}, the \emph{locked} time counters
+% refer to the time counters that have overreached the upper bound of
+% their associated time interval. Of course, time counters can never
+% be locked in the presence of an infinite upper bound.
+In Premises~\ref{it:inc-counters} and
 \ref{it:locked-counters}, for a given time interval $i$, $u(i)$
 denotes the upper bound of the time interval, and $l(i)$ denotes the
 lower bound of the time interval.\\
@@ -808,20 +820,21 @@ trace is built for a given number of clock cycles, starting from the
 initial state of the SITPN model.  The initial state of a SITPN model
 is formally defined as follows:
 
-\begin{definition}[Initial state]
+\begin{definition}[SITPN Initial State]
   \label{def:sitpn-init-state}
   For a given $sitpn\in{}SITPN$, $s_0\in{}S(sitpn)$ is the initial
-  state of $sitpn$, such that
-  $s_0=<M_0,O_\mathbb{N},O_\mathbb{B},O_\mathbb{B},O_\mathbb{B}>$,
-  where $M_0$ is the initial marking of the SITPN, $O_\mathbb{N}$ is a
-  function that always returns 0, $O_\mathbb{B}$ is a function that
-  always returns \texttt{false}.
+  state of $sitpn$ where
+  ${s_0=<M_0,O_\mathbb{N},O_\mathbb{B},O_\mathbb{B},O_\mathbb{B}>}$,
+  $M_0$ is the initial marking of $sitpn$, $O_\mathbb{N}$ is a
+  function that always returns 0, and $O_\mathbb{B}$ is a function
+  that always returns \texttt{false}.
 \end{definition}
 
 Here are the definitions of the SITPN execution and the SITPN full
-execution relations.
+execution relations that together give a formal small-step semantics
+to a SITPN model.
 
-\begin{definition}[SITPN execution]
+\begin{definition}[SITPN Execution]
   \label{def:sitpn-exec}
   For a given $sitpn\in{}SITPN$, a starting state $s\in{}S(sitpn)$, a
   clock cycle count $\tau\in\mathbb{N}$, and an environment
@@ -831,15 +844,15 @@ execution relations.
   the two rules below:
   
   \begin{tabular}{@{}l}
-    % {\fontsize{10}{12}\selectfont
-    % \textsc{ExecutionEnd}} \\
+    {\fontsize{8}{10}\selectfont
+    \textsc{ExecutionEnd}} \\
     {\begin{prooftree}
         \infer0 {E_c,0\vdash{}sitpn,s\rightarrow{}[~]}
       \end{prooftree}} 
   \end{tabular}
   \begin{tabular}{@{}l}
-    % {\fontsize{10}{12}\selectfont
-    % \textsc{ExecutionLoop}} \\    
+    {\fontsize{8}{10}\selectfont
+    \textsc{ExecutionLoop}} \\    
     {\begin{prooftree}[template={\inserttext}]
 
         \hypo{$E_c,\tau\vdash{}s\xrightarrow{\uparrow}s'$}
@@ -851,25 +864,25 @@ execution relations.
   \end{tabular}
 \end{definition}
 
-The first rule of Definition~\ref{def:sitpn-exec} states that the
-execution of a $sitpn\in{}SITPN$, starting from a state
-$s\in{}S(sitpn)$ in the environment
+In Definition~\ref{def:sitpn-exec}, the rule \textsc{ExecutionEnd}
+states that the execution of a $sitpn\in{}SITPN$, starting from a
+state $s\in{}S(sitpn)$ in the environment
 $E_c\in{}\mathbb{N}\rightarrow\mathcal{C}\rightarrow\mathbb{B}$,
 yields an empty execution trace if the clock count comes down to $0$.
-The second rule describes how the execution trace related to the
-execution of a $sitpn\in{}SITPN$ is built in the case where the clock
-count $\tau$ is greater than zero. The final execution trace is
-composed of a head state $s'$, followed by state $s''$ and the tail
-trace $\theta$. The $::$ operator builds a new trace by adding a new
-element at the head of an existing trace. Starting from state $s$,
-$sitpn$ reaches state $s'$ after a rising edge event; then from state
-$s'$, it reaches state $s''$ after a falling edge event, i.e. from $s$
-to $s''$, a whole clock cycle is performed.  Finally, the execution
+The rule \textsc{ExecutionLoop} describes how the execution trace
+related to the execution of a $sitpn\in{}SITPN$ is built in the case
+where the clock count $\tau$ is greater than zero. The final execution
+trace is composed of a head state $s'$, followed by state $s''$ and
+the tail trace $\theta$. The ``$::$'' operator builds a new trace by
+adding a new element at the head of an existing trace. Starting from
+state $s$, $sitpn$ reaches state $s'$ after a rising edge event; then
+from state $s'$, it reaches state $s''$ after a falling edge event. In
+this rule, a whole clock cycle is performed.  Finally, the execution
 trace $\theta$ is obtained through the recursive call to the SITPN
 execution relation where $sitpn$ is executed during $\tau-1$ cycles
 starting from state $s''$.
 
-\begin{definition}[SITPN full execution]
+\begin{definition}[SITPN Full Execution]
   \label{def:sitpn-full-exec}
   For a given $sitpn\in{}SITPN$, a clock cycle count
   $\tau\in\mathbb{N}$, and an environment
@@ -881,14 +894,14 @@ starting from state $s''$.
   rules below:
   
   \begin{tabular}{@{}l}
-    % {\fontsize{10}{12}\selectfont\textsc{FullExec0}} \\
+    {\fontsize{8}{10}\selectfont\textsc{FullExec0}} \\
     {\begin{prooftree}[template={\inserttext}]
         
         \infer0{$E_c,0\vdash{}sitpn\xrightarrow{full}[s_0]$}
       \end{prooftree}} 
   \end{tabular}
   \begin{tabular}{l}
-    % {\fontsize{10}{12}\selectfont\textsc{FullExecCons}} \\
+    {\fontsize{8}{10}\selectfont\textsc{FullExecCons}} \\
     {\begin{prooftree}[template={\inserttext}]
         \hypo{$E_c,\tau\vdash{}s_0\xrightarrow{\downarrow}s$}
         \hypo{$E_c,\tau-1\vdash{}sitpn,s\rightarrow\theta_s$}
@@ -898,17 +911,18 @@ starting from state $s''$.
 
 \end{definition}
 
-The first rule of the Definition~\ref{def:sitpn-full-exec} appeals to
-the SITPN execution relation
-(i.e. Definition~\ref{def:sitpn-exec}). However, the definition of the
+In Definition~\ref{def:sitpn-full-exec}, the rule
+\textsc{FullExecCons} appeals to the SITPN execution relation
+(cf. Definition~\ref{def:sitpn-exec}). However, the definition of the
 SITPN full execution relation is necessary because the first cycle of
 execution, starting from the initial state $s_0$, is particular. As a
 matter of fact, no transition is fired during the first rising
 edge. Thus, the first rising edge does not change the initial state
-$s_0$. This is why, in the second rule, the execution trace begins
-with two states $s_0$, thus representing the idle first rising edge.
+$s_0$. This is why, in the rule \textsc{FullExecCons}, the execution
+trace begins with two states $s_0$, thus representing the effectless
+first rising edge.
 
-\subsection{Well-definition of a SITPN}
+\subsection{Well-Definedness of a SITPN}
 \label{sec:sitpn-wd}
 
 The synchronous execution semantics of SITPNs implies that all
@@ -924,11 +938,11 @@ the firing of $t_1$.
   \centering
   \includegraphics[keepaspectratio=true, width=.5\textwidth]{double-consum.eps}
   \caption[Double consumption of token in a SITPN.]{Double consumption
-    of one token in a SITPN. On the left side, the current marking
-    before the firing of $t_0$ and $t_1$; on the right side, the
-    marking resulting from the firing of $t_0$ and $t_1$. The arrow
-    indicates the occurrence of a rising edge that triggers the firing
-    process.}
+    of one token in a SITPN. % On the left side, the current marking
+    % before the firing of $t_0$ and $t_1$; on the right side, the
+    % marking resulting from the firing of $t_0$ and $t_1$.
+    The arrow indicates the occurrence of a rising edge that triggers
+    the firing process.}
   \label{fig:double-consum}
 \end{figure}
 
@@ -942,30 +956,29 @@ through the application of priorities. This policy about the
 resolution of structural conflicts is part of the definition of a
 \emph{well-defined} SITPN. We must be able to decide which transition
 in a conflicting pair will be fired when the conflict becomes
-effective. Thus, we give place-centered definition of a group of
-transitions in conflict:
+effective. To formalize this notion of well-definedness, we give a
+place-centered definition of a group of transitions in conflict:
 
-\begin{definition}[Conflicting group of transitions]
+\begin{definition}[Conflicting Group of Transitions]
   \label{def:cgroup}
-  For a given $sitpn\in{}SITPN$, the conflicting transitions of a
+  For a given ${sitpn\in{}SITPN}$, the conflicting transitions of a
   given place $p$, noted $conflict(p)$, are all transitions related to
-  $p$ with a \texttt{basic} place-transition arc,
-  i.e.
-  $conflict(p)=\{t\in{}T~\vert~\exists{}\omega\in\mathbb{N}^{*},~pre(p,t)=(\omega,\mathtt{basic})\}$.
+  $p$ with a \texttt{basic} place-transition arc, i.e.
+  ${conflict(p)=\{t\in{}T~\vert~\exists{}\omega\in\mathbb{N}^{*},~pre(p,t)=\lfloor(\omega,\mathtt{basic})\rfloor\}}$.
 \end{definition}
 
 This view of a conflict group reflects the place-centered view of
 conflicts as implemented in the \vhdl{} code generated by the
-model-to-text transformation.  Figure~\ref{fig:conflict-groups} shows
-the conflict group related to place $p_0$ and $p_1$, namely:
-$\{t_0,t_3\}$ and $\{t_1,t_4\}$.
+model-to-text transformation of \hilecop{}.
+Figure~\ref{fig:conflict-groups} shows the conflict group related to
+place $p_0$ and $p_1$, namely $\{t_0,t_1\}$ and $\{t_2,t_3\}$.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[keepaspectratio,width=.3\linewidth]{conflict-groups.eps}
+  \includegraphics[keepaspectratio,width=.25\linewidth]{conflict-groups.eps}
   \caption[An example of two separate conflict groups.]{An example of
-    two separate conflict groups, namely: $\{t_0,t_3\}$ and
-    $\{t_1,t_4\}$.}
+    two separate conflict groups, namely $\{t_0,t_1\}$ and
+    $\{t_2,t_3\}$.}
   \label{fig:conflict-groups}
 \end{figure}
 
@@ -980,30 +993,35 @@ of a conflicting pair will never be firable at the same time. We only
 consider two ways of mutual exclusion, namely: mutual exclusion with
 complementary conditions and mutual exclusion with inhibitor arcs.
 
-\begin{definition}[Mutual exclusion with complementary conditions]
+\begin{definition}[Mutual Exclusion with Complementary Conditions]
   \label{def:mutex-conds}
   Given two conflicting transitions $t_0$ and $t_1$, $t_0$ and $t_1$
-  are in mutual exclusion with complementary conditions if there
-  exists $c\in\mathcal{C}$ such that
-  $(\mathbb{C}(t_0,c)=1\land{}\mathbb{C}(t_1,c)=-1)$ or
-  $(\mathbb{C}(t_0,c)=-1\land{}\mathbb{C}(t_1,c)=1)$.
+  are in mutual exclusion with complementary conditions if:
+  \begin{equation*}
+    \exists{}c\in\mathcal{C},
+    (\mathbb{C}(t_0,c)=1\land{}\mathbb{C}(t_1,c)=-1)
+    \lor(\mathbb{C}(t_0,c)=-1\land{}\mathbb{C}(t_1,c)=1).
+  \end{equation*}
 \end{definition}
 
 \begin{definition}[Mutual exclusion with an inhibitor arc]
   \label{def:mutex-inhib} Given two conflicting transitions $t_0$ and
   $t_1$, $t_0$ and $t_1$ are in mutual exclusion with an inhibitor arc
-  if there exists $p\in{}P$ and $\omega\in{}\mathbb{N}^{*}$ such that
-  $(pre(p,t_0)=(\omega,\mathtt{basic})\lor{}pre(p,t_0)=(\omega,\mathtt{test}))\land{}pre(p,t_1)=(\omega,\mathtt{inhib})$
-  or
-  $(pre(p,t_1)=(\omega,\mathtt{basic})\lor{}pre(p,t_1)=(\omega,\mathtt{test}))\land{}pre(p,t_0)=(\omega,\mathtt{inhib})$.
+  if:
+  \begin{equation*}
+    \begin{aligned}[t]
+      \exists{}p&\in{}P,\omega\in{}\mathbb{N}^{*},\\
+                &\big((pre(p,t_0)=\lfloor(\omega,\mathtt{basic})\rfloor\lor{}pre(p,t_0)=\lfloor(\omega,\mathtt{test})\rfloor)\land{}pre(p,t_1)=\lfloor(\omega,\mathtt{inhib})\rfloor\big)\\
+                &\lor\big((pre(p,t_1)=\lfloor(\omega,\mathtt{basic})\rfloor\lor{}pre(p,t_1)=\lfloor(\omega,\mathtt{test})\rfloor)\land{}pre(p,t_0)=\lfloor(\omega,\mathtt{inhib})\rfloor\big).\\
+    \end{aligned}
+  \end{equation*}
 \end{definition}
 
 Figure~\ref{fig:mutex} illustrates the two means of mutual exclusion
 that can be applied to solve a conflict between two transitions.
-
 \begin{figure}[H]
   \centering
-  \includegraphics[keepaspectratio,width=.45\linewidth]{mutex.eps}
+  \includegraphics[keepaspectratio,width=.4\linewidth]{mutex.eps}
   \caption[Examples of conflicting transitions in mutual exclusion.]{
     Examples of conflicting transitions in mutual exclusion. At
     \circled{1}, an example of mutual exclusion with complementary
@@ -1011,10 +1029,9 @@ that can be applied to solve a conflict between two transitions.
     inhibitor arc.}
   \label{fig:mutex}
 \end{figure}
-
-In Figure~\ref{fig:mutex}, in situation \circled{1}, condition $c_1$
-is associated to $t_1$ and the complementary condition is associated
-to $t_0$ thus creating the mutual exclusion. In situation \circled{2},
+In Situation \circled{1} of Figure~\ref{fig:mutex}, condition $c_1$ is
+associated to $t_1$ and the complementary condition is associated to
+$t_0$ thus creating the mutual exclusion. In Situation \circled{2},
 the arcs $(p_0,t_0)$ and $(p_0,t_1)$ ensure the mutual exclusion
 between transitions $t_0$ and $t_1$. Note that in the structure of
 mutual exclusion with an inhibitor arc, the weight of the inhibitor
@@ -1023,22 +1040,31 @@ otherwise, the mutual exclusion is not effective.\\
 
 \noindent{}A well-defined SITPN is defined as follows:
 
-\begin{definition}[Well-defined SITPN]\label{def:wd-sitpn}
+\begin{definition}[Well-Defined SITPN]\label{def:wd-sitpn}
   A given $sitpn\in{}SITPN$ is well-defined if:
   \begin{itemize}
   \item $T\neq\emptyset$, the set of transitions is not empty.
   \item $P\neq\emptyset$, the set of places is not empty.
   \item There is no isolated place, i.e. a place that has neither
     input nor output transitions:\\
-    $\nexists{}p\in{}P,~input(p)=\emptyset\wedge{}output(p)=\emptyset$,
-    where $input(p)$ (resp. $output(p)$) denotes the set of input
-    (resp. output) transitions of $p$.
+    $\nexists{}p\in{}P,~\mathtt{input}(p)=\emptyset\wedge{}\mathtt{output}(p)=\emptyset$,
+    where
+    \texttt{input}$(p)=\{t~\vert~post(t,p)=\lfloor\omega\rfloor\}$,
+    the set of input transitions of place $p$, and
+    \texttt{output}$(p)=\{t~\vert~pre(p,t)=\lfloor(\omega,a)\rfloor\}$,
+    the set of output transitions of place $p$.
+    
   \item There is no isolated transition, i.e. a transition that has
     neither
     input nor output places:\\
-    $\nexists{}t\in{}T,~input(t)=\emptyset\wedge{}output(t)=\emptyset$,
-    where $input(t)$ (resp. $output(t)$) denotes the set of input
-    (resp. output) places of $t$.
+    $\nexists{}t\in{}T,~\mathtt{input}(t)=\emptyset\wedge{}\mathtt{output}(t)=\emptyset$,
+
+    where
+    \texttt{input}$(t)=\{p~\vert~pre(p,t)=\lfloor(\omega,a)\rfloor\}$,
+    the set of input places of transition $t$, and
+    \texttt{output}$(t)=\{p~\vert~post(t,p)=\lfloor\omega\rfloor\}$,
+    the set of output places of $t$.
+    
   \item For all conflict group as defined in
     Definition~\ref{def:cgroup}, either all conflicts (i.e. for all
     pair of transitions in the conflict group) are solved by one of
@@ -1047,29 +1073,28 @@ otherwise, the mutual exclusion is not effective.\\
   \end{itemize}
 \end{definition}
 
-If the properties, given in Definition~\ref{def:wd-sitpn}, are not
-ensured, they will lead to compile-time errors during the
-transformation of a SITPN model into a \vhdl{} design.
+In the remainder of the paper, we will only be considering
+well-defined SITPNs.
 
-\section{A target language: \hvhdl{}}
+\section{A Target Language: \hvhdl{}}
 \label{sec:hvhdl}
 
 The \hilecop{} model-to-text transformation (HM2T) generates a \vhdl{}
 \emph{design} out of an input SITPN model.  \vhdl{} is a hardware
-description language. A design represents the highest entity level
-that can be described in \vhdl{}. A design defines an interface
-(i.e. ports and dimensioning constants), and an internal behavior
-(i.e. the design architecture). The \vhdl{} Language Reference Manual
-(LRM) \cite{VHDL2000} gives an informal semantics describing how to
-simulate the behavior of a design described with the \vhdl{}. This
-semantics takes the form of a simulation algorithm expressed in
-natural language. To prove that the HM2T is semantic-preserving, the
-syntax and semantics of the \vhdl{} language must be formally set. The
-designs generated by the HM2T rely on a subset of the \vhdl{} language
-that we identify as \hvhdl{}. The following section presents the
-abstract syntax and the semantics of \hvhdl{}.
+description language \cite{VHDL2000}. A design represents the highest
+entity level that can be described in \vhdl{}. A design defines an
+interface (i.e. ports and dimensioning constants) and an internal
+behavior (i.e. the design architecture). The \vhdl{} Language
+Reference Manual (LRM) \cite{VHDL2000} gives an informal semantics
+describing how to simulate the behavior of a design described with the
+\vhdl{}. This semantics takes the form of a simulation algorithm
+expressed in natural language. To prove that the HM2T is
+semantic-preserving, the syntax and semantics of the \vhdl{} language
+must be formally set. The designs generated by the HM2T rely on a
+subset of the \vhdl{} language that we call \hvhdl{}. The following
+section presents the abstract syntax and the semantics of \hvhdl{}.
 
-\subsection{The abstract syntax of \hvhdl{}}
+\subsection{The Abstract Syntax of \hvhdl{}}
 \label{subsec:abs-syntax}
 
 The following subset of \vhdl{} has been determined based on the
@@ -1376,7 +1401,7 @@ input ports. Note that these connections are not replicated in
 \end{table}
 
 
-\subsection{Simulation semantics}
+\subsection{Simulation Semantics}
 \label{subsec:sim-semantics}
 
 The \vhdl{} Language Reference Manual \cite{VHDL2000} defines the
@@ -1410,7 +1435,7 @@ semantics will be presented in a bottom-up manner, starting from the
 evaluation of expressions to the definition of the whole simulation
 algorithm.
 
-\subsubsection{Semantic domains}
+\subsubsection{Semantic Domains}
 \label{subsubsec:sem-domains}
 
 Before detailing the semantics rules, we must introduce the
@@ -1544,7 +1569,7 @@ write $id\in\sigma$ as a shorthand notation for
 $id\in\mathsf{dom}(\mathcal{S}(\sigma))$ or
 $id\in\mathsf{dom}(\mathcal{C}(\sigma))$.
 
-\subsubsection{Evaluation of expressions}
+\subsubsection{Evaluation of Expressions}
 \label{subsubsec:expr-eval}
 
 Table~\ref{tab:expr-eval} presents the rules to evaluate the
@@ -1783,7 +1808,7 @@ of the $\mathtt{vbop}$ function in Table~\ref{tab:expr-eval}.
   
 \end{table}
 
-\subsubsection{Evaluation of sequential statements and port maps}
+\subsubsection{Evaluation of Sequential Statements and Port Maps}
 \label{subsubsec:ss-and-port-map-eval}
 
 Table~\ref{tab:ss-eval} describes the evaluation of sequential
@@ -2375,7 +2400,7 @@ port map of a design instance.  As shown in Table~\ref{tab:pmap-eval},
 the evaluation of an unconnected output port does not impact the
 signal store of the embedding design.
 
-\subsubsection{Evaluation of concurrent statements}
+\subsubsection{Evaluation of Concurrent Statements}
 \label{subsubsec:cs-eval}
 
 Concurrent statements define the behavior of a \hvhdl{} design. The
@@ -2577,7 +2602,7 @@ cases are prevented by a successful elaboration phase.
 % with the same identifier exist in a design's behavior, and such a
 % design can never be elaborated.
 
-\subsubsection{The simulation algorithm}
+\subsubsection{The Simulation Algorithm}
 \label{subsubsec:sim-algo}
 
 Now, let us introduce our formalization of the simulation algorithm
@@ -2721,9 +2746,7 @@ $\sigma\stackrel{\Sigma}{=}\sigma'\equiv
 %   \end{prooftree}
 % \end{table}
 
-\paragraph{Main loop and full simulation}
-
-
+\paragraph{Main Loop and Full Simulation}
 
 The rules of Table~\ref{tab:sim-loop} define the \hvhdl{} simulation
 relation which is a relational definition of our simulation algorithm
@@ -2892,7 +2915,7 @@ other than input ports.
   \end{prooftree}
 \end{table}
 
-\section{Model-to-text transformation}
+\section{Model-to-text Transformation}
 \label{sec:m2t}
 
 In the following section, we present the \hilecop{} model-to-text
@@ -2966,7 +2989,7 @@ where $sitpn$ and $d$ refer to the first and the third parameters of
 the relation. As hinted at the beginning of the section, specifying
 the HM2T is mostly about describing how the PDIs and TDIs are
 interconnected through their port interface. The error case arises
-when the input SITPN model does not respect the well-definition
+when the input SITPN model does not respect the well-definedness
 property (cf. Definition~\ref{def:wd-sitpn}).
 
 The bounding function, that is, the second parameter of the
@@ -3533,7 +3556,7 @@ and the full names is given in Appendix~\ref{sec:cnsts-sigs-names}.
   not a well-defined SITPN model w.r.t. Definition~\ref{def:wd-sitpn}.
 \end{definition}
 
-\section{Proof of semantic preservation}
+\section{Proof of Semantic Preservation}
 \label{sec:proof}
 
 The semantic preservation property of the HM2T is expressed by a
@@ -3954,7 +3977,7 @@ similarity theorem expressing that the HM2T is semantic preserving.
 
 \end{pf}
 
-\subsection{A mechanization-ready proof}
+\subsection{A Mechanization-Ready Proof}
 \label{sec:mecha-ready-pf}
 
 As presented above, proving Theorem~\ref{thm:full-trace-sim} amounts
@@ -4406,7 +4429,7 @@ expressed by Lemma~\ref{lem:re-eq-marking}.
  
 \end{pf}
 
-\section{Mechanization with the \coq{} proof assistant}
+\section{Mechanization with the \coq{} Proof Assistant}
 \label{sec:mech-of-the-proof}
 
 Here, the different contributions pertaining to the mechanization of
@@ -4451,7 +4474,7 @@ semantics is accessible under the \texttt{sitpn} folder in our
 \textsf{Git} repository; it amounts to 680 lines of program and
 specification.
 
-\paragraph{Implementation of the \hvhdl{} language}
+\paragraph{Implementation of the \hvhdl{} Language}
 
 % COMMAND RUN TO COUNT PROG, SPECS AND PROOF LINES:
 % 
@@ -4470,7 +4493,7 @@ execution relations, or the commutativity and associativity of the
 composition operators (e.g. for concurrent statements) in certain
 contexts, etc.
 
-\paragraph{Implementation of the \hilecop{} model-to-text transformation}
+\paragraph{Implementation of the \hilecop{} Model-to-Text Transformation}
 
 % COMMAND RUN TO COUNT PROG, SPECS AND PROOF LINES:
 % 
@@ -4488,7 +4511,7 @@ implementation. The total amounts to about 1300 lines of program and
 specification. The code is accessible under the
 \texttt{transformation} folder in our \textsf{Git} repository.
 
-\paragraph{Mechanization of the proof of
+\paragraph{Mechanization of the Proof of
   Theorem~\ref{thm:full-trace-sim}}
 
 % COMMAND RUN TO COUNT PROG, SPECS AND PROOF LINES:
@@ -4643,7 +4666,7 @@ the mechanization can contribute to reduce the size of
 scripts. Nonetheless, we believe that in our case the factor will
 still be very high even once the mechanization completed.
 
-\section{Related work}
+\section{Related Work}
 \label{sec:related-work}
 
 %% SCOPE OF THE REVIEW
@@ -4844,7 +4867,7 @@ the hardware models. % ASMs are described in the language AsmL; in AsmL,
 % that the execution states hold, but rather the activity of the source
 % and target programs.
 
-\paragraph{Model transformations}
+\paragraph{Model Transformations}
 
 % FROM CHAPTER TRANSFORMATION
 
@@ -4944,7 +4967,7 @@ proceed by induction on the number of places of the input PN.
 
 % GLOBAL DISCUSSIONS
 
-\paragraph{Global discussion}
+\paragraph{Global Discussion}
 
 Transformation functions are mappings from a source representation to
 a target representation. The more the mapping from source to target is
@@ -5063,7 +5086,7 @@ which is:
 
 %%%%%%%% ANSWERS TO RESEARCH QUESTIONS AND CONTRIBUTIONS %%%%%%%%%
 
-\subsection{Achievements and discussions}
+\subsection{Achievements and Discussions}
 \label{sec:achiev-and-discuss}
 
 Following these steps, we brought the proof on paper and in a very
@@ -5076,7 +5099,7 @@ models. Especially, we formalized the concept of a well-defined SITPN,
 that is, an \textit{acceptable} model for the
 transformation. % As a matter of fact, the \hilecop{} transformation
 % raises errors if the input SITPN model is not well-defined. Also, all
-% the theorems and lemmas that we proved rely on the well-definition
+% the theorems and lemmas that we proved rely on the well-definedness
 % condition of the input SITPN model.
 Through the formalization of a well-defined SITPN, we precisely
 characterized the way to handle a conflict between the transitions of
@@ -5188,7 +5211,7 @@ soon evolve in this way.
 
 %%%%% PERSPECTIVES %%%%%
 
-\subsection{Future work}
+\subsection{Future Work}
 \label{sec:future}
 
 The mechanization of the proof of Theorem~\ref{thm:full-trace-sim} is
@@ -5282,7 +5305,7 @@ engineering.
 \clearpage
 \begin{appendices}
 
-\section{The place design in abstract \hvhdl{} syntax}
+\section{The Place Design in Abstract \hvhdl{} Syntax}
 \label{app:place-design}
 
 \begin{lstlisting}[language=VHDL,
@@ -5392,7 +5415,7 @@ ps (reinit_transitions_time_evaluation, $\emptyset$,
 }
 \end{lstlisting}
 
-\section{The transition design in abstract \hvhdl{} syntax}
+\section{The Transition Design in Abstract \hvhdl{} Syntax}
 \label{app:trans-design}
 
 \begin{lstlisting}[language=VHDL,
@@ -5502,7 +5525,7 @@ $\vert\vert$
 ps (fired_evaluation, $\emptyset$, fired <= and(s_firable, s_priority_combination))
 \end{lstlisting}
 
-\section{Generic constant and signal names reference}
+\section{Generic Constant and Signal Names Reference}
 \label{sec:cnsts-sigs-names}
 
 \begin{table}[h]
@@ -5902,7 +5925,7 @@ ps (fired_evaluation, $\emptyset$, fired <= and(s_firable, s_priority_combinatio
   
 \end{appendices}
 
-\section{Commands for implementation metrics}
+\section{Commands for Implementation Metrics}
 \label{app:impl-metrics}
 
 All the following commands are run at the root of our \textsf{Git}
