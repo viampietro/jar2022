@@ -17,4 +17,4 @@ check:
         $(BIBTEX) $(TEX:.tex=) | grep "Error\|Warning"; exit 0
 
 clean:
-	rm -f *~ .*~ *.aux *.bbl *.blg *.log *.out $(PDF)
+	rm -f *~ .*~ *.aux *.bbl *.blg *.log *.out $(PDF) *.fls *.synctex.gz *.fdb_latexmk

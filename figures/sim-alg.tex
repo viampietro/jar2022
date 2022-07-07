@@ -97,7 +97,7 @@
   node[pattern=north west lines, pattern color=red, draw, rectangle, minimum width=.8cm, inner sep=1pt] {}
   ++ (1, 0)
   % tau = 1
-  node[anchor=north] {\ssmall $\tau=1$} edge[->-=.5]++ (0,1);
+  node[anchor=north] {\ssmall $\tau_c=1$} edge[->-=.5]++ (0,1);
 
   \draw (3, 1) --
   node[draw, circle, anchor=south, yshift=2pt, inner sep=1pt] {\tiny $s$}
@@ -109,15 +109,15 @@
   node[draw, circle, anchor=south, yshift=2pt, inner sep=1pt] {\tiny $s$}
   node[pattern=north west lines, pattern color=red, draw, rectangle, minimum width=.8cm, inner sep=1pt] {} ++ (1,0)
   node[anchor=west]
-  {\ssmall $\dots$} node[anchor=north] {\ssmall $\tau=2$};
+  {\ssmall $\dots$} node[anchor=north] {\ssmall $\tau_c=2$};
   
   % tau = 0
-  \node[anchor=north] at ($(frelow)$) {\ssmall $\tau=0$};
+  \node[anchor=north] at ($(frelow)$) {\ssmall $\tau_c=0$};
 
   %% Time markers
   
   % tau = 0
-  \node[anchor=north] at ($(frelow)$) {\ssmall $\tau=0$};
+  \node[anchor=north] at ($(frelow)$) {\ssmall $\tau_c=0$};
 
   % Initialization
   \node (init) at ($(origin)+(0,.7)$) {

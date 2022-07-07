@@ -86,23 +86,24 @@
 
 The domain of Model-Based Systems Engineering (MBSE) \cite{Long2011}
 proposes a framework to help engineers to design and produce digital
-systems, in a well-documented, safe, and reliable way. Comparable to
-what Model Driven Engineering (MDE) does in the world of software
-engineering, models are first-order concepts in MBSE.  As illustrated
-in Figure~\ref{fig:MBSE-ps}, a MBSE process describes a way to design
-a digital system starting from a high-level specfication of the
-system. This specification possibly follows a graphical formalism such
-as SysML \cite{Friedenthal2014} or Petri nets (PNs) \cite{Petri1962},
-or a textual one such as SystemC \cite{Black2009} or VHDL
-\cite{Ashenden2010}. The MBSE process then describes many refinement
-phases (the downward-going arrows in Figure~\ref{fig:MBSE-ps}) during
-which the input model will be transformed; at each refinement phase,
-the model goes down in abstraction toward its final implementation as
-a hardware circuit. A refinement phase, which is also a transformation
-phase, can be performed automatically or manually.
+systems, in a well-documented, safe, and reliable way. % Comparable to
+% what Model Driven Engineering (MDE) does in the world of software
+% engineering, models are first-order concepts in MBSE.
+As illustrated in Figure~\ref{fig:MBSE-ps}, a MBSE process describes a
+way to design a digital system starting from a high-level
+specification of the system. This specification possibly follows a
+graphical formalism such as SysML \cite{Friedenthal2014} or Petri nets
+(PNs) \cite{Petri1962}, or a textual one such as SystemC
+\cite{Black2009} or VHDL \cite{Ashenden2010}. The MBSE process then
+describes many refinement phases (the downward-going arrows in
+Figure~\ref{fig:MBSE-ps}) during which the input model will be
+transformed; at each refinement phase, the model goes down in
+abstraction toward its final implementation as a hardware circuit. A
+refinement phase, which is also a transformation phase, can be
+performed automatically or manually.
 
 \begin{figure}[H] \centering
-\includegraphics[keepaspectratio,width=.6\textwidth]{MBSE-ps.png}
+\includegraphics[keepaspectratio,width=.5\textwidth]{MBSE-ps.png}
   \caption[A Model-Based Systems Engineering process.]{A Model-Based
 Systems Engineering process; REQ stands for requirements, BEH for
 behavior, ARCH for architecture, Dgn V\&V for design verification and
@@ -112,9 +113,9 @@ validation. This figure is an excerpt from \cite{Long2011}.}
 
 In the case where the digital system being designed is a
 safety-critical system, an MBSE process will often employ formal
-models as the design formalism. Thus, these models enable a certain
-extent of mathematical reasoning to prove that safety properties are
-met during the design V\&V phase (cf. Figure~\ref{fig:MBSE-ps}).
+models as the design formalism. These models enable a certain extent
+of mathematical reasoning to prove that safety properties are met
+during the design V\&V phase (cf. Figure~\ref{fig:MBSE-ps}).
 
 To assist the engineers in the design and the implementation of
 safety-critical digital systems, the Inria CAMIN team came up with a
@@ -157,17 +158,17 @@ execution semantics of these PN models
 Due to its mathematical foundations, a PN model can be analyzed, and a
 proof that a given model meets some properties can be automatically
 produced through the direct analysis of the structure or through the
-use of model-checking techniques. This feature of PNs has been one of
-the reason of the adoption of this formalism as \hilecop{}'s base
-formalism. Another thesis has been dedicated to the development of new
-methods to analyze the \hilecop{} PN models \cite{Merzoug2018}. The
-analysis phase is here to convince the engineers that they are
-designing a safe system. The analysis process is a round trip between
-Step~1 and Step~2.  It aims at producing a model that is conflict-free
-(see Section~\ref{sec:hilecop-models} for more details about the
-definition of a conflict), bounded, and deadlock-free using
-model-checking techniques.  After several iterations, the model should
-reach soundness and is then said to be \emph{implementation-ready}.
+use of model-checking techniques. This feature of PNs has been one
+reason of its adoption as \hilecop{}'s design formalism. Another
+thesis has been dedicated to the development of new methods to analyze
+the \hilecop{} PN models \cite{Merzoug2018}. The analysis phase is
+here to convince the engineers that they are designing a safe
+system. The analysis process is a round trip between Step~1 and
+Step~2.  It aims at producing a model that is conflict-free (see
+Section~\ref{sec:hilecop-models} for more details about the definition
+of a conflict), bounded, and deadlock-free.  After several iterations,
+the model should reach soundness and is then said to be
+\emph{implementation-ready}.
 
 In Figure~\ref{fig:hilecop-wf}, from Step~2 to Step~3, \vhdl{} source
 code is then generated by means of a model-to-text transformation. The
@@ -250,20 +251,11 @@ are often sequential programs.
 % related to the EU 2017/745 regulation text, necessary to qualify the
 % neuroprostheses as eligible for the medical market.
 
-Moreover, the \hilecop{} methodology comes with a working
-implementation based on the Eclipse framework used by the CAMIN team
-to design and develop neuroprostheses. % This software is currently used
-% by the engineers of the Neurinnov company to design the digital
-% systems having a part in safety-critical implantable medical devices.
-To the purpose of formal verification, we will implement the
-\hilecop{} model-to-text transformation leveraging the functional
-language of the \coq{} proof assistant. However, after the
-mechanization of the proof of semantic preservation, we could use the
-extraction feature of the \coq{} proof assistant to produce the
-implemented transformation as an \ocaml{} program. We will then be
-able to connect this program to the existing \hilecop{} software in
-order
-to use the verified version of the transformation.\\
+% Moreover, the \hilecop{} methodology comes with a working
+% implementation based on the Eclipse framework used by the CAMIN team
+% to design and develop
+% neuroprostheses. % This software is currently used by the engineers of the Neurinnov company to design the digital systems having a part in safety-critical implantable medical devices.  To the purpose of formal verification, we will implement the \hilecop{} model-to-text transformation leveraging the functional language of the \coq{} proof assistant. However, after the mechanization of the proof of semantic preservation, we could use the extraction feature of the \coq{} proof assistant to produce the implemented transformation as an \ocaml{} program. We will then be able to connect this program to the existing \hilecop{} software in order
+% to use the verified version of the transformation.\\
 
 This article is structured as
 follows. Section~\ref{sec:hilecop-models} presents the specific kind
@@ -338,7 +330,7 @@ Figure~\ref{fig:abs-model}.
 
 \begin{figure}[H]
 \centering
-\includegraphics[keepaspectratio=true,width=\textwidth] {impl-model.eps}
+\includegraphics[keepaspectratio=true,width=.8\textwidth] {impl-model.eps}
 \caption[Global PN model.]{A global PN model obtained
   after the flattening of a \hilecop{} high-level model.}
 \label{fig:impl-model}
@@ -1103,14 +1095,14 @@ presented in Section~\ref{sec:m2t}, the HM2T is mainly about
 instantiating, i.e. creating an instance of a design acting as a
 subcomponent in the behavior of an embedding design, two pre-defined
 designs that have been devised with the methodology: the place and
-transition designs. The \vhdl{} code of these two designs are given in
-abstract syntax in Appendices~\ref{app:place-design} and
-\ref{app:trans-design}. The \hvhdl{} abstract syntax captures all the
-constructs of the \vhdl{} language used in the definition of the place
-and transition designs. The place and transition designs, and more
-broadely all \hilecop{}-generated designs, are \textit{synthesizable},
-i.e. they will be used as inputs of a compiler/synthesizer to obtain
-an implementation on a physical device. As a consequence, the \hvhdl{}
+transition designs. The \hvhdl{} code of these two designs are given
+in Appendices~\ref{app:place-design} and \ref{app:trans-design}. The
+\hvhdl{} abstract syntax captures all the constructs of the \vhdl{}
+language used in the definition of the place and transition
+designs. The place and transition designs, and more broadly all
+\hilecop{}-generated designs, are \textit{synthesizable}, i.e. they
+will be used as inputs of a compiler/synthesizer to obtain an
+implementation on a physical device. As a consequence, the \hvhdl{}
 abstract syntax only includes synthesizable constructs; all time
 constructs such as wait statements or unit-delay signal assignments
 are not part of the grammar. Moreover, the \hilecop{}-generated
@@ -1152,10 +1144,11 @@ concurrent statements, and finally whole designs.
   \end{tabular}
 \end{table}
 
-In Table~\ref{tab:expr}, the expressions of \hvhdl{} are restrained to
-operations over Boolean or natural numbers that are used in the
-designs generated by the transformation, and more particularly the
-ones used in the pre-defined place and transition designs.
+In Table~\ref{tab:expr}, the range of expressions is restrained to the
+operations over Boolean or natural numbers that are present in the
+designs generated by the HM2T.
+% , and more particularly the ones used in the pre-defined place and
+% transition designs.
 
 \begin{table}[!t]
   \caption{Sequential statements}
@@ -1360,8 +1353,10 @@ input ports. Note that these connections are not replicated in
       \quad\quad\vhdle|rst : in std_logic;| & \\
       \quad\quad\vhdle|a : in std_logic_vector (0 to ports_nb $-$ 1);|
       & \quad\quad$(\mathtt{in}, \mathtt{a}, \mathtt{array}(\mathtt{bool}, 0, \mathtt{ports\_nb}-1)),$ \\
-      \quad\quad\vhdle|o : out std_logic|
-      & \quad\quad$(\mathtt{out}, \mathtt{o}, \mathtt{bool})$ \\
+      \quad\quad\vhdle|o$_1$ : out std_logic;|
+      & \quad\quad$(\mathtt{out}, \mathtt{o}_1, \mathtt{bool}),$ \\
+      \quad\quad\vhdle|o$_2$ : out std_logic;|
+      & \quad\quad$(\mathtt{out}, \mathtt{o}_2, \mathtt{bool})$ \\
       \quad\vhdle|);| & \quad$\},$ \\
       \vhdle|end nand_gate;| & \\
       & \\
@@ -1380,15 +1375,15 @@ input ports. Note that these connections are not replicated in
       & \quad\quad$\vert\vert$ \\
       \quad\vhdle|sout : process (clk, rst)|& \quad\quad $\mathtt{ps}(\mathtt{sout}, vars=\emptyset, $ \\
       \quad\vhdle|begin|& \quad\quad\quad $body=$ \\
-      \quad\quad \vhdle|if rst = '0' then o <= '0'| & \quad\quad\quad\quad $\mathtt{rst} \{~\mathtt{o}\Leftarrow\mathtt{false}~\} $ \\
-      \quad\quad \vhdle|elsif rising_edge(clk) then|& \quad\quad\quad\quad $\mathtt{else} \{~\mathtt{rising} \{\mathtt{o}\Leftarrow\mathtt{not}~\mathtt{s}\}~\}$ \\
-      \quad\quad\quad \vhdle|o <= not s;|& \quad\quad $)$ \\
+      \quad\quad \vhdle|if rst = '0' then o$_1$ <= '0'| & \quad\quad\quad\quad $\mathtt{rst} \{~\mathtt{o}_1\Leftarrow\mathtt{false}~\} $ \\
+      \quad\quad \vhdle|elsif rising_edge(clk) then|& \quad\quad\quad\quad $\mathtt{else} \{~\mathtt{rising} \{\mathtt{o}_1\Leftarrow\mathtt{not}~\mathtt{s}\}~\}$ \\
+      \quad\quad\quad \vhdle|o$_1$ <= not s;|& \quad\quad $)$ \\
       \quad\quad \vhdle|end if;|& \\
       \quad\vhdle|end process sout;|& \\
       & \quad\quad $\vert\vert$ \\
       \quad\vhdle|notsubcmp : entity notgate | & \quad\quad$\mathtt{comp}(\mathtt{notsubcmp}, \mathtt{notgate}, $\\
       \quad\quad\vhdle|generic map ()| & \quad\quad\quad $g=\emptyset,$\\
-      \quad\quad\vhdle|port map (clk=>clk, rst=>rst, i=>s, no=>o);| & \quad\quad\quad $i=\{(\mathtt{i}\Rightarrow\mathtt{s})\},o=\{(\mathtt{no}\Rightarrow\mathtt{o})\}$\\
+      \quad\quad\vhdle|port map (clk=>clk, rst=>rst, i=>s, no=>o$_2$);| & \quad\quad\quad $i=\{(\mathtt{i}\Rightarrow\mathtt{s})\},o=\{(\mathtt{no}\Rightarrow\mathtt{o}_2)\}$\\
       & \quad\quad $)$ \\
       \vhdle|end nand_gate_arch;| & $\}$\\
       &\\
@@ -2753,20 +2748,20 @@ relation which is a relational definition of our simulation algorithm
 given in a structural \textit{small-step} setting (i.e. all
 intermediary states are preserved in a simulation trace).  The
 simulation relation is written
-$\mathcal{D},E_p,\Delta,\tau,\sigma\vdash{}cs\rightarrow\theta$. It
+$\mathcal{D},E_p,\Delta,\tau_c,\sigma\vdash{}cs\rightarrow\theta$. It
 associates the execution of a behavior $cs$ with a simulation trace
 $\theta\in\mathtt{list}(\Sigma)$ in a context
-$\mathcal{D},E_p,\Delta,\tau,\sigma$ where
+$\mathcal{D},E_p,\Delta,\tau_c,\sigma$ where
 $\mathcal{D}\in{}id\nrightarrow{}design$ is a design store,
 $E_p\in\mathbb{N}\rightarrow(id\nrightarrow{}v)$ is a simulation
 environment that will be used to update the value of primary input
 ports at the beginning of each simulation cycle, $\Delta\in{}ElDesign$
-is the elaborated version of the design under simulation, $\tau$ is
+is the elaborated version of the design under simulation, $\tau_c$ is
 the number of clock cycles to be performed during the simulation, and
 $\sigma$ is the design state at the beginning of the simulation. The
 simulation trace $\theta$, which is a list of time-ordered design
 states, is the result of the execution of the design behavior $cs$
-during $\tau$ clock cycles. Here, $cs$ represents the behavior of the
+during $\tau_c$ clock cycles. Here, $cs$ represents the behavior of the
 \hvhdl{} design under simulation.
 
 \begin{table}[!h]
@@ -2781,7 +2776,7 @@ during $\tau$ clock cycles. Here, $cs$ represents the behavior of the
         
         % First column.
         % Rising
-        \hypo{$\mathcal{D},\Delta,\mathtt{inj}(\sigma,E_p,\tau)\vdash{}cs\xrightarrow{cs_\uparrow}\sigma_\uparrow$}
+        \hypo{$\mathcal{D},\Delta,\mathtt{inj}(\sigma,E_p,\tau_c)\vdash{}cs\xrightarrow{cs_\uparrow}\sigma_\uparrow$}
 
         % Stabilize after rising.
         \infer[no rule]1{$\mathcal{D},\Delta,\sigma_\uparrow\vdash{}cs\xrightarrow{\rightsquigarrow}\sigma'$}
@@ -2793,10 +2788,10 @@ during $\tau$ clock cycles. Here, $cs$ represents the behavior of the
         \infer[no rule]1{$\mathcal{D},\Delta,\sigma_\downarrow\vdash{}cs\xrightarrow{\rightsquigarrow}\sigma''$}
 
         % Second column.
-        \hypo{$\mathcal{D},E_p,\Delta,\tau-1,\sigma''\vdash{}cs\rightarrow\theta$}
+        \hypo{$\mathcal{D},E_p,\Delta,\tau_c-1,\sigma''\vdash{}cs\rightarrow\theta$}
         
-        \infer2 [$\tau>0$] {
-          $\mathcal{D},E_p,\Delta,\tau,\sigma\vdash{}cs\rightarrow(\sigma'
+        \infer2 [$\tau_c>0$] {
+          $\mathcal{D},E_p,\Delta,\tau_c,\sigma\vdash{}cs\rightarrow(\sigma'
           :: \sigma'' :: \theta)$ }
       \end{prooftree}} \\
   \end{tabular}
@@ -2818,21 +2813,21 @@ during $\tau$ clock cycles. Here, $cs$ represents the behavior of the
 
 
 As shown in Table~\ref{tab:sim-loop}, the \hvhdl{} simulation relation
-is defined through two rule instances.  In the case where $\tau$ is
+is defined through two rule instances.  In the case where $\tau_c$ is
 equal to zero, the simulation ends and the execution of $cs$ returns
-an empty trace. In the case where $\tau$ is greater than zero, one
+an empty trace. In the case where $\tau_c$ is greater than zero, one
 simulation cycle is performed with $\sigma$ as the starting state. At
 the beginning of the cycle, the value of the input ports of the design
 under simulation are updated with the values yielded by the simulation
-environment $E_p$ at clock count $\tau$. Given a simulation
+environment $E_p$ at clock count $\tau_c$. Given a simulation
 environment $E_p\in\mathbb{N}\rightarrow(id\nrightarrow{}v)$, the
 \texttt{inj} function that updates the value of signals at a given
 design state $\sigma\in\Sigma$ and clock cycle count
-$\tau\in{}\mathbb{N}$ is defined as follows:
-$\mathtt{inj}(\sigma,E_p,\tau)=(\mathcal{S}_i,\mathcal{C})$ where
+$\tau_c\in{}\mathbb{N}$ is defined as follows:
+$\mathtt{inj}(\sigma,E_p,\tau_c)=(\mathcal{S}_i,\mathcal{C})$ where
 $\sigma=(\mathcal{S},\mathcal{C}), $ and $\mathcal{S}_i(x)=
 \begin{cases}
-  E_p(\tau)(x) & \mathrm{if}~x\in\mathtt{dom}(E_p(\tau)) \\
+  E_p(\tau_c)(x) & \mathrm{if}~x\in\mathtt{dom}(E_p(\tau_c)) \\
   \mathcal{S}(x) & \mathrm{otherwise}
 \end{cases}$.
 
@@ -2862,7 +2857,7 @@ Table~\ref{tab:full-sim} presents the relation that formalizes our
 entire simulation algorithm by appealing to the elaboration relation,
 and to the simulation relation presented in
 Table~\ref{tab:sim-loop}. The full simulation relation states that the
-simulation of a design $d$ during $\tau$ clock cycles yields the trace
+simulation of a design $d$ during $\tau_c$ clock cycles yields the trace
 $(\sigma_0::\theta)$ in the context of the design store
 $\mathcal{D}\in{}id\nrightarrow{}design$, the dimensioning function
 $\mathcal{M}_g\in{}id\nrightarrow{}v$ (used for the elaboration of
@@ -2880,7 +2875,7 @@ implicit default value otherwise\footnote{In the default state,
   i.e. the state yielded after the elaboration of a design, all
   signals are associated to the implicit default value of their type
   in the signal store. }. Then, the simulation trace $\theta$ is the
-result of the simulation of design $d$ during $\tau$ clock cycles with
+result of the simulation of design $d$ during $\tau_c$ clock cycles with
 $\sigma_0$ as starting state. As a side condition, we enforce the fact
 that, at every clock count of the simulation, the definition domain of
 the simulation environment is a subset of the input port
@@ -2908,9 +2903,9 @@ other than input ports.
     \infer[no rule]1{$\mathcal{D},\Delta,\sigma'\vdash{}d.beh\xrightarrow{\rightsquigarrow}{}\sigma_0$}
     
     % Simulation main loop.
-    \infer[no rule]1{$\mathcal{D},E_p,\Delta,\tau,\sigma_0\vdash{}{}d.beh\rightarrow\theta$}
+    \infer[no rule]1{$\mathcal{D},E_p,\Delta,\tau_c,\sigma_0\vdash{}{}d.beh\rightarrow\theta$}
     
-    \infer2 [$\forall\tau_i\in\mathbb{N},~\mathsf{dom}(E_p)(\tau_i)\subseteq{}\mathsf{dom}(I(\Delta))$] { $\mathcal{D},\mathcal{M}_g,E_p,\tau\vdash$
+    \infer2 [$\forall\tau_i\in\mathbb{N},~\mathsf{dom}(E_p)(\tau_i)\subseteq{}\mathsf{dom}(I(\Delta))$] { $\mathcal{D},\mathcal{M}_g,E_p,\tau_c\vdash$
       ${}d\xrightarrow{full}(\sigma_0::\theta)$ }
   \end{prooftree}
 \end{table}
@@ -3616,7 +3611,7 @@ and its corresponding output design.
   \label{fig:trace-comparison}
 \end{figure}
 
-In Figure~\ref{fig:trace-comparison}, $\tau$ indicates an arbitrary
+In Figure~\ref{fig:trace-comparison}, $\tau_c$ indicates an arbitrary
 number of clock cycles. To perform the proof of semantic preservation,
 we must prove that every pair of states considered at the same time
 point are similar w.r.t. to our own similarity relation.  Let us
@@ -3867,7 +3862,7 @@ initial state. This is expressed by Lemma~\ref{lem:fst-re-lock-step}.
 
 \begin{lemma}[First rising edge lock-step simulation]
   \label{lem:fst-re-lock-step}
-  For all \hm2thyps{}, and for all clock count $\tau\in\mathbb{N}$,
+  For all \hm2thyps{}, and for all clock count $\tau_c\in\mathbb{N}$,
   $\sigma_0,\sigma_i,\sigma_{\uparrow},\sigma'_0\in{}\Sigma$ such that:
   \begin{itemize}
   \item $\sigma_0$ is the initial state of design $d$:\\
@@ -3875,7 +3870,7 @@ initial state. This is expressed by Lemma~\ref{lem:fst-re-lock-step}.
     $\mathcal{D},\Delta,\sigma_i\vdash{}d.beh\xrightarrow{\rightsquigarrow}{}\sigma_0$
     
   \item a rising edge step leads from $\sigma_0$ to $\sigma'_0$:\\
-    $\mathcal{D}_\mathcal{H},\Delta,\mathtt{inj}(\sigma_0,E_p,\tau)\vdash{}d.beh\xrightarrow{cs_{\uparrow}}\sigma_{\uparrow}$
+    $\mathcal{D}_\mathcal{H},\Delta,\mathtt{inj}(\sigma_0,E_p,\tau_c)\vdash{}d.beh\xrightarrow{cs_{\uparrow}}\sigma_{\uparrow}$
     and
     $\mathcal{D}_\mathcal{H},\Delta,\sigma_{\uparrow}\vdash{}d.beh\xrightarrow{\rightsquigarrow}\sigma'_0$
   \end{itemize}
@@ -3891,7 +3886,7 @@ Lemmas~\ref{lem:re-lock-step} and \ref{lem:fe-lock-step}.
 
 \begin{lemma}[Rising edge lock-step simulation]
   \label{lem:re-lock-step}
-  For all \hm2thyps{}, and for all $\tau\in\mathbb{N}$,
+  For all \hm2thyps{}, and for all $\tau_c\in\mathbb{N}$,
   $s,s'\in{}S(sitpn)$, $\sigma,\sigma_\uparrow,\sigma'\in\Sigma$, such
   that
   \begin{itemize}
@@ -3899,9 +3894,9 @@ Lemmas~\ref{lem:re-lock-step} and \ref{lem:fe-lock-step}.
     falling edge step:
     $\gamma\vdash{}s\stackrel{\downarrow}{\approx}\sigma$
   \item a rising edge step leads from $s$ to $s'$:
-    $E_c,\tau\vdash{}s\xrightarrow{\uparrow}s'$
+    $E_c,\tau_c\vdash{}s\xrightarrow{\uparrow}s'$
   \item a rising edge step leads from $\sigma$ to $\sigma'$:\\
-    $\mathcal{D}_\mathcal{H},\Delta,\mathtt{inj}(\sigma,E_p,\tau)\vdash{}d.beh\xrightarrow{cs_{\uparrow}}\sigma_{\uparrow}$
+    $\mathcal{D}_\mathcal{H},\Delta,\mathtt{inj}(\sigma,E_p,\tau_c)\vdash{}d.beh\xrightarrow{cs_{\uparrow}}\sigma_{\uparrow}$
     and
     $\mathcal{D}_\mathcal{H},\Delta,\sigma_{\uparrow}\vdash{}d.beh\xrightarrow{\rightsquigarrow}\sigma'$
   \end{itemize}
@@ -3911,14 +3906,14 @@ Lemmas~\ref{lem:re-lock-step} and \ref{lem:fe-lock-step}.
 
 \begin{lemma}[Falling edge lock-step simulation]
   \label{lem:fe-lock-step}
-  For all \hm2thyps{}, and for all $\tau\in\mathbb{N}$,
+  For all \hm2thyps{}, and for all $\tau_c\in\mathbb{N}$,
   $s,s'\in{}S(sitpn)$, $\sigma,\sigma_\downarrow,\sigma'\in\Sigma$,
   such that
   \begin{itemize}
   \item $s$ and $\sigma$ are similar states as intended after a rising
     edge step: $\gamma\vdash{}s\stackrel{\downarrow}{\approx}\sigma$
   \item a falling edge step leads from $s$ to $s'$:
-    $E_c,\tau\vdash{}s\xrightarrow{\downarrow}s'$
+    $E_c,\tau_c\vdash{}s\xrightarrow{\downarrow}s'$
   \item a falling edge step leads from $\sigma$ to $\sigma'$:\\
     $\mathcal{D}_\mathcal{H},\Delta,\sigma\vdash{}d.beh\xrightarrow{cs_{\downarrow}}\sigma_{\downarrow}$
     and
@@ -3945,30 +3940,30 @@ similarity theorem expressing that the HM2T is semantic preserving.
   $E_p\in\mathbb{N}\rightarrow{}(id\nrightarrow{}v)$, execution
   environment
   $E_c\in\mathbb{N}\rightarrow(\mathcal{C}\rightarrow\mathbb{B})$,
-  $\tau\in\mathbb{N}$, SITPN model trace
+  $\tau_c\in\mathbb{N}$, SITPN model trace
   $\theta_s\in\mathtt{list}(S(sitpn))$, and \hvhdl{} design trace
   $\theta_\sigma\in\mathtt{list}(\Sigma)$ such that:
   \begin{enumerate}
   \item $\mathtt{sitpn2hvhdl}(sitpn, b)=\lfloor(d,\gamma)\rfloor$
   \item $\lceil{}sitpn\rceil^b$
   \item $\gamma\vdash{}E_p\stackrel{env}{=}E_c$
-  \item $E_c,\tau\vdash{}sitpn\xrightarrow{full}\theta_s$
+  \item $E_c,\tau_c\vdash{}sitpn\xrightarrow{full}\theta_s$
   \item
-    $\mathcal{D}_\mathcal{H},\emptyset,E_p,\tau\vdash{}d\xrightarrow{full}\theta_\sigma$
+    $\mathcal{D}_\mathcal{H},\emptyset,E_p,\tau_c\vdash{}d\xrightarrow{full}\theta_\sigma$
   \end{enumerate}
   then $\gamma\vdash\theta_s\sim\theta_\sigma$.
 \end{theorem}
 
 \begin{pf}[Proof of Theorem~\ref{thm:full-trace-sim}.]
   
-  Proceeding by case analysis on the number of clock cycles $\tau$,
-  there are two cases. First $\tau=0$, and then we must prove that the
+  Proceeding by case analysis on the number of clock cycles $\tau_c$,
+  there are two cases. First $\tau_c=0$, and then we must prove that the
   initial states are similar, which is true appealing to
-  Lemma~\ref{lem:sim-init-states}. Otherwise, $\tau>0$ and then at
+  Lemma~\ref{lem:sim-init-states}. Otherwise, $\tau_c>0$ and then at
   least the first clock cycle is executed. Thanks to
   Lemmas~\ref{lem:fst-re-lock-step} and \ref{lem:fe-lock-step}, we can
   show that the states are similar during the first clock cycle. Then,
-  we can reason by induction over $\tau$ to prove that the remnant of
+  we can reason by induction over $\tau_c$ to prove that the remnant of
   the execution traces are similar. We can appeal to
   Lemmas~\ref{lem:re-lock-step} and \ref{lem:fe-lock-step} to prove
   that states are similar during the induction step (corresponding to
@@ -4012,7 +4007,7 @@ expressed by Lemma~\ref{lem:re-eq-marking}.
 
 \begin{lemma}[Rising edge equal marking]
   \label{lem:re-eq-marking}
-  For all \hm2thyps{}, and for all $\tau\in\mathbb{N}$,
+  For all \hm2thyps{}, and for all $\tau_c\in\mathbb{N}$,
   $s,s'\in{}S(sitpn)$, $\sigma,\sigma_\uparrow,\sigma'\in\Sigma$, such
   that
   \begin{itemize}
@@ -4020,9 +4015,9 @@ expressed by Lemma~\ref{lem:re-eq-marking}.
     falling edge step:
     $\gamma\vdash{}s\stackrel{\downarrow}{\approx}\sigma$
   \item a rising edge step leads from $s$ to $s'$:
-    $E_c,\tau\vdash{}s\xrightarrow{\uparrow}s'$
+    $E_c,\tau_c\vdash{}s\xrightarrow{\uparrow}s'$
   \item a rising edge step leads from $\sigma$ to $\sigma'$:\\
-    $\mathcal{D}_\mathcal{H},\Delta,\mathtt{inj}(\sigma,E_p,\tau)\vdash{}d.beh\xrightarrow{cs_{\uparrow}}\sigma_{\uparrow}$
+    $\mathcal{D}_\mathcal{H},\Delta,\mathtt{inj}(\sigma,E_p,\tau_c)\vdash{}d.beh\xrightarrow{cs_{\uparrow}}\sigma_{\uparrow}$
     and
     $\mathcal{D}_\mathcal{H},\Delta,\sigma_{\uparrow}\vdash{}d.beh\xrightarrow{\rightsquigarrow}\sigma'$
   \end{itemize}
